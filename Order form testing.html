@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Order Tracker Ultimate - Custom Cloud Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #4361ee; --primary-dark: #3046c0; --success: #4CAF50;
+            --success-dark: #45a049; --danger: #dc3545; --danger-dark: #c82333;
+            --warning: #ffc107; --info: #17a2b8; --dark: #343a40;
+            --light: #f8f9fa; --border: #dee2e6;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; overflow-x: hidden; }
+        
+        /* Layout */
+        .app-container { display: flex; min-height: 100vh; width: 100vw; overflow-x: hidden; }
+        .sidebar { width: 280px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .sidebar-header h2 { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; }
+        .nav-links { list-style: none; padding: 20px 0; }
+        .nav-links li { padding: 0; margin: 5px 10px; }
+        .nav-links li a { text-decoration: none; color: #666; display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: 8px; transition: all 0.3s; font-weight: 500; }
+        .nav-links li a i { width: 24px; font-size: 1.2rem; }
+        .nav-links li:hover a { background: #f0f0f0; color: var(--primary); }
+        .nav-links li.active a { background: var(--primary); color: white; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); background: white; }
+        
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 280px; padding: 20px; transition: margin-left 0.3s ease, width 0.3s ease; width: calc(100% - 280px); }
+        .main-content.expanded { margin-left: 0; width: 100%; }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .page-header h1 { font-size: 1.8rem; color: var(--dark); display: flex; align-items: center; gap: 15px; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        
+        .cloud-badge { background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s; }
+        .cloud-badge.connected { background: #e8f5e9; color: #2e7d32; }
+        
+        .unsaved-warning { background: #fff3cd; color: #856404; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; border-left: 4px solid var(--warning); }
+        .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .card-header h2 { font-size: 1.4rem; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        
+        /* Dashboard Search */
+        .dash-search-container { position: relative; margin-bottom: 25px; }
+        .dash-search-input { width: 100%; padding: 16px 20px 16px 50px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: border-color 0.3s; }
+        .dash-search-input:focus { border-color: var(--primary); outline: none; }
+        .dash-search-icon { position: absolute; left: 18px; top: 18px; font-size: 18px; color: #999; }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; transition: all 0.3s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-icon { width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+        .stat-icon.total { background: #e3f2fd; color: #1976d2; }
+        .stat-icon.pending { background: #fff3e0; color: #f57c00; }
+        .stat-icon.overdue { background: #ffebee; color: #d32f2f; }
+        .stat-icon.payment { background: #f3e5f5; color: #7b1fa2; }
+        .stat-icon.completed { background: #e8f5e9; color: #388e3c; }
+        .stat-details h3 { font-size: 14px; color: #666; margin-bottom: 5px; }
+        .stat-details p { font-size: 28px; font-weight: bold; color: var(--dark); }
+        
+        /* Forms & Inputs */
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .form-row.align-bottom { align-items: flex-end; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark); }
+        .form-control { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; transition: all 0.3s; }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1); }
+        
+        .searchable-select { position: relative; }
+        .searchable-select input { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; }
+        .searchable-select .dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 250px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 8px; margin-top: 5px; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .searchable-select .dropdown.show { display: block; }
+        .searchable-select .dropdown-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .searchable-select .dropdown-item:hover, .searchable-select .dropdown-item.highlighted { background: #e3f2fd; }
+        .searchable-select .no-results { padding: 15px; text-align: center; color: #666; }
+        
+        .customer-details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary); }
+        .customer-details p { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
+        
+        /* Single Line Item Layout */
+        .items-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .item-fields-header { display: grid; grid-template-columns: 2fr 2fr 0.8fr 1.5fr 1.2fr 60px 50px; gap: 15px; padding: 0 15px 10px 15px; font-weight: 600; color: var(--dark); border-bottom: 2px solid var(--border); margin-bottom: 10px; font-size: 13px; }
+        .item-fields-single { display: grid; grid-template-columns: 2fr 2fr 0.8fr 1.5fr 1.2fr 60px 50px; gap: 15px; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px; }
+        .item-fields-single .field-label { display: none; }
+        
+        .mobile-only { display: none; }
+        @media (max-width: 992px) {
+            .mobile-hidden { display: none !important; }
+            .item-fields-header.mobile-hidden { display: none !important; }
+            .item-fields-single { grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+            .item-fields-single .field-label { display: block; margin-bottom: 4px; font-weight: 600; color: var(--dark); }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .mobile-only { display: block; }
+            .page-header h1 { font-size: 1.4rem; }
+            .cloud-badge span { display: none; } 
+        }
+
+        .financials-section { background: #eef2f6; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #cdd5e0; }
+        
+        /* Buttons */
+        .btn-primary, .btn-success, .btn-danger, .btn-info, .btn-warning, .btn-secondary { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: var(--success-dark); transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-dark); transform: translateY(-2px); }
+        .btn-info { background: var(--info); color: white; }
+        .btn-info:hover { background: #138496; transform: translateY(-2px); }
+        .btn-warning { background: var(--warning); color: var(--dark); }
+        .btn-warning:hover { background: #e0a800; transform: translateY(-2px); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
+        .btn-icon { padding: 10px; background: none; border: none; cursor: pointer; color: #666; border-radius: 6px; transition: all 0.3s; font-size: 16px; }
+        .btn-icon:hover { background: #f0f0f0; color: var(--primary); }
+        .btn-sm { padding: 8px 15px; font-size: 14px; }
+        .form-actions { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        
+        /* Quick Mobile FAB Button */
+        .fab-btn { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: white; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4); border: none; z-index: 1000; cursor: pointer; transition: transform 0.2s; }
+        .fab-btn:hover { transform: scale(1.05); background: var(--primary-dark); }
+        
+        /* Tables & Badges */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 600; color: var(--dark); border-bottom: 2px solid var(--border); }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        tr:hover { background: #f8f9fa; }
+        
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; display: inline-block; }
+        .status-Pending { background: #fff3e0; color: #f57c00; }
+        .status-In-Progress { background: #e3f2fd; color: #1976d2; }
+        .status-Completed { background: #e8f5e9; color: #388e3c; }
+        .status-Delivered { background: #d4edda; color: #155724; }
+        .status-Payment-Pending { background: #ffebee; color: #d32f2f; }
+        .status-Paid { background: #c8e6c9; color: #2e7d32; }
+        .status-Cancelled { background: #ffebee; color: #d32f2f; }
+        .status-select { padding: 6px 10px; border-radius: 20px; border: 2px solid transparent; font-size: 13px; font-weight: 500; cursor: pointer; width: auto; min-width: 140px; }
+        
+        /* Modals & Toasts */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; backdrop-filter: blur(5px); }
+        .modal-content { background: white; width: 90%; max-width: 1000px; margin: 40px auto; padding: 30px; border-radius: 16px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999; z-index: 10; }
+        .close:hover { color: var(--danger); }
+        
+        .toast { position: fixed; bottom: 20px; right: 20px; background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; align-items: center; gap: 10px; z-index: 3000; border-left: 4px solid var(--primary); }
+        .toast.show { display: flex; }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        
+        .settings-group { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .order-id-preview { font-size: 18px; font-weight: bold; color: var(--primary); padding: 10px; background: white; border-radius: 4px; text-align: center; margin-top: 10px; }
+
+        /* Print Template Styling */
+        #printArea { display: none; }
+        @media print {
+            body > *:not(#printArea) { display: none !important; }
+            #printArea { display: block !important; position: absolute; top: 0; left: 0; width: 100%; padding: 20px; background: white; }
+            .no-print { display: none !important; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+            th { background-color: #f5f5f5 !important; -webkit-print-color-adjust: exact; }
+        }
+        
+        /* Keyboard Shortcuts Panel */
+        .shortcuts-hint { position: fixed; bottom: 20px; left: 300px; background: rgba(0,0,0,0.8); color: white; padding: 8px 15px; border-radius: 20px; font-size: 12px; z-index: 1500; cursor: pointer; }
+        .shortcuts-panel { position: fixed; bottom: 70px; left: 300px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); z-index: 1499; display: none; min-width: 400px; max-width: 500px; }
+        .shortcuts-panel.show { display: block; }
+        .shortcuts-panel h3 { margin-bottom: 15px; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .shortcut-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .shortcut-item { display: flex; align-items: center; padding: 8px; background: #f8f9fa; border-radius: 6px; }
+        .shortcut-key { background: var(--dark); color: white; padding: 4px 10px; border-radius: 4px; font-family: monospace; margin-right: 10px; min-width: 80px; text-align: center; font-weight: bold; }
+        .shortcut-desc { flex: 1; color: var(--dark); font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-cloud"></i> OrderTrack Cloud</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-page="dashboard"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li data-page="orders"><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                <li data-page="customers"><a href="#"><i class="fas fa-users"></i> Customers</a></li>
+                <li data-page="masters"><a href="#"><i class="fas fa-cog"></i> Masters</a></li>
+                <li data-page="reports"><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li data-page="settings"><a href="#"><i class="fas fa-sliders-h"></i> Settings</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <p style="font-size: 12px; color: #666; margin-bottom: 10px; text-align: center;">Advanced tools:</p>
+                <button class="btn-info btn-sm" onclick="performBackup(false)" style="width: 100%; margin-bottom: 10px;">
+                    <i class="fas fa-download"></i> Export JSON
+                </button>
+                <button class="btn-secondary btn-sm" onclick="document.getElementById('restoreFileInput').click()" style="width: 100%;">
+                    <i class="fas fa-upload"></i> Import JSON
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <h1>
+                    <span id="pageTitle">Dashboard</span>
+                    <span class="cloud-badge" id="cloudBadge"><i class="fas fa-spinner fa-spin"></i> <span id="cloudStatusText">Connecting...</span></span>
+                </h1>
+                <div class="header-actions">
+                    <button id="mobileMenuBtn" class="mobile-only btn-icon"><i class="fas fa-bars"></i></button>
+                    <button id="sidebarToggleBtn" class="btn-icon mobile-hidden" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+                    <button class="btn-info btn-sm mobile-hidden" onclick="toggleShortcuts()">
+                        <i class="fas fa-keyboard"></i> Shortcuts
+                    </button>
+                </div>
+            </header>
+
+            <!-- Shortcuts Panel -->
+            <div class="shortcuts-panel" id="shortcutsPanel">
+                <h3>
+                    <span><i class="fas fa-keyboard"></i> Keyboard Shortcuts</span>
+                    <i class="fas fa-times" style="cursor: pointer; color: #999;" onclick="toggleShortcuts()"></i>
+                </h3>
+                <div class="shortcut-grid">
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+D</span><span class="shortcut-desc">Dashboard</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+O</span><span class="shortcut-desc">Orders</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+U</span><span class="shortcut-desc">Customers</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+M</span><span class="shortcut-desc">Masters</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+R</span><span class="shortcut-desc">Reports</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+S</span><span class="shortcut-desc">Settings</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+N</span><span class="shortcut-desc">New Order</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Ctrl+I</span><span class="shortcut-desc">Add Item</span></div>
+                    <div class="shortcut-item"><span class="shortcut-key">Esc</span><span class="shortcut-desc">Close Modal</span></div>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage">
+                
+                <!-- Dashboard Global Search -->
+                <div class="dash-search-container">
+                    <i class="fas fa-search dash-search-icon"></i>
+                    <input type="text" id="dashSearchInput" class="dash-search-input" placeholder="Search orders by Customer Name, Contact Person, or Mobile Number..." oninput="window.handleDashSearch(this.value)">
+                </div>
+
+                <div id="dashSearchResults" style="display:none; margin-bottom: 30px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 style="margin-bottom: 0;"><i class="fas fa-search"></i> Search Results</h2>
+                            <button class="btn-secondary btn-sm" onclick="clearDashSearch()"><i class="fas fa-times"></i> Clear</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="dashSearchBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="defaultDashboardContent">
+                    <div class="stats-grid" id="statsContainer"></div>
+
+                    <!-- Pending Items Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 style="margin-bottom: 0;"><i class="fas fa-tasks"></i> Pending Items</h2>
+                            <button class="btn-success btn-sm" onclick="loadDashboard()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:60px;">Image</th>
+                                        <th>Item Name & Description</th>
+                                        <th>Qty</th>
+                                        <th>Customer</th>
+                                        <th>Order ID</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingItemsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Page (List Only) -->
+            <div id="ordersPage" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 style="margin-bottom: 0;"><i class="fas fa-list"></i> All Orders</h2>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-primary" onclick="window.openOrderModal()"><i class="fas fa-plus"></i> New Order</button>
+                            <input type="text" id="orderSearch" class="form-control" placeholder="Search orders..." style="width: 250px;">
+                            <button class="btn-success btn-sm" onclick="window.exportAllOrdersCSV()"><i class="fas fa-file-excel"></i> Export All to CSV</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="ordersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Page -->
+            <div id="customersPage" style="display: none;">
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">Customer Management</h2>
+                    <button class="btn-primary" onclick="window.showCustomerModal()" style="margin-bottom: 20px;">
+                        <i class="fas fa-plus"></i> Add Customer
+                    </button>
+                    <input type="text" id="customerSearchInput" class="form-control" placeholder="Search customers..." style="margin-bottom: 20px;">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Name</th><th>Contact Person</th><th>Phone</th><th>Address</th><th>Type</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="customersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Masters Page -->
+            <div id="mastersPage" style="display: none;">
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">Items</h2>
+                    <button class="btn-primary" onclick="window.showItemModal()" style="margin-bottom: 20px;">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Item Name</th><th>Actions</th></tr></thead>
+                            <tbody id="itemsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">Print Types</h2>
+                    <button class="btn-primary" onclick="window.showPrintModal()" style="margin-bottom: 20px;">
+                        <i class="fas fa-plus"></i> Add Print Type
+                    </button>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Print Type</th><th>Actions</th></tr></thead>
+                            <tbody id="printsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reportsPage" style="display: none;">
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">Reports</h2>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; flex-wrap: wrap;">
+                        <button class="btn-info" onclick="window.showReportTab('customer')">Customer Wise</button>
+                        <button class="btn-info" onclick="window.showReportTab('date')">Date Wise</button>
+                        <button class="btn-info" onclick="window.showReportTab('print')">Print Type Wise</button>
+                    </div>
+                    
+                    <div id="customerReportTab" class="tab-content" style="display: block;">
+                        <div class="form-row align-bottom">
+                            <div class="form-group">
+                                <label>Search Customer</label>
+                                <div class="searchable-select" id="reportCustomerSearchContainer">
+                                    <input type="text" id="reportCustomerSearch" class="form-control" placeholder="Type to search..." autocomplete="off">
+                                    <div class="dropdown" id="reportCustomerDropdown"></div>
+                                </div>
+                            </div>
+                            <div class="form-group"><label>From Date</label><input type="date" id="reportFromDate" class="form-control"></div>
+                            <div class="form-group"><label>To Date</label><input type="date" id="reportToDate" class="form-control"></div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <button class="btn-primary" onclick="window.generateCustomerReport()" style="width:100%; height: 46px;"><i class="fas fa-search"></i> Generate</button>
+                            </div>
+                        </div>
+                        <div id="customerReportResult"></div>
+                    </div>
+                    
+                    <div id="dateReportTab" class="tab-content" style="display: none;">
+                        <div class="form-row align-bottom">
+                            <div class="form-group"><label>From Date</label><input type="date" id="dateReportFrom" class="form-control"></div>
+                            <div class="form-group"><label>To Date</label><input type="date" id="dateReportTo" class="form-control"></div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <button class="btn-primary" onclick="window.generateDateReport()" style="width:100%; height: 46px;"><i class="fas fa-search"></i> Generate</button>
+                            </div>
+                        </div>
+                        <div id="dateReportResult"></div>
+                    </div>
+                    
+                    <div id="printReportTab" class="tab-content" style="display: none;">
+                        <div class="form-row align-bottom">
+                            <div class="form-group"><label>Print Type</label><select id="printTypeSelect" class="form-control"><option value="">All Print Types</option></select></div>
+                            <div class="form-group"><label>From Date</label><input type="date" id="printReportFrom" class="form-control"></div>
+                            <div class="form-group"><label>To Date</label><input type="date" id="printReportTo" class="form-control"></div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <button class="btn-primary" onclick="window.generatePrintReport()" style="width:100%; height: 46px;"><i class="fas fa-search"></i> Generate</button>
+                            </div>
+                        </div>
+                        <div id="printReportResult"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" style="display: none;">
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">Settings</h2>
+                    
+                    <div class="settings-group">
+                        <h3>Order ID Format</h3>
+                        <div class="form-row">
+                            <div class="form-group"><label>Prefix</label><input type="text" id="orderIdPrefix" class="form-control" value="ORD"></div>
+                            <div class="form-group">
+                                <label>Date Format</label>
+                                <select id="orderIdDateFormat" class="form-control">
+                                    <option value="YYMMDD">YYMMDD (240218)</option>
+                                    <option value="YYYYMMDD">YYYYMMDD (20240218)</option>
+                                    <option value="DDMMYY">DDMMYY (180224)</option>
+                                    <option value="MMDDYY">MMDDYY (021824)</option>
+                                    <option value="">None (Only Serial Number)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Counter Digits</label>
+                                <select id="orderIdCounter" class="form-control">
+                                    <option value="3">3 digits (001)</option>
+                                    <option value="4">4 digits (0001)</option>
+                                    <option value="5">5 digits (00001)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="order-id-preview" id="orderIdPreview">ORD240218001</div>
+                        <button class="btn-primary btn-sm" onclick="window.saveOrderIdFormat()" style="margin-top: 10px;"><i class="fas fa-save"></i> Save Format</button>
+                    </div>
+
+                    <div class="settings-group" style="background: #e3f2fd; border: 1px solid #bbdefb;">
+                        <h3 style="color: #1565c0;"><i class="fas fa-database"></i> Custom Firebase Setup</h3>
+                        <p style="font-size: 13px; color: #444; margin-bottom: 10px;">
+                            Your app is successfully hardcoded and permanently connected to your personal Firebase database (<b>order-tracker-e7ee9</b>). All offline storage logic has been upgraded to real-time cloud sync.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Action Button (Mobile Only) -->
+    <button class="fab-btn mobile-only" onclick="window.openOrderModal()"><i class="fas fa-plus"></i></button>
+
+    <!-- MODALS -->
+    
+    <!-- Big Order Form Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="window.closeModal('orderModal')">&times;</span>
+            <h2 id="orderFormTitle" style="margin-bottom: 15px;">Create New Order</h2>
+            
+            <div id="unsavedWarning" class="unsaved-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>You have unsaved changes! Click Save Order button.</span>
+            </div>
+            
+            <form id="orderForm">
+                <input type="hidden" id="orderId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Order ID</label>
+                        <input type="text" id="orderIdDisplay" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Order Date</label>
+                        <input type="date" id="orderDate" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Customer <span style="color: red;">*</span></label>
+                    <div class="searchable-select" id="customerSearchContainer">
+                        <input type="text" id="customerSearch" class="form-control" placeholder="Type to search customer..." autocomplete="off">
+                        <div class="dropdown" id="customerDropdown"></div>
+                    </div>
+                    <input type="hidden" id="customerSelect">
+                </div>
+
+                <div id="customerDetails" class="customer-details" style="display: none;">
+                    <p><i class="fas fa-user"></i> <span id="selectedCustomerPerson"></span></p>
+                    <p><i class="fas fa-phone"></i> <span id="selectedCustomerPhone"></span></p>
+                    <p><i class="fas fa-map-marker-alt"></i> <span id="selectedCustomerAddress"></span></p>
+                </div>
+
+                <button type="button" class="btn-info btn-sm" onclick="window.showCustomerModal()" style="margin-bottom: 15px;">
+                    <i class="fas fa-plus-circle"></i> Add New Customer
+                </button>
+
+                <div class="items-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">Order Items</h3>
+                        <button type="button" id="addItemBtn" class="btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="item-fields-header mobile-hidden">
+                        <div>Item Name</div><div>Description</div><div>Qty</div><div>Print Type</div><div>Status</div><div style="text-align: center;">Image</div><div style="text-align: center;">Delete</div>
+                    </div>
+                    <div id="itemsContainer"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Order Notes</label>
+                    <textarea id="orderDescription" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="financials-section">
+                    <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--primary-dark);">Financials (Update after completion)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Total Order Value (₹)</label>
+                            <input type="number" id="orderTotal" class="form-control" value="0" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Advance / Paid Amount (₹)</label>
+                            <input type="number" id="orderPaid" class="form-control" value="0" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row align-bottom">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="dueDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Overall Order Status <small style="color:#666; font-weight:normal;">(*Auto-updates via items)</small></label>
+                        <select id="orderStatus" class="form-control">
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-primary" onclick="window.saveOrder()"><i class="fas fa-save"></i> Save Order</button>
+                    <button type="button" class="btn-info" onclick="window.printOrderInvoice()"><i class="fas fa-print"></i> Print Invoice</button>
+                    <button type="button" id="deleteOrderBtn" class="btn-danger" style="display: none;"><i class="fas fa-trash"></i> Delete Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details View Modal -->
+    <div id="orderDetailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="window.closeModal('orderDetailModal')">&times;</span>
+            <h2 id="orderDetailTitle" style="margin-bottom: 15px;">Order Details</h2>
+            <div id="orderDetailContent"></div>
+        </div>
+    </div>
+
+    <div id="customerModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="window.closeModal('customerModal')">&times;</span>
+            <h2 style="margin-bottom: 15px;">Add/Edit Customer</h2>
+            <form id="customerForm" onsubmit="return window.saveCustomer(event)">
+                <input type="hidden" id="customerId">
+                <div class="form-group"><label>Company/Customer Name *</label><input type="text" id="customerName" class="form-control" required></div>
+                <div class="form-group"><label>Contact Person Name</label><input type="text" id="customerContactPerson" class="form-control" placeholder="e.g. John Doe"></div>
+                <div class="form-group"><label>Phone</label><input type="text" id="customerPhone" class="form-control"></div>
+                <div class="form-group"><label>Address</label><textarea id="customerAddress" class="form-control" rows="2"></textarea></div>
+                <div class="form-group"><label><input type="checkbox" id="customerRegular"> Regular Customer</label></div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="itemModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="window.closeModal('itemModal')">&times;</span>
+            <h2 style="margin-bottom: 15px;">Add Item</h2>
+            <form id="itemForm" onsubmit="return window.saveItem(event)">
+                <div class="form-group"><label>Item Name *</label><input type="text" id="itemName" class="form-control" required></div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="printModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="window.closeModal('printModal')">&times;</span>
+            <h2 style="margin-bottom: 15px;">Add Print Type</h2>
+            <form id="printForm" onsubmit="return window.savePrint(event)">
+                <div class="form-group"><label>Print Type *</label><input type="text" id="printName" class="form-control" required></div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Global Image Preview Modal -->
+    <div id="imageViewerModal" class="modal" style="background: rgba(0,0,0,0.9);">
+        <span class="close" onclick="window.closeModal('imageViewerModal')" style="color: white; font-size: 40px; top: 20px; right: 30px;">&times;</span>
+        <img id="fullSizeImage" src="" style="margin: auto; display: block; max-width: 90%; max-height: 90vh; margin-top: 5vh; border-radius: 8px;">
+    </div>
+
+    <!-- PRINT INVOICE TEMPLATE (Hidden from UI) -->
+    <div id="printArea">
+        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; color: #333;">
+            <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px;">Order Invoice</h1>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+                <div>
+                    <h3 style="margin:0 0 5px 0; color: #555;">Customer Details</h3>
+                    <p style="margin:2px 0;"><strong>Name:</strong> <span id="printCustName"></span></p>
+                    <p style="margin:2px 0;"><strong>Contact:</strong> <span id="printCustContact"></span></p>
+                    <p style="margin:2px 0;"><strong>Phone:</strong> <span id="printCustPhone"></span></p>
+                    <p style="margin:2px 0;"><strong>Address:</strong> <span id="printCustAddress"></span></p>
+                </div>
+                <div style="text-align: right;">
+                    <h3 style="margin:0 0 5px 0; color: #555;">Order Info</h3>
+                    <p style="margin:2px 0;"><strong>Order ID:</strong> <span id="printOrderId"></span></p>
+                    <p style="margin:2px 0;"><strong>Date:</strong> <span id="printOrderDate"></span></p>
+                    <p style="margin:2px 0;"><strong>Due Date:</strong> <span id="printOrderDue"></span></p>
+                    <p style="margin:2px 0;"><strong>Printed On:</strong> <span id="printCurrentDate"></span></p>
+                </div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                <thead>
+                    <tr style="background-color: #f0f0f0;">
+                        <th style="border: 1px solid #ccc; padding: 10px; text-align: left;">Sl. No.</th>
+                        <th style="border: 1px solid #ccc; padding: 10px; text-align: left;">Item Description</th>
+                        <th style="border: 1px solid #ccc; padding: 10px; text-align: left;">Print Type</th>
+                        <th style="border: 1px solid #ccc; padding: 10px; text-align: center;">Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="printItemsBody"></tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid #ccc; padding-top: 20px;">
+                <div style="width: 50%;">
+                    <p style="margin:0 0 5px 0;"><strong>Notes:</strong></p>
+                    <p style="margin:0; font-size: 14px; color: #555;" id="printOrderNotes"></p>
+                </div>
+                <div style="width: 40%; text-align: right;">
+                    <p style="margin:5px 0; font-size: 16px;"><strong>Total Amount:</strong> ₹<span id="printTotal"></span></p>
+                    <p style="margin:5px 0; font-size: 16px;"><strong>Advance Paid:</strong> ₹<span id="printPaid"></span></p>
+                    <p style="margin:5px 0; font-size: 18px; font-weight: bold; border-top: 1px solid #000; padding-top: 5px;"><strong>Balance Due:</strong> ₹<span id="printBalance"></span></p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #888;">
+                <p>Thank you for your business!</p>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
+    <div id="toast" class="toast"><span id="toastMessage"></span></div>
+
+    <!-- ==================== UI JAVASCRIPT ==================== -->
+    <script>
+        // GLOBAL STATE FOR CLOUD
+        window.appState = {
+            orders: [],
+            customers: [],
+            items: [],
+            prints: [],
+            settings: { prefix: 'ORD', dateFormat: 'YYMMDD', counter: '3', lastNumber: 0 }
+        };
+
+        window.dbAPI = null;
+        let unsavedChanges = false;
+        let activeDropdown = null;
+        let currentHighlightIndex = -1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            setupKeyboardShortcuts();
+            showPage('dashboard');
+        });
+
+        window.refreshCurrentView = function() {
+            const activePage = document.querySelector('.nav-links li.active')?.dataset?.page || 'dashboard';
+            if (activePage === 'dashboard') {
+                const searchVal = document.getElementById('dashSearchInput').value;
+                if(searchVal) window.handleDashSearch(searchVal);
+                else loadDashboard();
+            }
+            if (activePage === 'orders') loadOrdersList();
+            if (activePage === 'customers') loadCustomersList();
+            if (activePage === 'masters') { loadItemsList(); loadPrintsList(); }
+            if (activePage === 'settings') window.loadSettings();
+        };
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && !e.shiftKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'd': e.preventDefault(); showPage('dashboard'); break;
+                        case 'o': e.preventDefault(); showPage('orders'); break;
+                        case 'u': e.preventDefault(); showPage('customers'); break; 
+                        case 'm': e.preventDefault(); showPage('masters'); break;
+                        case 'r': e.preventDefault(); showPage('reports'); break;
+                        case 's': e.preventDefault(); if (document.getElementById('orderModal').style.display === 'block') { window.saveOrder(); } else { showPage('settings'); } break;
+                        case 'n': e.preventDefault(); window.openOrderModal(); break;
+                        case 'i': e.preventDefault(); if (document.getElementById('orderModal').style.display === 'block') addItemRow(); break;
+                        case 'b': e.preventDefault(); window.performBackup(); break;
+                    }
+                }
+                if (e.ctrlKey && e.shiftKey) {
+                    if(e.key.toLowerCase() === 'c') { e.preventDefault(); window.showCustomerModal(); }
+                }
+                if (e.key === 'F5') { e.preventDefault(); if (document.getElementById('dashboardPage').style.display !== 'none') loadDashboard(); }
+                if (e.key === 'Escape') { closeAllDropdowns(); window.closeModal('orderModal'); window.closeModal('orderDetailModal'); window.closeModal('customerModal'); window.closeModal('itemModal'); window.closeModal('printModal'); window.closeModal('imageViewerModal'); }
+            });
+        }
+
+        window.toggleShortcuts = function() { document.getElementById('shortcutsPanel').classList.toggle('show'); };
+
+        function setupDropdownNavigation(input, dropdown, selectCallback) {
+            if (!input || !dropdown) return;
+            input.addEventListener('keydown', function(e) {
+                const items = dropdown.querySelectorAll('.dropdown-item');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!dropdown.classList.contains('show')) { input.dispatchEvent(new Event('input')); return; }
+                    currentHighlightIndex = (currentHighlightIndex + 1) % items.length;
+                    updateHighlight(items);
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!dropdown.classList.contains('show') || items.length === 0) return;
+                    currentHighlightIndex = (currentHighlightIndex - 1 + items.length) % items.length;
+                    updateHighlight(items);
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const highlighted = dropdown.querySelector('.highlighted');
+                    if (highlighted) highlighted.click();
+                    else if (dropdown.classList.contains('show') && items.length > 0) items[0].click();
+                }
+                if (e.key === 'Escape') dropdown.classList.remove('show');
+            });
+            function updateHighlight(items) {
+                items.forEach(item => item.classList.remove('highlighted'));
+                if (items[currentHighlightIndex]) {
+                    items[currentHighlightIndex].classList.add('highlighted');
+                    items[currentHighlightIndex].scrollIntoView({ block: 'nearest' });
+                }
+            }
+            input.addEventListener('blur', function() {
+                setTimeout(() => { if (!dropdown.contains(document.activeElement)) dropdown.classList.remove('show'); }, 200);
+            });
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown.show').forEach(d => d.classList.remove('show'));
+            activeDropdown = null;
+            currentHighlightIndex = -1;
+        }
+
+        window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
+
+        function showPage(page) {
+            if (unsavedChanges && page !== 'orders') {
+                if (!confirm('You have unsaved changes. Are you sure you want to leave?')) return;
+                unsavedChanges = false;
+                document.getElementById('unsavedWarning').style.display = 'none';
+            }
+            document.querySelectorAll('[id$="Page"]').forEach(p => p.style.display = 'none');
+            document.getElementById(page + 'Page').style.display = 'block';
+            document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+            document.querySelector(`.nav-links li[data-page="${page}"]`).classList.add('active');
+            
+            const titles = { 'dashboard': 'Dashboard', 'orders': 'Orders', 'customers': 'Customers', 'masters': 'Masters', 'reports': 'Reports', 'settings': 'Settings' };
+            document.getElementById('pageTitle').textContent = titles[page];
+            
+            window.refreshCurrentView();
+            if (page === 'reports') loadReportsData();
+        }
+
+        function markUnsaved() {
+            unsavedChanges = true;
+            document.getElementById('unsavedWarning').style.display = 'flex';
+        }
+        
+        window.openOrderModal = function() {
+            resetOrderForm();
+            document.getElementById('orderModal').style.display = 'block';
+        };
+
+        // --- Dashboard Search Logic ---
+        window.handleDashSearch = function(val) {
+            const searchTerm = val.toLowerCase().trim();
+            const resultsContainer = document.getElementById('dashSearchResults');
+            const defaultDash = document.getElementById('defaultDashboardContent');
+            const tbody = document.getElementById('dashSearchBody');
+            
+            if (!searchTerm) {
+                resultsContainer.style.display = 'none';
+                defaultDash.style.display = 'block';
+                return;
+            }
+            
+            defaultDash.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            const matchedCustomers = appState.customers.filter(c => 
+                c.name.toLowerCase().includes(searchTerm) || 
+                (c.phone && c.phone.includes(searchTerm)) ||
+                (c.contactPerson && c.contactPerson.toLowerCase().includes(searchTerm))
+            );
+            const matchedCustomerIds = matchedCustomers.map(c => c.id);
+            
+            let filteredOrders = appState.orders.filter(o => 
+                matchedCustomerIds.includes(o.customerId) || 
+                o.orderId.toLowerCase().includes(searchTerm)
+            );
+            
+            // Sort: Pending first, then completed, then by date descending
+            filteredOrders.sort((a, b) => {
+                const aActive = ['Pending', 'In Progress'].includes(a.status);
+                const bActive = ['Pending', 'In Progress'].includes(b.status);
+                if (aActive && !bActive) return -1;
+                if (!aActive && bActive) return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #666;">No matching orders found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredOrders.map(order => {
+                const customer = appState.customers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown' };
+                const itemsListHtml = order.items?.map(i => `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block; white-space: nowrap;">${i.name}</span>`).join('') || '<span style="color:#999;font-size:12px;">No items</span>';
+
+                return `
+                    <tr>
+                        <td><strong>${order.orderId}</strong></td>
+                        <td>${formatDate(order.date)}</td>
+                        <td>${customer.name}</td>
+                        <td>${itemsListHtml}</td>
+                        <td><span class="status-badge status-${order.status.replace(/ /g, '-')}">${order.status}</span></td>
+                        <td>
+                            <button class="btn-icon" onclick="window.showOrderDetails('order', '${order.id}')" title="View Details"><i class="fas fa-eye"></i></button>
+                            <button class="btn-icon" onclick="window.editOrder('${order.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+        
+        window.clearDashSearch = function() {
+            document.getElementById('dashSearchInput').value = '';
+            document.getElementById('dashSearchResults').style.display = 'none';
+            document.getElementById('defaultDashboardContent').style.display = 'block';
+        };
+
+        function loadDashboard() {
+            const orders = appState.orders;
+            const total = orders.length;
+            const pending = orders.filter(o => o.status === 'Pending' || o.status === 'In Progress').length;
+            const overdue = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed'].includes(o.status)).length;
+            const paymentPending = orders.filter(o => o.status === 'Payment Pending').length;
+            const completed = orders.filter(o => ['Completed', 'Delivered', 'Paid'].includes(o.status)).length;
+            
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card" onclick="showPage('orders')">
+                    <div class="stat-icon total"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="stat-details"><h3>Total Orders</h3><p>${total}</p></div>
+                </div>
+                <div class="stat-card" onclick="window.showOrderDetails('pending')">
+                    <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                    <div class="stat-details"><h3>Pending</h3><p>${pending}</p></div>
+                </div>
+                <div class="stat-card" onclick="window.showOrderDetails('overdue')">
+                    <div class="stat-icon overdue"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-details"><h3>Overdue</h3><p>${overdue}</p></div>
+                </div>
+                <div class="stat-card" onclick="window.showOrderDetails('payment')">
+                    <div class="stat-icon payment"><i class="fas fa-credit-card"></i></div>
+                    <div class="stat-details"><h3>Payment Pending</h3><p>${paymentPending}</p></div>
+                </div>
+                <div class="stat-card" onclick="window.showOrderDetails('completed')">
+                    <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-details"><h3>Completed</h3><p>${completed}</p></div>
+                </div>
+            `;
+            loadPendingItems();
+        }
+
+        function loadPendingItems() {
+            const orders = appState.orders;
+            const customers = appState.customers;
+            const tbody = document.getElementById('pendingItemsBody');
+            
+            // Collect all pending items into an array
+            let pendingItemsList = [];
+            orders.forEach(order => {
+                if (order.status === 'Delivered' || order.status === 'Completed' || order.status === 'Paid') return; // Skip finished orders
+                if (!order.items) return;
+                
+                const customer = customers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown' };
+                
+                order.items.forEach((item, index) => {
+                    if (item.status === 'Pending' || item.status === 'In Progress') {
+                        pendingItemsList.push({ order, item, index, customer });
+                    }
+                });
+            });
+            
+            // Sort by order date or due date
+            pendingItemsList.sort((a, b) => {
+                const aDue = a.order.dueDate ? new Date(a.order.dueDate) : new Date(8640000000000000);
+                const bDue = b.order.dueDate ? new Date(b.order.dueDate) : new Date(8640000000000000);
+                return aDue - bDue; // Overdue/Earliest first
+            });
+
+            if (pendingItemsList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color:#666;">Great! No pending items.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pendingItemsList.map(data => {
+                const imgHtml = data.item.image ? 
+                    `<img src="${data.item.image}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; cursor:pointer; border:1px solid #ddd;" onclick="window.viewFullImage('${data.item.image}')">` : 
+                    `<div style="width:40px; height:40px; background:#eee; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#aaa;"><i class="fas fa-image"></i></div>`;
+                
+                return `
+                    <tr>
+                        <td>${imgHtml}</td>
+                        <td><strong>${data.item.name}</strong><br><small style="color: #666;">${data.item.description || '-'}</small></td>
+                        <td><span style="background:var(--light); padding:2px 8px; border-radius:4px; font-weight:bold;">${data.item.qty}</span></td>
+                        <td>${data.customer.name}</td>
+                        <td><small style="color:#888;">${formatDate(data.order.date)}</small><br><strong>${data.order.orderId}</strong></td>
+                        <td>
+                            <select class="status-select status-${data.item.status.replace(/ /g, '-')}" onchange="window.updateItemStatus('${data.order.id}', ${data.index}, this)">
+                                <option value="Pending" ${data.item.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${data.item.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Completed" ${data.item.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Delivered" ${data.item.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Cancelled" ${data.item.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn-icon" onclick="window.editOrder('${data.order.id}')" title="Edit Order"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- Auto-Calculate Order Status Logic ---
+        function calculateNewOrderStatus(order) {
+            if (!order.items || order.items.length === 0) return order.status;
+            if (order.status === 'Paid') return 'Paid'; // Let financial override stay
+
+            const nonCancelled = order.items.filter(i => i.status !== 'Cancelled');
+            if (nonCancelled.length === 0) return 'Cancelled';
+
+            const allDelivered = nonCancelled.every(i => i.status === 'Delivered');
+            const allCompleted = nonCancelled.every(i => i.status === 'Completed' || i.status === 'Delivered');
+            
+            if (allDelivered) return 'Delivered';
+            if (allCompleted) return 'Completed';
+            
+            // If any item is in progress or completed, order is in progress
+            const anyStarted = nonCancelled.some(i => i.status === 'In Progress' || i.status === 'Completed');
+            if (anyStarted) return 'In Progress'; // Wait, In Progress is not in the Order main dropdown anymore. 
+            // The user requested main order list to only have Pending, Completed, Delivered, Paid. 
+            // So if it's partially done, we can leave it Pending until fully Completed.
+            return 'Pending';
+        }
+
+        window.updateOrderStatus = async function(orderId, selectObj) {
+            if(!window.dbAPI) return showToast('Cloud sync initializing...', 'warning');
+            const order = appState.orders.find(o => o.id.toString() === orderId.toString());
+            if (order) {
+                const newStatus = selectObj.value;
+                order.status = newStatus;
+                order.updatedAt = new Date().toISOString();
+                
+                try {
+                    await window.dbAPI.saveOrder(order);
+                    selectObj.className = selectObj.className.replace(/status-[^\s]+/g, '');
+                    selectObj.classList.add('status-' + newStatus.replace(/ /g, '-'));
+                    showToast('Order status updated!', 'success');
+                } catch(e) {
+                    alert("Failed to update status: " + e.message);
+                }
+            }
+        };
+
+        window.updateItemStatus = async function(orderId, itemIndex, selectObj) {
+            if(!window.dbAPI) return showToast('Cloud sync initializing or not configured.', 'warning');
+            const order = appState.orders.find(o => o.id.toString() === orderId.toString());
+            if (order && order.items && order.items[itemIndex]) {
+                const newItemStatus = selectObj.value;
+                order.items[itemIndex].status = newItemStatus;
+                
+                selectObj.className = selectObj.className.replace(/status-[^\s]+/g, '');
+                selectObj.classList.add('status-' + newItemStatus.replace(/ /g, '-'));
+                
+                // Auto status update logic
+                const nonCancelled = order.items.filter(i => i.status !== 'Cancelled');
+                let autoUpdated = false;
+                if (nonCancelled.length > 0) {
+                    const allDelivered = nonCancelled.every(i => i.status === 'Delivered');
+                    const allCompleted = nonCancelled.every(i => i.status === 'Completed' || i.status === 'Delivered');
+                    
+                    if (allDelivered && order.status !== 'Delivered' && order.status !== 'Paid') {
+                        order.status = 'Delivered';
+                        autoUpdated = true;
+                    } else if (allCompleted && order.status === 'Pending') {
+                        order.status = 'Completed';
+                        autoUpdated = true;
+                    }
+                }
+                
+                order.updatedAt = new Date().toISOString();
+                
+                try {
+                    await window.dbAPI.saveOrder(order);
+                    if (autoUpdated) {
+                        showToast(`Item updated. Order auto-set to ${order.status}!`, 'success');
+                        setTimeout(() => window.refreshCurrentView(), 400); 
+                    } else {
+                        showToast('Item status updated!', 'success');
+                    }
+                } catch(e) {
+                    alert("Failed to update item: " + e.message);
+                }
+            }
+        };
+
+        window.viewFullImage = function(src) {
+            document.getElementById('fullSizeImage').src = src;
+            document.getElementById('imageViewerModal').style.display = 'block';
+        };
+
+        window.showOrderDetails = function(type, orderId = null) {
+            let orders = [];
+            const customers = appState.customers;
+            
+            if (orderId) {
+                orders = appState.orders.filter(o => o.id.toString() === orderId.toString());
+            } else {
+                orders = [...appState.orders];
+                switch(type) {
+                    case 'pending': orders = orders.filter(o => o.status === 'Pending' || o.status === 'In Progress'); break;
+                    case 'overdue': orders = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed'].includes(o.status)); break;
+                    case 'payment': orders = orders.filter(o => o.status === 'Payment Pending'); break;
+                    case 'completed': orders = orders.filter(o => ['Completed', 'Delivered', 'Paid'].includes(o.status)); break;
+                }
+            }
+            
+            let html = '';
+            orders.forEach(order => {
+                const customer = customers.find(c => c.id.toString() === order.customerId.toString()) || { name: order.customerName, phone: '', address: '' };
+                
+                html += `
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3>Order: ${order.orderId} <span class="status-badge status-${order.status.replace(/ /g, '-')}">${order.status}</span></h3>
+                        <p><strong>Customer:</strong> ${customer.name} | ${customer.phone || 'No phone'}</p>
+                        <p><strong>Date:</strong> ${formatDate(order.date)} | <strong>Due:</strong> ${formatDate(order.dueDate) || 'N/A'}</p>
+                        <p><strong>Notes:</strong> ${order.description || 'None'}</p>
+                        
+                        <h4 style="margin: 15px 0 10px;">Items:</h4>
+                        <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Item</th><th>Image</th><th>Print</th><th>Qty</th><th>Description</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                order.items?.forEach((item, index) => {
+                    const imgHtml = item.image ? 
+                        `<img src="${item.image}" style="max-width:50px; max-height:50px; cursor:pointer; border-radius:4px; border:1px solid #ddd;" onclick="window.viewFullImage('${item.image}')" alt="Item Image">` : 
+                        '<span style="color:#999;font-size:12px;">No Image</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${imgHtml}</td>
+                            <td>${item.printType || 'None'}</td>
+                            <td>${item.qty}</td>
+                            <td>${item.description || ''}</td>
+                            <td>
+                                <select class="status-select status-${item.status.replace(/ /g, '-')}" onchange="window.updateItemStatus('${order.id}', ${index}, this)">
+                                    <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                    <option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                    <option value="Delivered" ${item.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                    <option value="Cancelled" ${item.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                let balance = (order.totalValue || 0) - (order.paidAmount || 0);
+                let balanceColor = balance > 0 ? "var(--danger)" : "var(--success)";
+
+                html += `
+                            </tbody>
+                        </table>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px dashed var(--border);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>Total Value:</strong> <span>₹${(order.totalValue || 0).toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <strong>Advance Paid:</strong> <span>₹${(order.paidAmount || 0).toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 16px; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px;">
+                                <strong>Balance Due:</strong> <strong style="color: ${balanceColor};">₹${balance.toFixed(2)}</strong>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px;">
+                            <button class="btn-primary btn-sm" onclick="window.editOrder('${order.id}'); window.closeModal('orderDetailModal');"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-danger btn-sm" onclick="window.deleteOrder('${order.id}')"><i class="fas fa-trash"></i> Delete</button>
+                            <button class="btn-info btn-sm" onclick="window.shareOrderWhatsApp('${order.id}')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (orders.length === 0) {
+                html = '<p style="text-align: center; padding: 40px;">No orders found</p>';
+            }
+            
+            let modalTitle = 'Order Details';
+            if (!orderId) {
+                switch(type) {
+                    case 'total': modalTitle = 'Total Orders'; break;
+                    case 'pending': modalTitle = 'Pending Orders'; break;
+                    case 'overdue': modalTitle = 'Overdue Orders'; break;
+                    case 'payment': modalTitle = 'Payment Pending Orders'; break;
+                    case 'completed': modalTitle = 'Completed Orders'; break;
+                    default: modalTitle = 'Filtered Orders';
+                }
+            }
+            
+            document.getElementById('orderDetailTitle').textContent = modalTitle;
+            document.getElementById('orderDetailContent').innerHTML = html;
+            document.getElementById('orderDetailModal').style.display = 'block';
+        };
+
+        window.updateOrderIdPreview = function() {
+            const prefix = document.getElementById('orderIdPrefix').value;
+            const dateFormat = document.getElementById('orderIdDateFormat').value;
+            const counter = document.getElementById('orderIdCounter').value;
+            const date = new Date();
+            let dateStr = '';
+            switch(dateFormat) {
+                case 'YYMMDD': dateStr = date.getFullYear().toString().slice(-2) + (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0'); break;
+                case 'YYYYMMDD': dateStr = date.getFullYear() + (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0'); break;
+                case 'DDMMYY': dateStr = date.getDate().toString().padStart(2, '0') + (date.getMonth() + 1).toString().padStart(2, '0') + date.getFullYear().toString().slice(-2); break;
+                case 'MMDDYY': dateStr = (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0') + date.getFullYear().toString().slice(-2); break;
+                case '': dateStr = ''; break; // None option
+            }
+            let lastNum = parseInt(appState.settings.lastNumber || 0);
+            let counterStr = (lastNum + 1).toString().padStart(parseInt(counter || 3), '0');
+            document.getElementById('orderIdPreview').textContent = `${prefix || 'ORD'}${dateStr}${counterStr}`;
+        }
+
+        function generateOrderId() {
+            const date = new Date();
+            let dateStr = '';
+            const fmt = appState.settings.dateFormat || 'YYMMDD';
+            switch(fmt) {
+                case 'YYMMDD': dateStr = date.getFullYear().toString().slice(-2) + (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0'); break;
+                case 'YYYYMMDD': dateStr = date.getFullYear() + (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0'); break;
+                case 'DDMMYY': dateStr = date.getDate().toString().padStart(2, '0') + (date.getMonth() + 1).toString().padStart(2, '0') + date.getFullYear().toString().slice(-2); break;
+                case 'MMDDYY': dateStr = (date.getMonth() + 1).toString().padStart(2, '0') + date.getDate().toString().padStart(2, '0') + date.getFullYear().toString().slice(-2); break;
+                case '': dateStr = ''; break; // None option
+            }
+            let lastNum = parseInt(appState.settings.lastNumber || 0);
+            let counter = (lastNum + 1).toString().padStart(parseInt(appState.settings.counter || 3), '0');
+            return `${appState.settings.prefix || 'ORD'}${dateStr}${counter}`;
+        }
+
+        function resetOrderForm() {
+            document.getElementById('orderForm').reset();
+            document.getElementById('orderId').value = '';
+            document.getElementById('orderIdDisplay').value = generateOrderId();
+            document.getElementById('orderDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('orderTotal').value = '0';
+            document.getElementById('orderPaid').value = '0';
+            document.getElementById('customerDetails').style.display = 'none';
+            document.getElementById('deleteOrderBtn').style.display = 'none';
+            document.getElementById('orderFormTitle').textContent = 'Create New Order';
+            document.getElementById('itemsContainer').innerHTML = '';
+            setupCustomerSearch();
+            addItemRow();
+            unsavedChanges = false;
+            document.getElementById('unsavedWarning').style.display = 'none';
+        }
+
+        function setupCustomerSearch() {
+            const searchInput = document.getElementById('customerSearch');
+            const dropdown = document.getElementById('customerDropdown');
+            if (!searchInput) return;
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const customers = appState.customers;
+                const filtered = customers.filter(c => c.name.toLowerCase().includes(searchTerm) || (c.phone && c.phone.toLowerCase().includes(searchTerm)) || (c.contactPerson && c.contactPerson.toLowerCase().includes(searchTerm)));
+                if (filtered.length > 0) {
+                    dropdown.innerHTML = filtered.map(c => `
+                        <div class="dropdown-item" onclick="window.selectCustomer('${c.id}')">
+                            <strong>${c.name}</strong> ${c.regular ? '★' : ''}<br><small>${c.contactPerson ? c.contactPerson+' | ' : ''}${c.phone || 'No phone'}</small>
+                        </div>
+                    `).join('');
+                    dropdown.classList.add('show');
+                    activeDropdown = dropdown;
+                } else {
+                    dropdown.innerHTML = `<div class="no-results" onclick="window.showCustomerModal()">No customers found. Click to add "${this.value}"</div>`;
+                    dropdown.classList.add('show');
+                }
+            });
+            setupDropdownNavigation(searchInput, dropdown, window.selectCustomer);
+        }
+
+        window.selectCustomer = function(id) {
+            const customer = appState.customers.find(c => c.id.toString() === id.toString());
+            if (!customer) return;
+            document.getElementById('customerSearch').value = customer.name;
+            document.getElementById('customerSelect').value = customer.id;
+            document.getElementById('selectedCustomerPerson').textContent = customer.contactPerson || 'N/A';
+            document.getElementById('selectedCustomerPhone').textContent = customer.phone || 'No phone';
+            document.getElementById('selectedCustomerAddress').textContent = customer.address || 'No address';
+            document.getElementById('customerDetails').style.display = 'block';
+            document.getElementById('customerDropdown').classList.remove('show');
+            markUnsaved();
+        };
+
+        function addItemRow() {
+            const container = document.getElementById('itemsContainer');
+            const row = document.createElement('div');
+            row.className = 'item-row-single';
+            row.innerHTML = `
+                <div class="item-fields-single">
+                    <div>
+                        <div class="field-label">Item Name</div>
+                        <div class="searchable-select">
+                            <input type="text" class="form-control item-search" placeholder="Search item...">
+                            <div class="dropdown item-dropdown"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-label">Description</div>
+                        <input type="text" class="form-control item-desc" placeholder="Notes/Specs...">
+                    </div>
+                    <div>
+                        <div class="field-label">Qty</div>
+                        <input type="number" class="form-control item-qty" value="1" min="1">
+                    </div>
+                    <div>
+                        <div class="field-label">Print Type</div>
+                        <div class="searchable-select">
+                            <input type="text" class="form-control print-search" placeholder="Search print...">
+                            <div class="dropdown print-dropdown"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="field-label">Status</div>
+                        <select class="item-status-select status-select status-Pending" style="width:100%; padding:10px;">
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="field-label">Image</div>
+                        <button type="button" class="btn-icon item-image-upload" onclick="window.uploadItemImage(this)" title="Upload Image" style="background:#f0f0f0;"><i class="fas fa-camera"></i></button>
+                        <input type="file" class="item-image-input" accept="image/*" style="display: none;">
+                        <div class="image-preview-container" style="display:none; position:relative; margin:auto; width:40px;">
+                            <img class="item-image-preview" src="#" alt="Img" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor:pointer;" onclick="window.viewFullImage(this.src)">
+                            <div onclick="window.removeImage(this)" style="position:absolute; top:-6px; right:-6px; background:var(--danger); color:white; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer;" title="Remove"><i class="fas fa-times"></i></div>
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="field-label">Delete</div>
+                        <button type="button" class="btn-icon" onclick="window.removeItemRow(this)" style="color: var(--danger);"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+            
+            // Hook up item status change to auto-update main Order Status
+            row.querySelector('.item-status-select').addEventListener('change', function() {
+                this.className = this.className.replace(/status-[^\s]+/g, '');
+                this.classList.add('status-' + this.value.replace(/ /g, '-'));
+                
+                const itemStatuses = Array.from(document.querySelectorAll('.item-status-select')).map(s => s.value);
+                const nonCancelled = itemStatuses.filter(s => s !== 'Cancelled');
+                if (nonCancelled.length > 0) {
+                    const allDelivered = nonCancelled.every(s => s === 'Delivered');
+                    const allCompleted = nonCancelled.every(s => s === 'Completed' || s === 'Delivered');
+                    const mainSelect = document.getElementById('orderStatus');
+                    
+                    if (allDelivered && mainSelect.value !== 'Paid') {
+                        mainSelect.value = 'Delivered';
+                    } else if (allCompleted && mainSelect.value !== 'Paid' && mainSelect.value !== 'Delivered') {
+                        mainSelect.value = 'Completed';
+                    }
+                }
+            });
+            
+            setupItemSearch(row);
+            markUnsaved();
+        }
+
+        function setupItemSearch(row) {
+            const itemSearch = row.querySelector('.item-search');
+            const itemDropdown = row.querySelector('.item-dropdown');
+            itemSearch.addEventListener('input', function() {
+                const items = appState.items;
+                const searchTerm = this.value.toLowerCase();
+                const filtered = items.filter(i => i.name.toLowerCase().includes(searchTerm));
+                if (filtered.length > 0) {
+                    itemDropdown.innerHTML = filtered.map(i => `<div class="dropdown-item" onclick="window.selectItem(this, '${i.name}')">${i.name}</div>`).join('');
+                    itemDropdown.classList.add('show');
+                } else {
+                    itemDropdown.innerHTML = `<div class="no-results" onclick="window.addNewItemFromSearch('${this.value}', this)">Add "${this.value}"</div>`;
+                    itemDropdown.classList.add('show');
+                }
+            });
+            setupDropdownNavigation(itemSearch, itemDropdown, window.selectItem);
+            
+            const printSearch = row.querySelector('.print-search');
+            const printDropdown = row.querySelector('.print-dropdown');
+            printSearch.addEventListener('input', function() {
+                const prints = appState.prints;
+                const searchTerm = this.value.toLowerCase();
+                const filtered = prints.filter(p => p.name.toLowerCase().includes(searchTerm));
+                if (filtered.length > 0) {
+                    printDropdown.innerHTML = filtered.map(p => `<div class="dropdown-item" onclick="window.selectPrint(this, '${p.name}')">${p.name}</div>`).join('');
+                    printDropdown.classList.add('show');
+                } else {
+                    printDropdown.innerHTML = `<div class="no-results" onclick="window.addNewPrintFromSearch('${this.value}', this)">Add "${this.value}"</div>`;
+                    printDropdown.classList.add('show');
+                }
+            });
+            setupDropdownNavigation(printSearch, printDropdown, window.selectPrint);
+        }
+
+        window.selectItem = function(element, itemName) {
+            const row = element.closest('.item-row-single');
+            row.querySelector('.item-search').value = itemName;
+            element.closest('.dropdown').classList.remove('show');
+            markUnsaved();
+        };
+
+        window.selectPrint = function(element, printName) {
+            const row = element.closest('.item-row-single');
+            row.querySelector('.print-search').value = printName;
+            element.closest('.dropdown').classList.remove('show');
+            markUnsaved();
+        };
+
+        window.addNewItemFromSearch = async function(itemName, element) {
+            if(!window.dbAPI) return;
+            const item = { id: Date.now().toString(), name: itemName };
+            try {
+                await window.dbAPI.saveItem(item);
+                const row = element.closest('.item-row-single');
+                row.querySelector('.item-search').value = itemName;
+                element.closest('.dropdown').classList.remove('show');
+                showToast(`Added "${itemName}" to Cloud`, 'success');
+                markUnsaved();
+            } catch (e) {
+                alert("Failed to add item: " + e.message);
+            }
+        };
+
+        window.addNewPrintFromSearch = async function(printName, element) {
+            if(!window.dbAPI) return;
+            const print = { id: Date.now().toString(), name: printName };
+            try {
+                await window.dbAPI.savePrint(print);
+                const row = element.closest('.item-row-single');
+                row.querySelector('.print-search').value = printName;
+                element.closest('.dropdown').classList.remove('show');
+                showToast(`Added "${printName}" to Cloud`, 'success');
+                markUnsaved();
+            } catch (e) {
+                alert("Failed to add print type: " + e.message);
+            }
+        };
+
+        window.removeItemRow = function(button) {
+            if (confirm('Remove this item?')) { button.closest('.item-row-single').remove(); markUnsaved(); }
+        };
+
+        window.uploadItemImage = function(btn) {
+            const parent = btn.parentElement;
+            const input = parent.querySelector('.item-image-input');
+            input.click();
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ie) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const MAX_SIZE = 800; // Increased max size for better quality in DB
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > height) {
+                                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                            } else {
+                                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#FFFFFF';
+                            ctx.fillRect(0, 0, width, height);
+                            ctx.drawImage(img, 0, 0, width, height);
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8); // Higher quality
+
+                            const container = parent.querySelector('.image-preview-container');
+                            const preview = container.querySelector('.item-image-preview');
+                            preview.src = compressedBase64; 
+                            container.style.display = 'block';
+                            btn.style.display = 'none';
+                            markUnsaved();
+                        };
+                        img.src = ie.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+        };
+
+        window.removeImage = function(btn) {
+            const container = btn.closest('.image-preview-container');
+            const parent = container.parentElement;
+            const uploadBtn = parent.querySelector('.item-image-upload');
+            const preview = container.querySelector('.item-image-preview');
+            const input = parent.querySelector('.item-image-input');
+            
+            preview.src = '#';
+            input.value = ''; 
+            container.style.display = 'none';
+            uploadBtn.style.display = 'inline-block';
+            markUnsaved();
+        };
+
+        window.saveOrder = async function() {
+            if(!window.dbAPI) {
+                alert('Cannot save: Cloud sync is initializing or not connected. Check Firebase connection.');
+                return;
+            }
+            
+            let customerId = document.getElementById('customerSelect').value;
+            const customerSearchName = document.getElementById('customerSearch').value.trim();
+            
+            if (!customerId && customerSearchName) {
+                customerId = Date.now().toString();
+                const newCustomer = {
+                    id: customerId,
+                    name: customerSearchName,
+                    contactPerson: '',
+                    phone: '',
+                    address: '',
+                    regular: false
+                };
+                try {
+                    await window.dbAPI.saveCustomer(newCustomer);
+                    appState.customers.push(newCustomer);
+                    document.getElementById('customerSelect').value = customerId;
+                } catch(e) {
+                    alert("Error auto-creating customer: " + e.message);
+                    return;
+                }
+            } else if (!customerId) { 
+                alert('Please type or select a customer name'); 
+                return; 
+            }
+            
+            const items = [];
+            document.querySelectorAll('.item-row-single').forEach((row, index) => {
+                const itemName = row.querySelector('.item-search')?.value;
+                if (itemName) {
+                    let imageSrc = '';
+                    const preview = row.querySelector('.item-image-preview');
+                    if (preview && preview.src && preview.src !== window.location.href && !preview.src.endsWith('#')) {
+                        imageSrc = preview.src;
+                    }
+                    items.push({
+                        id: index, name: itemName,
+                        qty: parseInt(row.querySelector('.item-qty')?.value) || 1,
+                        printType: row.querySelector('.print-search')?.value || '',
+                        description: row.querySelector('.item-desc')?.value || '',
+                        status: row.querySelector('.item-status-select')?.value || 'Pending',
+                        image: imageSrc
+                    });
+                }
+            });
+            
+            if (items.length === 0) { 
+                alert('Please add at least one item'); 
+                return; 
+            }
+            
+            const customer = appState.customers.find(c => c.id.toString() === customerId.toString()) || { name: customerSearchName };
+            const isNew = !document.getElementById('orderId').value;
+            
+            const order = {
+                id: document.getElementById('orderId').value || Date.now().toString(),
+                orderId: document.getElementById('orderIdDisplay').value,
+                date: document.getElementById('orderDate').value,
+                customerId: customerId.toString(),
+                customerName: customer.name,
+                customerPhone: document.getElementById('selectedCustomerPhone')?.textContent || '',
+                items: items,
+                description: document.getElementById('orderDescription').value,
+                totalValue: parseFloat(document.getElementById('orderTotal').value) || 0,
+                paidAmount: parseFloat(document.getElementById('orderPaid').value) || 0,
+                dueDate: document.getElementById('dueDate').value,
+                status: document.getElementById('orderStatus').value,
+                updatedAt: new Date().toISOString()
+            };
+            
+            // Re-calculate order status in case it was left out of sync, unless user manually set to Paid/Delivered
+            if (order.status !== 'Paid' && order.status !== 'Delivered') {
+                order.status = calculateNewOrderStatus(order);
+            }
+            
+            try {
+                if (isNew) {
+                    order.createdAt = new Date().toISOString();
+                    appState.settings.lastNumber = (parseInt(appState.settings.lastNumber || 0) + 1);
+                    await window.dbAPI.saveSettings(appState.settings);
+                }
+                
+                await window.dbAPI.saveOrder(order);
+                unsavedChanges = false;
+                document.getElementById('unsavedWarning').style.display = 'none';
+                window.closeModal('orderModal');
+                showPage(document.querySelector('.nav-links li.active')?.dataset?.page || 'dashboard');
+                showToast('Order saved to Cloud!', 'success');
+            } catch (e) {
+                console.error("Save Order Error:", e);
+                alert("Error saving order: " + e.message);
+            }
+        };
+
+        window.editOrder = function(orderId) {
+            const order = appState.orders.find(o => o.id.toString() === orderId.toString());
+            if (!order) return;
+            
+            document.getElementById('orderFormTitle').textContent = 'Edit Order';
+            document.getElementById('orderId').value = order.id;
+            document.getElementById('orderIdDisplay').value = order.orderId;
+            document.getElementById('orderDate').value = order.date;
+            document.getElementById('orderDescription').value = order.description || '';
+            document.getElementById('orderTotal').value = order.totalValue || 0;
+            document.getElementById('orderPaid').value = order.paidAmount || 0;
+            document.getElementById('dueDate').value = order.dueDate || '';
+            document.getElementById('orderStatus').value = order.status || 'Pending';
+            
+            const customer = appState.customers.find(c => c.id.toString() === order.customerId.toString());
+            if (customer) {
+                document.getElementById('customerSearch').value = customer.name;
+                document.getElementById('customerSelect').value = customer.id;
+                document.getElementById('selectedCustomerPerson').textContent = customer.contactPerson || 'N/A';
+                document.getElementById('selectedCustomerPhone').textContent = customer.phone || 'No phone';
+                document.getElementById('selectedCustomerAddress').textContent = customer.address || 'No address';
+                document.getElementById('customerDetails').style.display = 'block';
+            }
+            
+            document.getElementById('itemsContainer').innerHTML = '';
+            if (order.items && order.items.length) {
+                order.items.forEach(item => {
+                    addItemRow();
+                    const rows = document.querySelectorAll('.item-row-single');
+                    const lastRow = rows[rows.length - 1];
+                    lastRow.querySelector('.item-search').value = item.name || '';
+                    lastRow.querySelector('.item-qty').value = item.qty || 1;
+                    lastRow.querySelector('.print-search').value = item.printType || '';
+                    lastRow.querySelector('.item-desc').value = item.description || '';
+                    if (lastRow.querySelector('.item-status-select')) {
+                        let statusSel = lastRow.querySelector('.item-status-select');
+                        statusSel.value = item.status || 'Pending';
+                        statusSel.className = statusSel.className.replace(/status-[^\s]+/g, '');
+                        statusSel.classList.add('status-' + (item.status || 'Pending').replace(/ /g, '-'));
+                    }
+                    if (item.image) {
+                        const container = lastRow.querySelector('.image-preview-container');
+                        const uploadArea = lastRow.querySelector('.item-image-upload');
+                        const preview = container.querySelector('.item-image-preview');
+                        preview.src = item.image;
+                        container.style.display = 'block';
+                        uploadArea.style.display = 'none';
+                    }
+                });
+            }
+            document.getElementById('deleteOrderBtn').style.display = 'inline-block';
+            unsavedChanges = false;
+            document.getElementById('unsavedWarning').style.display = 'none';
+            document.getElementById('orderModal').style.display = 'block';
+        };
+
+        window.deleteOrder = async function(orderId) {
+            if(!window.dbAPI) return;
+            if (!confirm('Are you sure you want to delete this order entirely from the cloud?')) return;
+            try {
+                await window.dbAPI.deleteOrder(orderId.toString());
+                showToast('Order deleted from Cloud!', 'success');
+                window.closeModal('orderDetailModal');
+                window.closeModal('orderModal');
+            } catch(e) {
+                alert("Failed to delete order: " + e.message);
+            }
+        };
+        
+        window.printOrderInvoice = function() {
+            document.getElementById('printOrderId').textContent = document.getElementById('orderIdDisplay')?.value || '';
+            document.getElementById('printOrderDate').textContent = formatDate(document.getElementById('orderDate')?.value) || '';
+            document.getElementById('printOrderDue').textContent = formatDate(document.getElementById('dueDate')?.value) || 'N/A';
+            
+            document.getElementById('printCustName').textContent = document.getElementById('customerSearch')?.value || '';
+            document.getElementById('printCustContact').textContent = document.getElementById('selectedCustomerPerson')?.textContent || '';
+            document.getElementById('printCustPhone').textContent = document.getElementById('selectedCustomerPhone')?.textContent || '';
+            document.getElementById('printCustAddress').textContent = document.getElementById('selectedCustomerAddress')?.textContent || '';
+            
+            document.getElementById('printOrderNotes').textContent = document.getElementById('orderDescription')?.value || 'None';
+            document.getElementById('printTotal').textContent = document.getElementById('orderTotal')?.value || '';
+            document.getElementById('printPaid').textContent = document.getElementById('orderPaid')?.value || '';
+            let bal = parseFloat(document.getElementById('orderTotal')?.value || 0) - parseFloat(document.getElementById('orderPaid')?.value || 0);
+            
+            const eBal = document.getElementById('printBalance');
+            if(eBal) eBal.textContent = bal.toFixed(2);
+            
+            const eDate = document.getElementById('printCurrentDate');
+            if(eDate) eDate.textContent = new Date().toLocaleDateString();
+            
+            let tbody = '';
+            document.querySelectorAll('.item-row-single').forEach((row, index) => {
+                let name = row.querySelector('.item-search')?.value;
+                let desc = row.querySelector('.item-desc')?.value;
+                let qty = row.querySelector('.item-qty')?.value;
+                let printType = row.querySelector('.print-search')?.value;
+                if(name) {
+                    tbody += `<tr>
+                        <td style="border: 1px solid #ccc; padding: 10px;">${index + 1}</td>
+                        <td style="border: 1px solid #ccc; padding: 10px;"><strong>${name}</strong><br><small>${desc}</small></td>
+                        <td style="border: 1px solid #ccc; padding: 10px;">${printType}</td>
+                        <td style="border: 1px solid #ccc; padding: 10px; text-align: center;">${qty}</td>
+                    </tr>`;
+                }
+            });
+            const pItems = document.getElementById('printItemsBody');
+            if(pItems) pItems.innerHTML = tbody;
+            
+            window.print();
+        };
+
+        window.loadOrdersList = function(searchTerm = '') {
+            let orders = [...appState.orders];
+            const customers = appState.customers;
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                orders = orders.filter(o => o.orderId.toLowerCase().includes(term) || (o.customerName && o.customerName.toLowerCase().includes(term)));
+            }
+            
+            // Sort: Pending first, then by Date
+            orders.sort((a, b) => {
+                const aActive = ['Pending', 'In Progress'].includes(a.status);
+                const bActive = ['Pending', 'In Progress'].includes(b.status);
+                if (aActive && !bActive) return -1;
+                if (!aActive && bActive) return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            const tbody = document.getElementById('ordersTableBody');
+            if (orders.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No orders found</td></tr>'; return; }
+            tbody.innerHTML = orders.map(order => {
+                const customer = customers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown' };
+                const itemsListHtml = order.items?.map(i => `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block; white-space: nowrap;">${i.name}</span>`).join('') || '<span style="color:#999;font-size:12px;">No items</span>';
+                return `
+                    <tr>
+                        <td><strong>${order.orderId}</strong></td>
+                        <td>${formatDate(order.date)}</td>
+                        <td>${customer.name}</td>
+                        <td>${itemsListHtml}</td>
+                        <td><span class="status-badge status-${order.status.replace(/ /g, '-')}">${order.status}</span></td>
+                        <td>
+                            <button class="btn-icon" onclick="window.editOrder('${order.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" onclick="window.showOrderDetails('order', '${order.id}')" title="Details"><i class="fas fa-eye"></i></button>
+                            <button class="btn-icon" onclick="window.shareOrderWhatsApp('${order.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                            <button class="btn-icon" onclick="window.deleteOrder('${order.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.exportAllOrdersCSV = function() {
+            const orders = appState.orders;
+            if (orders.length === 0) { showToast('No orders to export', 'error'); return; }
+            const customers = appState.customers;
+            
+            let csv = ['Order ID,Date,Customer,Phone,Total Value,Paid,Balance,Status,Notes'];
+            orders.forEach(o => {
+                const c = customers.find(c => c.id === o.customerId) || {name: o.customerName};
+                const bal = (o.totalValue || 0) - (o.paidAmount || 0);
+                const row = [
+                    o.orderId, formatDate(o.date), `"${c.name}"`, `"${c.phone || o.customerPhone || ''}"`,
+                    o.totalValue || 0, o.paidAmount || 0, bal, o.status, `"${(o.description || '').replace(/"/g, '""')}"`
+                ];
+                csv.push(row.join(','));
+            });
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = window.URL.createObjectURL(blob);
+            a.download = `All_Orders_Cloud_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showToast('Orders exported successfully!', 'success');
+        };
+
+        function loadCustomersList(searchTerm = '') {
+            let customers = [...appState.customers];
+            const orders = appState.orders;
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                customers = customers.filter(c => c.name.toLowerCase().includes(term) || (c.phone && c.phone.toLowerCase().includes(term)) || (c.contactPerson && c.contactPerson.toLowerCase().includes(term)));
+            }
+            const tbody = document.getElementById('customersTableBody');
+            tbody.innerHTML = customers.map(c => {
+                const customerOrders = orders.filter(o => o.customerId === c.id);
+                return `
+                    <tr>
+                        <td><strong>${c.name}</strong> ${c.regular ? '⭐' : ''}</td>
+                        <td>${c.contactPerson || '-'}</td>
+                        <td>${c.phone || '-'}</td>
+                        <td>${c.address || '-'}</td>
+                        <td>${c.regular ? 'Regular' : 'One-time'}</td>
+                        <td>
+                            <button class="btn-icon" onclick="window.editCustomer('${c.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon" onclick="window.deleteCustomer('${c.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.showCustomerModal = function() {
+            document.getElementById('customerForm').reset();
+            document.getElementById('customerId').value = '';
+            document.getElementById('customerModal').style.display = 'block';
+        };
+
+        window.saveCustomer = async function(event) {
+            event.preventDefault();
+            if(!window.dbAPI) return;
+            const customer = {
+                id: document.getElementById('customerId').value || Date.now().toString(),
+                name: document.getElementById('customerName').value,
+                contactPerson: document.getElementById('customerContactPerson').value,
+                phone: document.getElementById('customerPhone').value,
+                address: document.getElementById('customerAddress').value,
+                regular: document.getElementById('customerRegular').checked
+            };
+            try {
+                await window.dbAPI.saveCustomer(customer);
+                window.closeModal('customerModal');
+                showToast('Customer saved to Cloud!', 'success');
+            } catch(e) {
+                alert("Failed to save customer: " + e.message);
+            }
+        };
+
+        window.editCustomer = function(id) {
+            const customer = appState.customers.find(c => c.id === id);
+            if (customer) {
+                document.getElementById('customerId').value = customer.id;
+                document.getElementById('customerName').value = customer.name;
+                document.getElementById('customerContactPerson').value = customer.contactPerson || '';
+                document.getElementById('customerPhone').value = customer.phone || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+                document.getElementById('customerRegular').checked = customer.regular || false;
+                document.getElementById('customerModal').style.display = 'block';
+            }
+        };
+
+        window.deleteCustomer = async function(id) {
+            if(!window.dbAPI) return;
+            if (!confirm('Delete this customer from Cloud?')) return;
+            try {
+                await window.dbAPI.deleteCustomer(id.toString());
+                showToast('Customer deleted', 'success');
+            } catch(e) {
+                alert("Failed to delete customer: " + e.message);
+            }
+        };
+
+        function loadItemsList() {
+            document.getElementById('itemsTableBody').innerHTML = appState.items.map(item => `<tr><td>${item.name}</td><td><button class="btn-icon" onclick="window.deleteItem('${item.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+        }
+
+        function loadPrintsList() {
+            document.getElementById('printsTableBody').innerHTML = appState.prints.map(p => `<tr><td>${p.name}</td><td><button class="btn-icon" onclick="window.deletePrint('${p.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+        }
+
+        window.showItemModal = function() { document.getElementById('itemForm').reset(); document.getElementById('itemModal').style.display = 'block'; };
+        window.showPrintModal = function() { document.getElementById('printForm').reset(); document.getElementById('printModal').style.display = 'block'; };
+
+        window.saveItem = async function(event) {
+            event.preventDefault();
+            if(!window.dbAPI) return;
+            const item = { id: Date.now().toString(), name: document.getElementById('itemName').value };
+            try {
+                await window.dbAPI.saveItem(item);
+                window.closeModal('itemModal');
+                showToast('Item saved to Cloud!', 'success');
+            } catch(e) {
+                alert("Failed to save item: " + e.message);
+            }
+        };
+
+        window.savePrint = async function(event) {
+            event.preventDefault();
+            if(!window.dbAPI) return;
+            const print = { id: Date.now().toString(), name: document.getElementById('printName').value };
+            try {
+                await window.dbAPI.savePrint(print);
+                window.closeModal('printModal');
+                showToast('Print type saved to Cloud!', 'success');
+            } catch(e) {
+                alert("Failed to save print type: " + e.message);
+            }
+        };
+
+        window.deleteItem = async function(id) {
+            if(!window.dbAPI) return;
+            if (!confirm('Delete this item?')) return;
+            try {
+                await window.dbAPI.deleteItem(id.toString());
+                showToast('Item deleted', 'success');
+            } catch(e) {
+                alert("Failed to delete item: " + e.message);
+            }
+        };
+
+        window.deletePrint = async function(id) {
+            if(!window.dbAPI) return;
+            if (!confirm('Delete this print type?')) return;
+            try {
+                await window.dbAPI.deletePrint(id.toString());
+                showToast('Print type deleted', 'success');
+            } catch(e) {
+                alert("Failed to delete print type: " + e.message);
+            }
+        };
+
+        window.showReportTab = function(tab) {
+            document.querySelectorAll('#reportsPage .tab-content').forEach(t => t.style.display = 'none');
+            document.getElementById(tab + 'ReportTab').style.display = 'block';
+            if (tab === 'print') loadPrintTypesForReport();
+        };
+
+        function loadPrintTypesForReport() {
+            const select = document.getElementById('printTypeSelect');
+            if (select) select.innerHTML = '<option value="">All Print Types</option>' + appState.prints.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+        }
+
+        function setupReportCustomerSearch() {
+            const searchInput = document.getElementById('reportCustomerSearch');
+            const dropdown = document.getElementById('reportCustomerDropdown');
+            if (!searchInput) return;
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const customers = appState.customers;
+                const filtered = customers.filter(c => c.name.toLowerCase().includes(searchTerm) || (c.phone && c.phone.toLowerCase().includes(searchTerm)));
+                if (filtered.length > 0) {
+                    dropdown.innerHTML = filtered.map(c => `
+                        <div class="dropdown-item" onclick="window.selectReportCustomer('${c.name.replace(/'/g, "\\'")}')">
+                            <strong>${c.name}</strong> ${c.regular ? '★' : ''}<br><small>${c.phone || 'No phone'}</small>
+                        </div>
+                    `).join('');
+                    dropdown.classList.add('show');
+                } else {
+                    dropdown.innerHTML = '<div class="no-results">No customers found</div>';
+                    dropdown.classList.add('show');
+                }
+            });
+            setupDropdownNavigation(searchInput, dropdown, window.selectReportCustomer);
+        }
+
+        window.selectReportCustomer = function(customerName) {
+            document.getElementById('reportCustomerSearch').value = customerName;
+            document.getElementById('reportCustomerDropdown').classList.remove('show');
+            window.generateCustomerReport();
+        };
+
+        window.generateCustomerReport = function() {
+            const searchTerm = document.getElementById('reportCustomerSearch').value.toLowerCase().trim();
+            const fromDate = document.getElementById('reportFromDate').value;
+            const toDate = document.getElementById('reportToDate').value;
+            const allOrders = appState.orders;
+            const allCustomers = appState.customers;
+            let filteredOrders = [];
+            
+            if (searchTerm === '') {
+                filteredOrders = [...allOrders];
+            } else {
+                const matchedCustomers = allCustomers.filter(c => (c.name && c.name.toLowerCase().includes(searchTerm)) || (c.phone && c.phone.toLowerCase().includes(searchTerm)));
+                if (matchedCustomers.length === 0) { document.getElementById('customerReportResult').innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">No customers found matching "' + searchTerm + '"</p>'; return; }
+                const matchedCustomerIds = matchedCustomers.map(c => String(c.id));
+                filteredOrders = allOrders.filter(o => matchedCustomerIds.includes(String(o.customerId)));
+            }
+            if (fromDate) filteredOrders = filteredOrders.filter(o => o.date >= fromDate);
+            if (toDate) filteredOrders = filteredOrders.filter(o => o.date <= toDate);
+            displayReport(filteredOrders, allCustomers, 'customerReportResult');
+        };
+
+        window.generateDateReport = function() {
+            const fromDate = document.getElementById('dateReportFrom').value;
+            const toDate = document.getElementById('dateReportTo').value;
+            let filteredOrders = [...appState.orders];
+            if (fromDate) filteredOrders = filteredOrders.filter(o => o.date >= fromDate);
+            if (toDate) filteredOrders = filteredOrders.filter(o => o.date <= toDate);
+            displayReport(filteredOrders, appState.customers, 'dateReportResult');
+        };
+
+        window.generatePrintReport = function() {
+            const printType = document.getElementById('printTypeSelect').value;
+            const fromDate = document.getElementById('printReportFrom').value;
+            const toDate = document.getElementById('printReportTo').value;
+            let filteredOrders = [...appState.orders];
+            if (printType) filteredOrders = filteredOrders.filter(o => o.items && o.items.some(i => i.printType === printType));
+            if (fromDate) filteredOrders = filteredOrders.filter(o => o.date >= fromDate);
+            if (toDate) filteredOrders = filteredOrders.filter(o => o.date <= toDate);
+            displayReport(filteredOrders, appState.customers, 'printReportResult');
+        };
+
+        function displayReport(orders, allCustomers, elementId) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+            if (orders.length === 0) { container.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">No orders found for the selected criteria</p>'; return; }
+            
+            const customerMap = {};
+            allCustomers.forEach(c => customerMap[c.id] = c);
+            
+            let html = `
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3>Found ${orders.length} Order(s)</h3>
+                        <button class="btn-success btn-sm" onclick="window.exportReportToCSV('${elementId}')"><i class="fas fa-file-excel"></i> Export to CSV</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead><tr><th>Order ID</th><th>Date</th><th>Customer Name</th><th>Phone</th><th>Items</th><th>Print Types</th><th>Status</th></tr></thead>
+                            <tbody>
+            `;
+            orders.forEach(order => {
+                const customer = customerMap[order.customerId] || { name: order.customerName || 'Unknown', phone: order.customerPhone || 'N/A' };
+                const itemsList = order.items?.map(i => i.name).join(', ') || 'No items';
+                const printsList = order.items?.map(i => i.printType).filter(p => p && p !== 'None').join(', ') || 'None';
+                html += `<tr><td><strong>${order.orderId || 'N/A'}</strong></td><td>${formatDate(order.date)}</td><td>${customer.name}</td><td>${customer.phone || 'N/A'}</td><td>${itemsList}</td><td>${printsList}</td><td><span class="status-badge status-${order.status ? order.status.replace(/ /g, '-') : 'Pending'}">${order.status || 'Pending'}</span></td></tr>`;
+            });
+            html += `</tbody></table></div></div>`;
+            container.innerHTML = html;
+        }
+
+        window.exportReportToCSV = function(elementId) {
+            const table = document.querySelector(`#${elementId} table`);
+            if (!table) return;
+            let csv = [];
+            table.querySelectorAll('tr').forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td, th').forEach(col => rowData.push(`"${col.innerText.trim().replace(/,/g, ';')}"`));
+                csv.push(rowData.join(','));
+            });
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = window.URL.createObjectURL(blob);
+            a.download = `report_cloud_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showToast('Report exported successfully!', 'success');
+        };
+
+        function loadReportsData() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(today.getDate() - 30);
+            const formatDateForInput = (date) => date.toISOString().split('T')[0];
+            
+            ['reportFromDate', 'dateReportFrom', 'printReportFrom'].forEach(id => {
+                const el = document.getElementById(id); if (el && !el.value) el.value = formatDateForInput(thirtyDaysAgo);
+            });
+            ['reportToDate', 'dateReportTo', 'printReportTo'].forEach(id => {
+                const el = document.getElementById(id); if (el && !el.value) el.value = formatDateForInput(today);
+            });
+            
+            loadPrintTypesForReport();
+            setTimeout(() => setupReportCustomerSearch(), 100);
+            setTimeout(() => window.generateCustomerReport(), 200);
+        }
+
+        window.loadSettings = function() {
+            document.getElementById('orderIdPrefix').value = appState.settings.prefix || 'ORD';
+            document.getElementById('orderIdDateFormat').value = appState.settings.dateFormat || 'YYMMDD';
+            document.getElementById('orderIdCounter').value = appState.settings.counter || '3';
+            window.updateOrderIdPreview();
+            
+            document.getElementById('orderIdPrefix').addEventListener('input', window.updateOrderIdPreview);
+            document.getElementById('orderIdDateFormat').addEventListener('change', window.updateOrderIdPreview);
+            document.getElementById('orderIdCounter').addEventListener('change', window.updateOrderIdPreview);
+        }
+
+        function setupEventListeners() {
+            document.querySelectorAll('.nav-links li').forEach(li => {
+                li.addEventListener('click', function(e) {
+                    e.preventDefault(); showPage(this.dataset.page);
+                    if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('show');
+                });
+            });
+            
+            document.getElementById('sidebarToggleBtn')?.addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.querySelector('.main-content');
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.toggle('show');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    mainContent.classList.toggle('expanded');
+                }
+            });
+
+            document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('show');
+            });
+
+            document.getElementById('addItemBtn')?.addEventListener('click', addItemRow);
+            document.getElementById('orderSearch')?.addEventListener('input', e => loadOrdersList(e.target.value));
+            document.getElementById('customerSearchInput')?.addEventListener('input', e => loadCustomersList(e.target.value));
+            document.getElementById('deleteOrderBtn')?.addEventListener('click', function() { 
+                const orderId = document.getElementById('orderId').value; 
+                if (orderId) window.deleteOrder(orderId); 
+            });
+            
+            document.getElementById('restoreFileInput')?.addEventListener('change', function(e) {
+                if(!window.dbAPI) return showToast('Please wait for cloud connection.', 'warning');
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const backup = JSON.parse(e.target.result);
+                        if (confirm("Importing JSON will add/merge this data into your Cloud database. Continue?")) {
+                            if (backup.customers) backup.customers.forEach(c => window.dbAPI.saveCustomer({...c, id: c.id.toString()}));
+                            if (backup.orders) backup.orders.forEach(o => window.dbAPI.saveOrder({...o, id: o.id.toString()}));
+                            if (backup.items) backup.items.forEach(i => window.dbAPI.saveItem({...i, id: i.id.toString()}));
+                            if (backup.prints) backup.prints.forEach(p => window.dbAPI.savePrint({...p, id: p.id.toString()}));
+                            if (backup.orderIdFormat) window.dbAPI.saveSettings(backup.orderIdFormat);
+                            showToast('Cloud Import started!', 'success');
+                        }
+                    } catch (error) { showToast('Invalid JSON file', 'error'); }
+                };
+                reader.readAsText(file); e.target.value = '';
+            });
+            document.addEventListener('click', function(e) { if (!e.target.closest('.searchable-select')) closeAllDropdowns(); });
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('keypress', function(e) { if (e.key === 'Enter' && !this.closest('.searchable-select')) e.preventDefault(); });
+            });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const d = new Date(dateString);
+                if (isNaN(d.getTime())) return dateString;
+                return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+            } catch { return dateString; }
+        }
+
+        function isOverdue(dateString) {
+            if (!dateString) return false;
+            try {
+                const dueDate = new Date(dateString); const today = new Date();
+                today.setHours(0,0,0,0); dueDate.setHours(0,0,0,0); return dueDate < today;
+            } catch { return false; }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast'); toast.className = `toast ${type}`;
+            document.getElementById('toastMessage').textContent = message; toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; };
+    </script>
+
+    <!-- ==================== CUSTOM FIREBASE CLOUD SYNC MODULE ==================== -->
+    <script type="module">
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const badge = document.getElementById('cloudBadge');
+        
+        // Hardcoded custom Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2IfsBsyBWSx415yaFajLoy_32dAb_J2Q",
+            authDomain: "order-tracker-e7ee9.firebaseapp.com",
+            projectId: "order-tracker-e7ee9",
+            storageBucket: "order-tracker-e7ee9.firebasestorage.app",
+            messagingSenderId: "1050523392217",
+            appId: "1:1050523392217:web:3129fe24e7c28c1311c6c8",
+            measurementId: "G-TGYJ25ZTB2"
+        };
+
+        try {
+            const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            // Authenticate Anonymously
+            signInAnonymously(auth).catch((error) => {
+                console.error("Auth error:", error);
+                badge.classList.remove('connected');
+                badge.style.background = '#ffebee';
+                badge.style.color = '#c62828';
+                badge.innerHTML = '<i class="fas fa-times-circle"></i> <span id="cloudStatusText">Check Firebase Rules</span>';
+            });
+
+            let activeListeners = [];
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    badge.classList.add('connected');
+                    badge.style.background = ''; 
+                    badge.style.color = '';
+                    badge.innerHTML = '<i class="fas fa-cloud-check"></i> <span id="cloudStatusText">Cloud Connected</span>';
+                    
+                    setupDbAPI(db, user.uid);
+                    setupListeners(db, user.uid);
+                } else {
+                    badge.classList.remove('connected');
+                    badge.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span id="cloudStatusText">Disconnected</span>';
+                    activeListeners.forEach(unsub => unsub());
+                    activeListeners = [];
+                    window.dbAPI = null;
+                }
+            });
+
+            function getRef(db, uid, colName) {
+                return collection(db, 'users', uid, colName);
+            }
+
+            function setupListeners(db, uid) {
+                // Settings Sync
+                activeListeners.push(onSnapshot(doc(db, 'users', uid, 'settings', 'main'), snap => {
+                    if (snap.exists()) {
+                        window.appState.settings = snap.data();
+                    } else {
+                        const defSettings = { prefix: 'ORD', dateFormat: 'YYMMDD', counter: '3', lastNumber: 0 };
+                        setDoc(doc(db, 'users', uid, 'settings', 'main'), defSettings);
+                    }
+                    window.refreshCurrentView();
+                }, err => console.error(err)));
+
+                // Customers Sync
+                let isFirstCust = true;
+                activeListeners.push(onSnapshot(getRef(db, uid, 'customers'), snap => {
+                    if (snap.empty && isFirstCust) {
+                        const defCust = { id: '1', name: 'Walk-in Customer', phone: '', address: '', regular: true };
+                        setDoc(doc(db, 'users', uid, 'customers', '1'), defCust);
+                    }
+                    isFirstCust = false;
+                    window.appState.customers = snap.docs.map(d => d.data());
+                    window.refreshCurrentView();
+                }, err => console.error(err)));
+
+                // Items Sync
+                let isFirstItems = true;
+                activeListeners.push(onSnapshot(getRef(db, uid, 'items'), snap => {
+                    if (snap.empty && isFirstItems) {
+                        const defItems = [
+                            { id: '1', name: 'Flex' }, { id: '2', name: 'Banner' }, { id: '3', name: 'Visiting Card' },
+                            { id: '4', name: 'Brochure' }, { id: '5', name: 'Sticker' }
+                        ];
+                        defItems.forEach(i => setDoc(doc(db, 'users', uid, 'items', i.id), i));
+                    }
+                    isFirstItems = false;
+                    window.appState.items = snap.docs.map(d => d.data());
+                    window.refreshCurrentView();
+                }, err => console.error(err)));
+
+                // Prints Sync
+                let isFirstPrints = true;
+                activeListeners.push(onSnapshot(getRef(db, uid, 'prints'), snap => {
+                    if (snap.empty && isFirstPrints) {
+                        const defPrints = [
+                            { id: '1', name: 'Digital' }, { id: '2', name: 'Offset' }, { id: '3', name: 'Screen' }, { id: '4', name: 'None' }
+                        ];
+                        defPrints.forEach(p => setDoc(doc(db, 'users', uid, 'prints', p.id), p));
+                    }
+                    isFirstPrints = false;
+                    window.appState.prints = snap.docs.map(d => d.data());
+                    window.refreshCurrentView();
+                }, err => console.error(err)));
+
+                // Orders Sync
+                activeListeners.push(onSnapshot(getRef(db, uid, 'orders'), snap => {
+                    window.appState.orders = snap.docs.map(d => d.data());
+                    window.refreshCurrentView();
+                }, err => console.error(err)));
+            }
+
+            // Bridge to the UI
+            function setupDbAPI(db, uid) {
+                const docPath = (col, id) => doc(db, 'users', uid, col, id);
+                
+                window.dbAPI = {
+                    saveOrder: async (order) => await setDoc(docPath('orders', order.id.toString()), order),
+                    deleteOrder: async (id) => await deleteDoc(docPath('orders', id.toString())),
+                    
+                    saveCustomer: async (customer) => await setDoc(docPath('customers', customer.id.toString()), customer),
+                    deleteCustomer: async (id) => await deleteDoc(docPath('customers', id.toString())),
+                    
+                    saveItem: async (item) => await setDoc(docPath('items', item.id.toString()), item),
+                    deleteItem: async (id) => await deleteDoc(docPath('items', id.toString())),
+                    
+                    savePrint: async (print) => await setDoc(docPath('prints', print.id.toString()), print),
+                    deletePrint: async (id) => await deleteDoc(docPath('prints', id.toString())),
+                    
+                    saveSettings: async (settings) => await setDoc(docPath('settings', 'main'), settings)
+                };
+            }
+
+        } catch(e) {
+            console.error("Config parse error", e);
+            badge.classList.remove('connected');
+            badge.style.background = '#ffebee';
+            badge.style.color = '#c62828';
+            badge.innerHTML = '<i class="fas fa-times-circle"></i> <span id="cloudStatusText">Invalid Setup</span>';
+        }
+    </script>
+</body>
+</html>
