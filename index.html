@@ -183,27 +183,57 @@
     </style>
 </head>
 <body>
-    <div class="app-container">
+
+    <!-- Admin Login Screen -->
+    <div id="loginScreen" style="display: flex; height: 100vh; align-items: center; justify-content: center; background: #f5f5f5; z-index: 9999; position: fixed; top: 0; left: 0; width: 100%; flex-direction: column;">
+        <div class="card" style="width: 100%; max-width: 400px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border);">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px;">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h2>Admin Login</h2>
+                <p style="color: #666; font-size: 14px; margin-top: 5px;">Secure access to OrderTrack Pro</p>
+            </div>
+            <form id="loginForm" onsubmit="window.handleAdminLogin(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="adminEmail" class="form-control" placeholder="admin@example.com" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label>Password</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="adminLoginBtn" class="btn-primary" style="width: 100%; justify-content: center;">Sign In</button>
+                <p id="adminLoginError" style="color: var(--danger); font-size: 13px; margin-top: 15px; text-align: center; display: none; font-weight: 500;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden until logged in) -->
+    <div class="app-container" id="mainAppContainer" style="display: none;">
         <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2><i class="fas fa-cloud"></i> OrderTrack Cloud</h2>
             </div>
             <ul class="nav-links">
-                <li class="active" data-page="dashboard"><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li data-page="orders"><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
-                <li data-page="customers"><a href="#"><i class="fas fa-users"></i> Customers</a></li>
-                <li data-page="masters"><a href="#"><i class="fas fa-cog"></i> Masters</a></li>
-                <li data-page="reports"><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li data-page="settings"><a href="#"><i class="fas fa-sliders-h"></i> Settings</a></li>
+                <li class="active" data-page="dashboard"><a href="#" onclick="window.showPage('dashboard')"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li data-page="orders"><a href="#" onclick="window.showPage('orders')"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                <li data-page="customers"><a href="#" onclick="window.showPage('customers')"><i class="fas fa-users"></i> Customers</a></li>
+                <li data-page="masters"><a href="#" onclick="window.showPage('masters')"><i class="fas fa-cog"></i> Masters</a></li>
+                <li data-page="reports"><a href="#" onclick="window.showPage('reports')"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li data-page="settings"><a href="#" onclick="window.showPage('settings')"><i class="fas fa-sliders-h"></i> Settings</a></li>
             </ul>
             <div class="sidebar-footer">
                 <p style="font-size: 12px; color: #666; margin-bottom: 10px; text-align: center;">Advanced tools:</p>
-                <button class="btn-info btn-sm" onclick="performBackup(false)" style="width: 100%; margin-bottom: 10px;">
+                <button class="btn-info btn-sm" onclick="window.performBackup(false)" style="width: 100%; margin-bottom: 10px;">
                     <i class="fas fa-download"></i> Export JSON
                 </button>
-                <button class="btn-secondary btn-sm" onclick="document.getElementById('restoreFileInput').click()" style="width: 100%;">
+                <button class="btn-secondary btn-sm" onclick="document.getElementById('restoreFileInput').click()" style="width: 100%; margin-bottom: 10px;">
                     <i class="fas fa-upload"></i> Import JSON
+                </button>
+                <button class="btn-danger btn-sm" onclick="window.handleAdminLogout()" style="width: 100%;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </nav>
@@ -218,7 +248,7 @@
                 <div class="header-actions">
                     <button id="mobileMenuBtn" class="mobile-only btn-icon"><i class="fas fa-bars"></i></button>
                     <button id="sidebarToggleBtn" class="btn-icon mobile-hidden" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
-                    <button class="btn-info btn-sm mobile-hidden" onclick="toggleShortcuts()">
+                    <button class="btn-info btn-sm mobile-hidden" onclick="window.toggleShortcuts()">
                         <i class="fas fa-keyboard"></i> Shortcuts
                     </button>
                 </div>
@@ -228,7 +258,7 @@
             <div class="shortcuts-panel" id="shortcutsPanel">
                 <h3>
                     <span><i class="fas fa-keyboard"></i> Keyboard Shortcuts</span>
-                    <i class="fas fa-times" style="cursor: pointer; color: #999;" onclick="toggleShortcuts()"></i>
+                    <i class="fas fa-times" style="cursor: pointer; color: #999;" onclick="window.toggleShortcuts()"></i>
                 </h3>
                 <div class="shortcut-grid">
                     <div class="shortcut-item"><span class="shortcut-key">Ctrl+D</span><span class="shortcut-desc">Dashboard</span></div>
@@ -256,7 +286,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h2 style="margin-bottom: 0;"><i class="fas fa-search"></i> Search Results</h2>
-                            <button class="btn-secondary btn-sm" onclick="clearDashSearch()"><i class="fas fa-times"></i> Clear</button>
+                            <button class="btn-secondary btn-sm" onclick="window.clearDashSearch()"><i class="fas fa-times"></i> Clear</button>
                         </div>
                         <div class="table-responsive">
                             <table>
@@ -276,7 +306,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h2 style="margin-bottom: 0;"><i class="fas fa-tasks"></i> Pending Items</h2>
-                            <button class="btn-success btn-sm" onclick="loadDashboard()">
+                            <button class="btn-success btn-sm" onclick="window.loadDashboard()">
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
                         </div>
@@ -992,9 +1022,7 @@
             
             // If any item is in progress or completed, order is in progress
             const anyStarted = nonCancelled.some(i => i.status === 'In Progress' || i.status === 'Completed');
-            if (anyStarted) return 'In Progress'; // Wait, In Progress is not in the Order main dropdown anymore. 
-            // The user requested main order list to only have Pending, Completed, Delivered, Paid. 
-            // So if it's partially done, we can leave it Pending until fully Completed.
+            if (anyStarted) return 'In Progress'; 
             return 'Pending';
         }
 
@@ -2125,12 +2153,30 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
         window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.style.display = 'none'; };
+
+        // Bind global functions to window so they are fully available everywhere
+        window.performBackup = function(isAuto = false) {
+            const backup = {
+                customers: appState.customers,
+                orders: appState.orders,
+                items: appState.items,
+                prints: appState.prints,
+                orderIdFormat: appState.settings,
+                timestamp: new Date().toISOString()
+            };
+            const a = document.createElement('a');
+            a.href = window.URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
+            a.download = isAuto ? `auto_backup_cloud_${new Date().toISOString().split('T')[0]}.json` : `order_tracker_cloud_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            localStorage.setItem('lastBackup', new Date().toISOString());
+            if (!isAuto) showToast('JSON Export created!', 'success');
+        };
     </script>
 
     <!-- ==================== CUSTOM FIREBASE CLOUD SYNC MODULE ==================== -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const badge = document.getElementById('cloudBadge');
@@ -2151,19 +2197,47 @@
             const auth = getAuth(app);
             const db = getFirestore(app);
 
-            // Authenticate Anonymously
-            signInAnonymously(auth).catch((error) => {
-                console.error("Auth error:", error);
-                badge.classList.remove('connected');
-                badge.style.background = '#ffebee';
-                badge.style.color = '#c62828';
-                badge.innerHTML = '<i class="fas fa-times-circle"></i> <span id="cloudStatusText">Check Firebase Rules</span>';
-            });
+            // Admin Login Handler
+            window.handleAdminLogin = async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('adminEmail').value;
+                const pass = document.getElementById('adminPassword').value;
+                const btn = document.getElementById('adminLoginBtn');
+                const err = document.getElementById('adminLoginError');
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+                btn.disabled = true;
+                err.style.display = 'none';
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } catch (error) {
+                    err.textContent = "Invalid email or password.";
+                    err.style.display = 'block';
+                    btn.innerHTML = 'Sign In';
+                    btn.disabled = false;
+                }
+            };
+
+            // Admin Logout Handler
+            window.handleAdminLogout = async function() {
+                try {
+                    await signOut(auth);
+                } catch(e) {
+                    console.error("Logout error", e);
+                }
+            };
 
             let activeListeners = [];
 
             onAuthStateChanged(auth, (user) => {
+                const loginScreen = document.getElementById('loginScreen');
+                const mainApp = document.getElementById('mainAppContainer');
+
                 if (user) {
+                    loginScreen.style.display = 'none';
+                    mainApp.style.display = 'flex';
+
                     badge.classList.add('connected');
                     badge.style.background = ''; 
                     badge.style.color = '';
@@ -2172,8 +2246,17 @@
                     setupDbAPI(db, user.uid);
                     setupListeners(db, user.uid);
                 } else {
+                    loginScreen.style.display = 'flex';
+                    mainApp.style.display = 'none';
+
+                    document.getElementById('adminPassword').value = '';
+                    const btn = document.getElementById('adminLoginBtn');
+                    btn.innerHTML = 'Sign In';
+                    btn.disabled = false;
+
                     badge.classList.remove('connected');
                     badge.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span id="cloudStatusText">Disconnected</span>';
+                    
                     activeListeners.forEach(unsub => unsub());
                     activeListeners = [];
                     window.dbAPI = null;
