@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Order Tracker Ultimate - Custom Cloud Edition</title>
+    <title>OrderTrack - Professional Order Management_V2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,6 +14,13 @@
             --light: #f8f9fa; --border: #dee2e6;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; overflow-x: hidden; }
+        
+        /* Unified Auth Screens */
+        .auth-wrapper { display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center; background: #f5f5f5; position: fixed; top: 0; left: 0; z-index: 9999; flex-direction: column; padding: 20px; }
+        .auth-card { background: white; width: 100%; max-width: 420px; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); text-align: center; }
+        .auth-icon { width: 64px; height: 64px; background: #eef2ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
+        .auth-title { font-size: 24px; font-weight: bold; margin-bottom: 8px; color: var(--dark); }
+        .auth-subtitle { color: #666; font-size: 14px; margin-bottom: 30px; line-height: 1.5; }
         
         /* Layout */
         .app-container { display: flex; min-height: 100vh; width: 100vw; overflow-x: hidden; }
@@ -67,10 +74,11 @@
         /* Forms & Inputs */
         .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
         .form-row.align-bottom { align-items: flex-end; }
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark); }
         .form-control { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; transition: all 0.3s; }
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1); }
+        .form-control:disabled { background-color: #e9ecef; cursor: not-allowed; opacity: 1; }
         
         .searchable-select { position: relative; }
         .searchable-select input { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; }
@@ -83,18 +91,13 @@
         .customer-details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary); }
         .customer-details p { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
         
-        /* Single Line Item Layout */
+        /* Advanced Item Layout */
         .items-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .item-fields-header { display: grid; grid-template-columns: 2fr 2fr 0.8fr 1.5fr 1.2fr 60px 50px; gap: 15px; padding: 0 15px 10px 15px; font-weight: 600; color: var(--dark); border-bottom: 2px solid var(--border); margin-bottom: 10px; font-size: 13px; }
-        .item-fields-single { display: grid; grid-template-columns: 2fr 2fr 0.8fr 1.5fr 1.2fr 60px 50px; gap: 15px; align-items: center; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px; }
-        .item-fields-single .field-label { display: none; }
+        .item-row-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .item-row-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
         
         .mobile-only { display: none; }
         @media (max-width: 992px) {
-            .mobile-hidden { display: none !important; }
-            .item-fields-header.mobile-hidden { display: none !important; }
-            .item-fields-single { grid-template-columns: 1fr; gap: 12px; padding: 15px; }
-            .item-fields-single .field-label { display: block; margin-bottom: 4px; font-weight: 600; color: var(--dark); }
             .sidebar { transform: translateX(-100%); }
             .sidebar.show { transform: translateX(0); }
             .main-content { margin-left: 0; width: 100%; }
@@ -106,7 +109,7 @@
         .financials-section { background: #eef2f6; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #cdd5e0; }
         
         /* Buttons */
-        .btn-primary, .btn-success, .btn-danger, .btn-info, .btn-warning, .btn-secondary { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+        .btn-primary, .btn-success, .btn-danger, .btn-info, .btn-warning, .btn-secondary { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
         .btn-success { background: var(--success); color: white; }
@@ -119,6 +122,9 @@
         .btn-warning:hover { background: #e0a800; transform: translateY(-2px); }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
+        .btn-outline { background: white; border: 1px solid #d1d5db; color: #4b5563; }
+        .btn-outline:hover { background: #f9fafb; border-color: #9ca3af; }
+        
         .btn-icon { padding: 10px; background: none; border: none; cursor: pointer; color: #666; border-radius: 6px; transition: all 0.3s; font-size: 16px; }
         .btn-icon:hover { background: #f0f0f0; color: var(--primary); }
         .btn-sm { padding: 8px 15px; font-size: 14px; }
@@ -135,9 +141,10 @@
         td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
         tr:hover { background: #f8f9fa; }
         
-        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; display: inline-block; }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
         .status-Pending { background: #fff3e0; color: #f57c00; }
         .status-In-Progress { background: #e3f2fd; color: #1976d2; }
+        .status-Ready-to-Deliver { background: #e0f7fa; color: #00838f; border: 1px solid #b2ebf2;}
         .status-Completed { background: #e8f5e9; color: #388e3c; }
         .status-Delivered { background: #d4edda; color: #155724; }
         .status-Payment-Pending { background: #ffebee; color: #d32f2f; }
@@ -180,41 +187,132 @@
         .shortcut-item { display: flex; align-items: center; padding: 8px; background: #f8f9fa; border-radius: 6px; }
         .shortcut-key { background: var(--dark); color: white; padding: 4px 10px; border-radius: 4px; font-family: monospace; margin-right: 10px; min-width: 80px; text-align: center; font-weight: bold; }
         .shortcut-desc { flex: 1; color: var(--dark); font-size: 13px; }
+
+        /* Customer Portal Specific UI */
+        .portal-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .portal-filters { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
+        .portal-filters::-webkit-scrollbar { display: none; }
+        .portal-filters { -ms-overflow-style: none; scrollbar-width: none; }
+        .filter-btn { background: white; border: 1px solid var(--border); color: #666; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .filter-btn:hover { background: #f8f9fa; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .portal-card { background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; overflow: hidden; transition: transform 0.2s; }
+        .portal-card-header { padding: 15px; display: flex; align-items: center; justify-content: space-between; background: white; cursor: pointer; }
+        .portal-card-header:hover { background: #f8f9fa; }
+        .portal-card-thumb { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; border: 1px solid #eee; flex-shrink: 0; }
+        .portal-card-thumb-placeholder { width: 50px; height: 50px; border-radius: 6px; background: #eee; color: #aaa; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .portal-card-title { font-weight: bold; color: var(--dark); font-size: 15px; margin-bottom: 2px; }
+        .portal-card-date { font-size: 12px; color: #888; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: #fdfdfd; }
+        .accordion-content.open { max-height: 1000px; }
+        .accordion-inner { padding: 15px; border-top: 1px solid var(--border); }
+        .portal-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
+        .portal-item-row:last-child { border-bottom: none; }
+        .portal-financials { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
-    <!-- Admin Login Screen -->
-    <div id="loginScreen" style="display: flex; height: 100vh; align-items: center; justify-content: center; background: #f5f5f5; z-index: 9999; position: fixed; top: 0; left: 0; width: 100%; flex-direction: column;">
-        <div class="card" style="width: 100%; max-width: 400px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border);">
-            <div style="text-align: center; margin-bottom: 30px;">
-                <div style="width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 15px;">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <h2>Admin Login</h2>
-                <p style="color: #666; font-size: 14px; margin-top: 5px;">Secure access to OrderTrack Pro</p>
+    <!-- Landing Screen (Default View) -->
+    <div id="landingScreen" class="auth-wrapper" style="display: flex;">
+        <div class="auth-card">
+            <div class="auth-icon"><i class="fas fa-box"></i></div>
+            <h2 class="auth-title">OrderTrack</h2>
+            <p class="auth-subtitle">Welcome! Track your orders in real-time or log in to manage your business.</p>
+            
+            <button class="btn-primary" style="width: 100%; height: 50px; font-size: 16px; margin-bottom: 30px;" onclick="window.showCustomerLogin()">
+                <i class="fas fa-search"></i> Track Your Order
+            </button>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 20px;">
+                <a href="#" style="color: #888; text-decoration: none; font-size: 13px; font-weight: 500;" onclick="window.showAdminLogin()">
+                    <i class="fas fa-lock"></i> Admin Login
+                </a>
             </div>
-            <form id="loginForm" onsubmit="window.handleAdminLogin(event)">
+        </div>
+    </div>
+
+    <!-- Admin Login Screen -->
+    <div id="adminLoginScreen" class="auth-wrapper" style="display: none;">
+        <div class="auth-card">
+            <div class="auth-icon"><i class="fas fa-user-shield"></i></div>
+            <h2 class="auth-title">Admin Login</h2>
+            <p class="auth-subtitle">Secure access to business management.</p>
+            
+            <form onsubmit="window.handleAdminLoginForm(event)">
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="adminEmail" class="form-control" placeholder="admin@example.com" required>
+                    <input type="email" id="adminEmail" class="form-control" placeholder="Email Address" required>
                 </div>
                 <div class="form-group" style="margin-bottom: 25px;">
-                    <label>Password</label>
-                    <input type="password" id="adminPassword" class="form-control" placeholder="••••••••" required>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="Password" required>
                 </div>
                 <button type="submit" id="adminLoginBtn" class="btn-primary" style="width: 100%; justify-content: center;">Sign In</button>
-                <p id="adminLoginError" style="color: var(--danger); font-size: 13px; margin-top: 15px; text-align: center; display: none; font-weight: 500;"></p>
+                <p id="adminLoginError" style="color: var(--danger); font-size: 13px; margin-top: 15px; display: none; font-weight: 500;"></p>
+                <button type="button" class="btn-outline" style="width: 100%; margin-top: 15px;" onclick="window.showLanding()">Cancel</button>
             </form>
         </div>
     </div>
 
-    <!-- Main App Container (Hidden until logged in) -->
+    <!-- Customer Login Screen -->
+    <div id="customerLoginScreen" class="auth-wrapper" style="display: none;">
+        <div class="auth-card">
+            <div class="auth-icon"><i class="fas fa-truck"></i></div>
+            <h2 class="auth-title">Track Orders</h2>
+            <p class="auth-subtitle">Enter your registered mobile number to view the status of your items.</p>
+            
+            <form onsubmit="window.handleCustomerLoginForm(event)">
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <input type="tel" id="customerPhoneInput" class="form-control" placeholder="Mobile Number (e.g. 9876543210)" required>
+                </div>
+                <button type="submit" id="customerLoginBtn" class="btn-primary" style="width: 100%; justify-content: center;">Continue <i class="fas fa-arrow-right"></i></button>
+                <p id="customerLoginError" style="color: var(--danger); font-size: 13px; margin-top: 15px; display: none; font-weight: 500;"></p>
+                <button type="button" class="btn-outline" style="width: 100%; margin-top: 15px;" onclick="window.showLanding()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Dashboard (Portal) -->
+    <div id="customerDashboardScreen" style="display: none; background: #f5f5f5; min-height: 100vh;">
+        <nav style="background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;">
+            <div style="display: flex; align-items: center; gap: 10px; font-weight: bold; color: var(--dark);">
+                <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-box"></i></div>
+                OrderTrack
+            </div>
+            <button onclick="window.customerLogout()" style="background: none; border: none; color: var(--danger); font-weight: 600; cursor: pointer; font-size: 14px;">Logout <i class="fas fa-sign-out-alt"></i></button>
+        </nav>
+        
+        <main style="max-width: 800px; margin: 0 auto; padding: 20px;">
+            <div class="portal-header">
+                <div>
+                    <h2 style="font-size: 22px; color: var(--dark); margin-bottom: 4px;">Your Orders</h2>
+                    <p style="color: #666; font-size: 14px;">Hello <span id="customerNameDisplay" style="color: var(--primary); font-weight: bold;">Customer</span>!</p>
+                </div>
+                <button class="btn-outline btn-sm" onclick="window.fetchCustomerOrders()" id="portalSyncBtn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            
+            <div class="portal-filters" id="portalFilterContainer">
+                <button onclick="window.setPortalFilter('All Pending')" class="filter-btn active">🔥 All Active</button>
+                <button onclick="window.setPortalFilter('Pending')" class="filter-btn">Pending</button>
+                <button onclick="window.setPortalFilter('In Progress')" class="filter-btn">In Progress</button>
+                <button onclick="window.setPortalFilter('Ready to Deliver')" class="filter-btn">Ready / Completed</button>
+                <button onclick="window.setPortalFilter('Payment Pending')" class="filter-btn">Payment Pending / Delivered</button>
+            </div>
+            
+            <div id="portalOrdersContainer" style="padding-bottom: 50px;">
+                <!-- Customer Orders Injected Here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Main Admin App Container -->
     <div class="app-container" id="mainAppContainer" style="display: none;">
         <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2><i class="fas fa-cloud"></i> OrderTrack Cloud</h2>
+                <h2><i class="fas fa-cloud"></i> OrderTrack Admin</h2>
             </div>
             <ul class="nav-links">
                 <li class="active" data-page="dashboard"><a href="#" onclick="window.showPage('dashboard')"><i class="fas fa-home"></i> Dashboard</a></li>
@@ -246,8 +344,7 @@
                     <span class="cloud-badge" id="cloudBadge"><i class="fas fa-spinner fa-spin"></i> <span id="cloudStatusText">Connecting...</span></span>
                 </h1>
                 <div class="header-actions">
-                    <button id="mobileMenuBtn" class="mobile-only btn-icon"><i class="fas fa-bars"></i></button>
-                    <button id="sidebarToggleBtn" class="btn-icon mobile-hidden" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+                    <button id="sidebarToggleBtn" class="btn-icon" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
                     <button class="btn-info btn-sm mobile-hidden" onclick="window.toggleShortcuts()">
                         <i class="fas fa-keyboard"></i> Shortcuts
                     </button>
@@ -277,15 +374,18 @@
             <div id="dashboardPage">
                 
                 <!-- Dashboard Global Search -->
-                <div class="dash-search-container">
-                    <i class="fas fa-search dash-search-icon"></i>
-                    <input type="text" id="dashSearchInput" class="dash-search-input" placeholder="Search orders by Customer Name, Contact Person, or Mobile Number..." oninput="window.handleDashSearch(this.value)">
+                <div class="dash-search-container" style="display: flex; gap: 10px;">
+                    <div style="position: relative; flex: 1;">
+                        <i class="fas fa-search dash-search-icon"></i>
+                        <input type="text" id="dashSearchInput" class="dash-search-input" placeholder="Search orders by Customer Name, Contact Person, or Mobile Number..." oninput="window.handleDashSearch(this.value)" onkeypress="if(event.key === 'Enter') window.handleDashSearch(this.value)">
+                    </div>
+                    <button class="btn-primary" onclick="window.handleDashSearch(document.getElementById('dashSearchInput').value)" style="padding: 0 25px; white-space: nowrap;"><i class="fas fa-search"></i> Search</button>
                 </div>
 
                 <div id="dashSearchResults" style="display:none; margin-bottom: 30px;">
                     <div class="card">
                         <div class="card-header">
-                            <h2 style="margin-bottom: 0;"><i class="fas fa-search"></i> Search Results</h2>
+                            <h2 style="margin-bottom: 0;" id="dashSearchResultsTitle"><i class="fas fa-search"></i> Search Results</h2>
                             <button class="btn-secondary btn-sm" onclick="window.clearDashSearch()"><i class="fas fa-times"></i> Clear</button>
                         </div>
                         <div class="table-responsive">
@@ -337,7 +437,7 @@
                         <h2 style="margin-bottom: 0;"><i class="fas fa-list"></i> All Orders</h2>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn-primary" onclick="window.openOrderModal()"><i class="fas fa-plus"></i> New Order</button>
-                            <input type="text" id="orderSearch" class="form-control" placeholder="Search orders..." style="width: 250px;">
+                            <input type="text" id="orderSearch" class="form-control" placeholder="Search orders..." style="width: 250px;" oninput="window.loadOrdersList(this.value)">
                             <button class="btn-success btn-sm" onclick="window.exportAllOrdersCSV()"><i class="fas fa-file-excel"></i> Export All to CSV</button>
                         </div>
                     </div>
@@ -395,6 +495,19 @@
                         <table>
                             <thead><tr><th>Print Type</th><th>Actions</th></tr></thead>
                             <tbody id="printsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 style="margin-bottom: 15px;">Vendors</h2>
+                    <button class="btn-primary" onclick="window.showVendorModal()" style="margin-bottom: 20px;">
+                        <i class="fas fa-plus"></i> Add Vendor
+                    </button>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Vendor Name</th><th>Phone</th><th>Email ID</th><th>Actions</th></tr></thead>
+                            <tbody id="vendorsTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -482,13 +595,28 @@
                             </div>
                         </div>
                         <div class="order-id-preview" id="orderIdPreview">ORD240218001</div>
-                        <button class="btn-primary btn-sm" onclick="window.saveOrderIdFormat()" style="margin-top: 10px;"><i class="fas fa-save"></i> Save Format</button>
+                        <button class="btn-primary btn-sm" onclick="window.saveAdminSettings()" style="margin-top: 10px;"><i class="fas fa-save"></i> Save Format</button>
                     </div>
 
-                    <div class="settings-group" style="background: #e3f2fd; border: 1px solid #bbdefb;">
-                        <h3 style="color: #1565c0;"><i class="fas fa-database"></i> Custom Firebase Setup</h3>
+                    <div class="settings-group">
+                        <h3>Vendor Email Template</h3>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Available Variables: {order_id}, {item_name}, {qty}, {print_type}, {material}, {finishing}, {notes}</p>
+                        <div class="form-group">
+                            <label>Default Subject</label>
+                            <input type="text" id="vendorEmailSubject" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Default Body</label>
+                            <textarea id="vendorEmailBody" class="form-control" rows="8"></textarea>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="window.saveAdminSettings()" style="width: 100%; margin-top: 10px;"><i class="fas fa-save"></i> Save All Settings</button>
+
+                    <div class="settings-group" style="background: #e3f2fd; border: 1px solid #bbdefb; margin-top: 20px;">
+                        <h3 style="color: #1565c0;"><i class="fas fa-database"></i> Secure Cloud System</h3>
                         <p style="font-size: 13px; color: #444; margin-bottom: 10px;">
-                            Your app is successfully hardcoded and permanently connected to your personal Firebase database (<b>order-tracker-e7ee9</b>). All offline storage logic has been upgraded to real-time cloud sync.
+                            Your app is successfully hardcoded and securely connected to your personal Firebase database (<b>order-tracker-e7ee9</b>). Customers can track their orders by phone number on the front page, while you manage everything securely inside this dashboard.
                         </p>
                     </div>
                 </div>
@@ -500,7 +628,6 @@
     <button class="fab-btn mobile-only" onclick="window.openOrderModal()"><i class="fas fa-plus"></i></button>
 
     <!-- MODALS -->
-    
     <!-- Big Order Form Modal -->
     <div id="orderModal" class="modal">
         <div class="modal-content">
@@ -514,7 +641,6 @@
             
             <form id="orderForm">
                 <input type="hidden" id="orderId">
-                
                 <div class="form-row">
                     <div class="form-group">
                         <label>Order ID</label>
@@ -548,13 +674,11 @@
                 <div class="items-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="margin: 0;">Order Items</h3>
-                        <button type="button" id="addItemBtn" class="btn-success btn-sm">
+                        <button type="button" id="addItemBtn" class="btn-success btn-sm" onclick="window.addItemRow()">
                             <i class="fas fa-plus"></i> Add Item
                         </button>
                     </div>
-                    <div class="item-fields-header mobile-hidden">
-                        <div>Item Name</div><div>Description</div><div>Qty</div><div>Print Type</div><div>Status</div><div style="text-align: center;">Image</div><div style="text-align: center;">Delete</div>
-                    </div>
+                    <!-- Cards will be injected here instead of single row grid -->
                     <div id="itemsContainer"></div>
                 </div>
 
@@ -584,11 +708,14 @@
                     </div>
                     <div class="form-group">
                         <label>Overall Order Status <small style="color:#666; font-weight:normal;">(*Auto-updates via items)</small></label>
-                        <select id="orderStatus" class="form-control">
+                        <select id="orderStatus" class="form-control" disabled style="background-color: #e9ecef; opacity: 1;">
                             <option value="Pending">Pending</option>
-                            <option value="Completed">Completed</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Ready to Deliver">Ready to Deliver</option>
                             <option value="Delivered">Delivered</option>
+                            <option value="Payment Pending">Payment Pending</option>
                             <option value="Paid">Paid</option>
+                            <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
                 </div>
@@ -602,7 +729,6 @@
         </div>
     </div>
 
-    <!-- Details View Modal -->
     <div id="orderDetailModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="window.closeModal('orderDetailModal')">&times;</span>
@@ -611,6 +737,7 @@
         </div>
     </div>
 
+    <!-- Quick Add Modals -->
     <div id="customerModal" class="modal">
         <div class="modal-content" style="max-width: 500px;">
             <span class="close" onclick="window.closeModal('customerModal')">&times;</span>
@@ -649,7 +776,20 @@
         </div>
     </div>
 
-    <!-- Global Image Preview Modal -->
+    <div id="vendorModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="window.closeModal('vendorModal')">&times;</span>
+            <h2 style="margin-bottom: 15px;">Add Vendor</h2>
+            <form id="vendorForm" onsubmit="return window.saveVendor(event)">
+                <input type="hidden" id="vendorId">
+                <div class="form-group"><label>Vendor Name *</label><input type="text" id="vendorName" class="form-control" required></div>
+                <div class="form-group"><label>Phone Number</label><input type="text" id="vendorPhone" class="form-control"></div>
+                <div class="form-group"><label>Email Address</label><input type="email" id="vendorEmail" class="form-control" placeholder="vendor@example.com"></div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
     <div id="imageViewerModal" class="modal" style="background: rgba(0,0,0,0.9);">
         <span class="close" onclick="window.closeModal('imageViewerModal')" style="color: white; font-size: 40px; top: 20px; right: 30px;">&times;</span>
         <img id="fullSizeImage" src="" style="margin: auto; display: block; max-width: 90%; max-height: 90vh; margin-top: 5vh; border-radius: 8px;">
@@ -661,7 +801,6 @@
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px;">
                 <h1 style="margin: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px;">Order Invoice</h1>
             </div>
-            
             <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
                 <div>
                     <h3 style="margin:0 0 5px 0; color: #555;">Customer Details</h3>
@@ -678,7 +817,6 @@
                     <p style="margin:2px 0;"><strong>Printed On:</strong> <span id="printCurrentDate"></span></p>
                 </div>
             </div>
-
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
                 <thead>
                     <tr style="background-color: #f0f0f0;">
@@ -690,7 +828,6 @@
                 </thead>
                 <tbody id="printItemsBody"></tbody>
             </table>
-
             <div style="display: flex; justify-content: space-between; border-top: 1px solid #ccc; padding-top: 20px;">
                 <div style="width: 50%;">
                     <p style="margin:0 0 5px 0;"><strong>Notes:</strong></p>
@@ -702,7 +839,6 @@
                     <p style="margin:5px 0; font-size: 18px; font-weight: bold; border-top: 1px solid #000; padding-top: 5px;"><strong>Balance Due:</strong> ₹<span id="printBalance"></span></p>
                 </div>
             </div>
-            
             <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #888;">
                 <p>Thank you for your business!</p>
             </div>
@@ -712,26 +848,204 @@
     <input type="file" id="restoreFileInput" accept=".json" style="display: none;">
     <div id="toast" class="toast"><span id="toastMessage"></span></div>
 
-    <!-- ==================== UI JAVASCRIPT ==================== -->
+    <!-- ==================== SINGLE UI JAVASCRIPT BLOCK ==================== -->
     <script>
         // GLOBAL STATE FOR CLOUD
         window.appState = {
-            orders: [],
-            customers: [],
-            items: [],
-            prints: [],
+            orders: [], customers: [], items: [], prints: [], vendors: [],
             settings: { prefix: 'ORD', dateFormat: 'YYMMDD', counter: '3', lastNumber: 0 }
         };
 
         window.dbAPI = null;
+        window.customerOrdersData = [];
+        window.currentCustomerPhone = localStorage.getItem('customerPhone') || null;
         let unsavedChanges = false;
         let activeDropdown = null;
         let currentHighlightIndex = -1;
 
+        // View Navigators
+        window.showLanding = function() {
+            document.getElementById('landingScreen').style.display = 'flex';
+            document.getElementById('adminLoginScreen').style.display = 'none';
+            document.getElementById('customerLoginScreen').style.display = 'none';
+            document.getElementById('customerDashboardScreen').style.display = 'none';
+            document.getElementById('mainAppContainer').style.display = 'none';
+        };
+
+        window.showAdminLogin = function() {
+            document.getElementById('landingScreen').style.display = 'none';
+            document.getElementById('adminLoginScreen').style.display = 'flex';
+        };
+
+        window.showCustomerLogin = function() {
+            if (window.currentCustomerPhone) {
+                if (window.handleCustomerLogin) {
+                    window.handleCustomerLogin(null, window.currentCustomerPhone);
+                }
+            } else {
+                document.getElementById('landingScreen').style.display = 'none';
+                document.getElementById('customerLoginScreen').style.display = 'flex';
+            }
+        };
+
+        window.handleAdminLoginForm = function(e) {
+            e.preventDefault();
+            if (window.handleAdminLogin) { window.handleAdminLogin(e); }
+        }
+        
+        window.handleCustomerLoginForm = function(e) {
+            e.preventDefault();
+            if (window.handleCustomerLogin) { window.handleCustomerLogin(e); }
+        }
+
+        // --- CUSTOMER PORTAL LOGIC ---
+        window.setPortalFilter = function(filterName) {
+            window.currentPortalFilter = filterName;
+            
+            const buttons = document.querySelectorAll('.portal-filters .filter-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${filterName}'`)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.renderCustomerOrders();
+        };
+
+        window.toggleCustomerOrderDetails = function(orderId) {
+            const detailsDiv = document.getElementById(`details-${orderId}`);
+            const icon = document.getElementById(`icon-${orderId}`);
+            
+            if (detailsDiv.classList.contains('open')) {
+                detailsDiv.classList.remove('open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                detailsDiv.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        };
+
+        window.renderCustomerOrders = function() {
+            const container = document.getElementById('portalOrdersContainer');
+            let filtered = [];
+            
+            if (window.currentPortalFilter === 'All Pending') {
+                filtered = window.customerOrdersData.filter(o => ['Pending', 'In Progress', 'Ready to Deliver', 'Completed', 'Payment Pending', 'Delivered'].includes(o.status));
+            } else if (window.currentPortalFilter === 'Payment Pending') {
+                filtered = window.customerOrdersData.filter(o => ['Payment Pending', 'Delivered'].includes(o.status));
+            } else if (window.currentPortalFilter === 'Ready to Deliver') {
+                filtered = window.customerOrdersData.filter(o => ['Ready to Deliver', 'Completed'].includes(o.status));
+            } else {
+                filtered = window.customerOrdersData.filter(o => o.status === window.currentPortalFilter);
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="portal-card" style="padding: 40px; text-align: center; color: #888;"><i class="fas fa-box-open" style="font-size: 40px; margin-bottom: 10px; color: #ddd;"></i><p>No orders found in this category.</p></div>';
+                return;
+            }
+
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            container.innerHTML = filtered.map(order => {
+                const orderStatusClass = `bg-${(order.status || 'Pending').replace(/ /g, '-')}`;
+                const total = parseFloat(order.totalValue) || 0;
+                const paid = parseFloat(order.paidAmount) || 0;
+                const bal = total - paid;
+                
+                let financialHtml = '';
+                if (total > 0) {
+                    financialHtml = `
+                    <div class="portal-financials">
+                        <div style="color: #666;">Total: <strong style="color: var(--dark);">₹${total.toFixed(2)}</strong></div>
+                        <div>
+                            ${bal > 0 ? `<strong style="color: var(--danger);">₹${bal.toFixed(2)} Due</strong>` : `<strong style="color: var(--success);"><i class="fas fa-check-circle"></i> Paid in Full</strong>`}
+                        </div>
+                    </div>`;
+                } else {
+                    financialHtml = `<div class="portal-financials" style="justify-content: center; color: #888;"><i class="fas fa-info-circle" style="margin-right:5px;"></i> Amount to be calculated by admin.</div>`;
+                }
+                
+                const firstItem = order.items && order.items.length > 0 ? order.items[0] : null;
+                const firstItemImg = firstItem && firstItem.image ? 
+                    `<img src="${firstItem.image}" class="portal-card-thumb">` : 
+                    `<div class="portal-card-thumb-placeholder"><i class="fas fa-image"></i></div>`;
+                
+                const firstItemName = firstItem ? firstItem.name : 'Empty Order';
+                const moreItemsText = order.items && order.items.length > 1 ? `<span style="font-size: 12px; color: #888; font-weight: normal; margin-left: 5px;">(+${order.items.length - 1} more)</span>` : '';
+                
+                let fullItemsHtml = '';
+                if(order.items && order.items.length > 0) {
+                    fullItemsHtml = order.items.map(item => {
+                        const itemStatusClass = `bg-${(item.status || 'Pending').replace(/ /g, '-')}`;
+                        return `
+                        <div class="portal-item-row" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; width: 100%;">
+                                <p style="font-size: 14px; font-weight: bold; color: var(--dark);">${item.name} <span style="font-weight: normal; color: #888; font-size: 12px; margin-left: 5px;">x${item.qty}</span></p>
+                                <span class="status-badge ${itemStatusClass}">${item.status || 'Pending'}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                ${item.printType && item.printType !== 'None' ? `<span style="font-size: 10px; color: #999; text-transform: uppercase;"><i class="fas fa-print"></i> ${item.printType}</span>` : ''}
+                                ${item.material ? `<span style="font-size: 10px; color: #999; text-transform: uppercase;"><i class="fas fa-layer-group"></i> ${item.material}</span>` : ''}
+                                ${item.finishing ? `<span style="font-size: 10px; color: #999; text-transform: uppercase;"><i class="fas fa-paint-roller"></i> ${item.finishing}</span>` : ''}
+                            </div>
+                            ${item.description ? `<p style="font-size: 12px; color: #666; margin-top: 2px;">Note: ${item.description}</p>` : ''}
+                        </div>
+                        `;
+                    }).join('');
+                }
+
+                return `
+                <div class="portal-card">
+                    <div class="portal-card-header" onclick="window.toggleCustomerOrderDetails('${order.id}')">
+                        <div style="display: flex; gap: 15px; align-items: center; overflow: hidden;">
+                            ${firstItemImg}
+                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <div class="portal-card-title">${firstItemName} ${moreItemsText}</div>
+                                <div class="portal-card-date">#${order.orderId} • ${new Date(order.date).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                            <span class="status-badge ${orderStatusClass}" style="display: none;">${order.status}</span>
+                            <div style="width: 30px; height: 30px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chevron-down" id="icon-${order.id}" style="color: #999; transition: transform 0.3s;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="details-${order.id}" class="accordion-content">
+                        <div class="accordion-inner">
+                            <div style="margin-bottom: 15px;">
+                                <span class="status-badge ${orderStatusClass}">${order.status}</span>
+                            </div>
+                            <h4 style="font-size: 11px; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Items Included</h4>
+                            <div>${fullItemsHtml}</div>
+                            ${order.description ? `<p style="font-size: 12px; color: #666; background: white; padding: 10px; border-radius: 6px; border: 1px solid var(--border); margin-top: 15px;"><i class="fas fa-sticky-note" style="margin-right: 5px;"></i> ${order.description}</p>` : ''}
+                            ${financialHtml}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            if(window.innerWidth > 600) {
+                 document.querySelectorAll('.portal-card-header .status-badge').forEach(b => b.style.display = 'inline-block');
+            }
+        };
+
+        window.customerLogout = function() {
+            localStorage.removeItem('customerPhone');
+            window.currentCustomerPhone = null;
+            window.customerOrdersData = [];
+            document.getElementById('customerPhoneInput').value = '';
+            window.showLanding();
+        };
+
+        // --- ADMIN APP LOGIC ---
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             setupKeyboardShortcuts();
-            showPage('dashboard');
         });
 
         window.refreshCurrentView = function() {
@@ -739,34 +1053,33 @@
             if (activePage === 'dashboard') {
                 const searchVal = document.getElementById('dashSearchInput').value;
                 if(searchVal) window.handleDashSearch(searchVal);
-                else loadDashboard();
+                else window.loadDashboard();
             }
-            if (activePage === 'orders') loadOrdersList();
-            if (activePage === 'customers') loadCustomersList();
-            if (activePage === 'masters') { loadItemsList(); loadPrintsList(); }
-            if (activePage === 'settings') window.loadSettings();
+            if (activePage === 'orders') window.loadOrdersList();
+            if (activePage === 'customers') window.loadCustomersList();
+            if (activePage === 'masters') { window.loadItemsList(); window.loadPrintsList(); window.loadVendorsList(); }
+            if (activePage === 'settings' && window.loadSettings) window.loadSettings();
         };
 
         function setupKeyboardShortcuts() {
             document.addEventListener('keydown', function(e) {
+                if (document.getElementById('mainAppContainer').style.display === 'none') return;
                 if (e.ctrlKey && !e.shiftKey) {
                     switch(e.key.toLowerCase()) {
-                        case 'd': e.preventDefault(); showPage('dashboard'); break;
-                        case 'o': e.preventDefault(); showPage('orders'); break;
-                        case 'u': e.preventDefault(); showPage('customers'); break; 
-                        case 'm': e.preventDefault(); showPage('masters'); break;
-                        case 'r': e.preventDefault(); showPage('reports'); break;
-                        case 's': e.preventDefault(); if (document.getElementById('orderModal').style.display === 'block') { window.saveOrder(); } else { showPage('settings'); } break;
+                        case 'd': e.preventDefault(); window.showPage('dashboard'); break;
+                        case 'o': e.preventDefault(); window.showPage('orders'); break;
+                        case 'u': e.preventDefault(); window.showPage('customers'); break; 
+                        case 'm': e.preventDefault(); window.showPage('masters'); break;
+                        case 'r': e.preventDefault(); window.showPage('reports'); break;
+                        case 's': e.preventDefault(); if (document.getElementById('orderModal').style.display === 'block') { window.saveOrder(); } else { window.showPage('settings'); } break;
                         case 'n': e.preventDefault(); window.openOrderModal(); break;
-                        case 'i': e.preventDefault(); if (document.getElementById('orderModal').style.display === 'block') addItemRow(); break;
+                        case 'i': e.preventDefault(); if (document.getElementById('orderModal').style.display === 'block') window.addItemRow(); break;
                         case 'b': e.preventDefault(); window.performBackup(); break;
                     }
                 }
-                if (e.ctrlKey && e.shiftKey) {
-                    if(e.key.toLowerCase() === 'c') { e.preventDefault(); window.showCustomerModal(); }
-                }
-                if (e.key === 'F5') { e.preventDefault(); if (document.getElementById('dashboardPage').style.display !== 'none') loadDashboard(); }
-                if (e.key === 'Escape') { closeAllDropdowns(); window.closeModal('orderModal'); window.closeModal('orderDetailModal'); window.closeModal('customerModal'); window.closeModal('itemModal'); window.closeModal('printModal'); window.closeModal('imageViewerModal'); }
+                if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') { e.preventDefault(); window.showCustomerModal(); }
+                if (e.key === 'F5') { e.preventDefault(); if (document.getElementById('dashboardPage').style.display !== 'none') window.loadDashboard(); }
+                if (e.key === 'Escape') { closeAllDropdowns(); window.closeModal('orderModal'); window.closeModal('orderDetailModal'); window.closeModal('customerModal'); window.closeModal('itemModal'); window.closeModal('printModal'); window.closeModal('vendorModal'); window.closeModal('imageViewerModal'); }
             });
         }
 
@@ -816,7 +1129,7 @@
 
         window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
 
-        function showPage(page) {
+        window.showPage = function(page) {
             if (unsavedChanges && page !== 'orders') {
                 if (!confirm('You have unsaved changes. Are you sure you want to leave?')) return;
                 unsavedChanges = false;
@@ -832,7 +1145,7 @@
             
             window.refreshCurrentView();
             if (page === 'reports') loadReportsData();
-        }
+        };
 
         function markUnsaved() {
             unsavedChanges = true;
@@ -844,7 +1157,6 @@
             document.getElementById('orderModal').style.display = 'block';
         };
 
-        // --- Dashboard Search Logic ---
         window.handleDashSearch = function(val) {
             const searchTerm = val.toLowerCase().trim();
             const resultsContainer = document.getElementById('dashSearchResults');
@@ -859,6 +1171,7 @@
             
             defaultDash.style.display = 'none';
             resultsContainer.style.display = 'block';
+            document.getElementById('dashSearchResultsTitle').innerHTML = `<i class="fas fa-search"></i> Search Results`;
             
             const matchedCustomers = appState.customers.filter(c => 
                 c.name.toLowerCase().includes(searchTerm) || 
@@ -872,7 +1185,6 @@
                 o.orderId.toLowerCase().includes(searchTerm)
             );
             
-            // Sort: Pending first, then completed, then by date descending
             filteredOrders.sort((a, b) => {
                 const aActive = ['Pending', 'In Progress'].includes(a.status);
                 const bActive = ['Pending', 'In Progress'].includes(b.status);
@@ -896,7 +1208,88 @@
                         <td>${formatDate(order.date)}</td>
                         <td>${customer.name}</td>
                         <td>${itemsListHtml}</td>
-                        <td><span class="status-badge status-${order.status.replace(/ /g, '-')}">${order.status}</span></td>
+                        <td>
+                            <select class="status-select status-${order.status.replace(/ /g, '-')}" onchange="window.updateOrderStatus('${order.id}', this)">
+                                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Ready to Deliver" ${order.status === 'Ready to Deliver' ? 'selected' : ''}>Ready to Deliver</option>
+                                <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Payment Pending" ${order.status === 'Payment Pending' ? 'selected' : ''}>Payment Pending</option>
+                                <option value="Paid" ${order.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn-icon" onclick="window.showOrderDetails('order', '${order.id}')" title="View Details"><i class="fas fa-eye"></i></button>
+                            <button class="btn-icon" onclick="window.editOrder('${order.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.filterDashboardByStatus = function(statusStr) {
+            const resultsContainer = document.getElementById('dashSearchResults');
+            const defaultDash = document.getElementById('defaultDashboardContent');
+            const tbody = document.getElementById('dashSearchBody');
+            
+            defaultDash.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            let filteredOrders = [...appState.orders];
+            
+            if (statusStr === 'Overdue') {
+                filteredOrders = filteredOrders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed', 'Ready to Deliver'].includes(o.status));
+                document.getElementById('dashSearchResultsTitle').innerHTML = `<i class="fas fa-exclamation-triangle"></i> Overdue Orders`;
+            } else if (statusStr === 'Payment Pending') {
+                filteredOrders = filteredOrders.filter(o => o.status === 'Payment Pending' || o.status === 'Delivered');
+                document.getElementById('dashSearchResultsTitle').innerHTML = `<i class="fas fa-credit-card"></i> Payment Pending & Delivered`;
+            } else if (statusStr === 'Ready to Deliver') {
+                filteredOrders = filteredOrders.filter(o => o.status === 'Ready to Deliver' || o.status === 'Completed');
+                document.getElementById('dashSearchResultsTitle').innerHTML = `<i class="fas fa-check-circle"></i> Ready to Deliver & Completed`;
+            } else if (statusStr !== 'All') {
+                filteredOrders = filteredOrders.filter(o => o.status === statusStr);
+                document.getElementById('dashSearchResultsTitle').innerHTML = `<i class="fas fa-filter"></i> ${statusStr} Orders`;
+            } else {
+                document.getElementById('dashSearchResultsTitle').innerHTML = `<i class="fas fa-list"></i> All Orders`;
+            }
+            
+            filteredOrders.sort((a, b) => {
+                const aActive = ['Pending', 'In Progress'].includes(a.status);
+                const bActive = ['Pending', 'In Progress'].includes(b.status);
+                if (aActive && !bActive) return -1;
+                if (!aActive && bActive) return 1;
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #666;">No matching orders found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredOrders.map(order => {
+                const customer = appState.customers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown' };
+                const itemsListHtml = order.items?.map(i => `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block; white-space: nowrap;">${i.name}</span>`).join('') || '<span style="color:#999;font-size:12px;">No items</span>';
+
+                return `
+                    <tr>
+                        <td><strong>${order.orderId}</strong></td>
+                        <td>${formatDate(order.date)}</td>
+                        <td>${customer.name}</td>
+                        <td>${itemsListHtml}</td>
+                        <td>
+                            <select class="status-select status-${order.status.replace(/ /g, '-')}" onchange="window.updateOrderStatus('${order.id}', this)">
+                                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Ready to Deliver" ${order.status === 'Ready to Deliver' ? 'selected' : ''}>Ready to Deliver</option>
+                                <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Payment Pending" ${order.status === 'Payment Pending' ? 'selected' : ''}>Payment Pending</option>
+                                <option value="Paid" ${order.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
                         <td>
                             <button class="btn-icon" onclick="window.showOrderDetails('order', '${order.id}')" title="View Details"><i class="fas fa-eye"></i></button>
                             <button class="btn-icon" onclick="window.editOrder('${order.id}')" title="Edit"><i class="fas fa-edit"></i></button>
@@ -912,48 +1305,47 @@
             document.getElementById('defaultDashboardContent').style.display = 'block';
         };
 
-        function loadDashboard() {
+        window.loadDashboard = function() {
             const orders = appState.orders;
             const total = orders.length;
             const pending = orders.filter(o => o.status === 'Pending' || o.status === 'In Progress').length;
-            const overdue = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed'].includes(o.status)).length;
-            const paymentPending = orders.filter(o => o.status === 'Payment Pending').length;
-            const completed = orders.filter(o => ['Completed', 'Delivered', 'Paid'].includes(o.status)).length;
+            const overdue = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed', 'Ready to Deliver'].includes(o.status)).length;
+            const paymentPending = orders.filter(o => o.status === 'Payment Pending' || o.status === 'Delivered').length;
+            const readyToDeliverCount = orders.filter(o => o.status === 'Ready to Deliver' || o.status === 'Completed').length;
             
             document.getElementById('statsContainer').innerHTML = `
-                <div class="stat-card" onclick="showPage('orders')">
+                <div class="stat-card" onclick="window.filterDashboardByStatus('All')">
                     <div class="stat-icon total"><i class="fas fa-shopping-bag"></i></div>
                     <div class="stat-details"><h3>Total Orders</h3><p>${total}</p></div>
                 </div>
-                <div class="stat-card" onclick="window.showOrderDetails('pending')">
+                <div class="stat-card" onclick="window.filterDashboardByStatus('Pending')">
                     <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
                     <div class="stat-details"><h3>Pending</h3><p>${pending}</p></div>
                 </div>
-                <div class="stat-card" onclick="window.showOrderDetails('overdue')">
+                <div class="stat-card" onclick="window.filterDashboardByStatus('Overdue')">
                     <div class="stat-icon overdue"><i class="fas fa-exclamation-triangle"></i></div>
                     <div class="stat-details"><h3>Overdue</h3><p>${overdue}</p></div>
                 </div>
-                <div class="stat-card" onclick="window.showOrderDetails('payment')">
+                <div class="stat-card" onclick="window.filterDashboardByStatus('Payment Pending')">
                     <div class="stat-icon payment"><i class="fas fa-credit-card"></i></div>
-                    <div class="stat-details"><h3>Payment Pending</h3><p>${paymentPending}</p></div>
+                    <div class="stat-details"><h3>Payment Pending / Delivered</h3><p>${paymentPending}</p></div>
                 </div>
-                <div class="stat-card" onclick="window.showOrderDetails('completed')">
+                <div class="stat-card" onclick="window.filterDashboardByStatus('Ready to Deliver')">
                     <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-details"><h3>Completed</h3><p>${completed}</p></div>
+                    <div class="stat-details"><h3>Ready to Deliver / Completed</h3><p>${readyToDeliverCount}</p></div>
                 </div>
             `;
-            loadPendingItems();
-        }
+            window.loadPendingItems();
+        };
 
-        function loadPendingItems() {
+        window.loadPendingItems = function() {
             const orders = appState.orders;
             const customers = appState.customers;
             const tbody = document.getElementById('pendingItemsBody');
             
-            // Collect all pending items into an array
             let pendingItemsList = [];
             orders.forEach(order => {
-                if (order.status === 'Delivered' || order.status === 'Completed' || order.status === 'Paid') return; // Skip finished orders
+                if (order.status === 'Delivered' || order.status === 'Ready to Deliver' || order.status === 'Completed' || order.status === 'Paid') return; 
                 if (!order.items) return;
                 
                 const customer = customers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown' };
@@ -965,11 +1357,10 @@
                 });
             });
             
-            // Sort by order date or due date
             pendingItemsList.sort((a, b) => {
                 const aDue = a.order.dueDate ? new Date(a.order.dueDate) : new Date(8640000000000000);
                 const bDue = b.order.dueDate ? new Date(b.order.dueDate) : new Date(8640000000000000);
-                return aDue - bDue; // Overdue/Earliest first
+                return aDue - bDue; 
             });
 
             if (pendingItemsList.length === 0) {
@@ -1004,25 +1395,29 @@
                     </tr>
                 `;
             }).join('');
-        }
+        };
 
-        // --- Auto-Calculate Order Status Logic ---
         function calculateNewOrderStatus(order) {
-            if (!order.items || order.items.length === 0) return order.status;
-            if (order.status === 'Paid') return 'Paid'; // Let financial override stay
-
-            const nonCancelled = order.items.filter(i => i.status !== 'Cancelled');
-            if (nonCancelled.length === 0) return 'Cancelled';
+            const nonCancelled = (order.items || []).filter(i => i.status !== 'Cancelled');
+            if (nonCancelled.length === 0 && order.items?.length > 0) return 'Cancelled';
+            if (!order.items || order.items.length === 0) return 'Pending';
 
             const allDelivered = nonCancelled.every(i => i.status === 'Delivered');
             const allCompleted = nonCancelled.every(i => i.status === 'Completed' || i.status === 'Delivered');
+            const anyStarted = nonCancelled.some(i => i.status === 'In Progress' || i.status === 'Completed' || i.status === 'Delivered');
             
-            if (allDelivered) return 'Delivered';
-            if (allCompleted) return 'Completed';
+            const total = parseFloat(order.totalValue) || 0;
+            const paid = parseFloat(order.paidAmount) || 0;
+            const balance = total - paid;
+
+            if (allDelivered) {
+                if (balance > 0) return 'Payment Pending';
+                return 'Paid';
+            }
             
-            // If any item is in progress or completed, order is in progress
-            const anyStarted = nonCancelled.some(i => i.status === 'In Progress' || i.status === 'Completed');
+            if (allCompleted) return 'Ready to Deliver';
             if (anyStarted) return 'In Progress'; 
+            
             return 'Pending';
         }
 
@@ -1033,15 +1428,13 @@
                 const newStatus = selectObj.value;
                 order.status = newStatus;
                 order.updatedAt = new Date().toISOString();
-                
                 try {
                     await window.dbAPI.saveOrder(order);
                     selectObj.className = selectObj.className.replace(/status-[^\s]+/g, '');
                     selectObj.classList.add('status-' + newStatus.replace(/ /g, '-'));
                     showToast('Order status updated!', 'success');
-                } catch(e) {
-                    alert("Failed to update status: " + e.message);
-                }
+                    setTimeout(() => window.refreshCurrentView(), 400);
+                } catch(e) { alert("Failed to update status: " + e.message); }
             }
         };
 
@@ -1055,20 +1448,12 @@
                 selectObj.className = selectObj.className.replace(/status-[^\s]+/g, '');
                 selectObj.classList.add('status-' + newItemStatus.replace(/ /g, '-'));
                 
-                // Auto status update logic
-                const nonCancelled = order.items.filter(i => i.status !== 'Cancelled');
+                const newOrderStatus = calculateNewOrderStatus(order);
                 let autoUpdated = false;
-                if (nonCancelled.length > 0) {
-                    const allDelivered = nonCancelled.every(i => i.status === 'Delivered');
-                    const allCompleted = nonCancelled.every(i => i.status === 'Completed' || i.status === 'Delivered');
-                    
-                    if (allDelivered && order.status !== 'Delivered' && order.status !== 'Paid') {
-                        order.status = 'Delivered';
-                        autoUpdated = true;
-                    } else if (allCompleted && order.status === 'Pending') {
-                        order.status = 'Completed';
-                        autoUpdated = true;
-                    }
+                
+                if (order.status !== newOrderStatus) {
+                    order.status = newOrderStatus;
+                    autoUpdated = true;
                 }
                 
                 order.updatedAt = new Date().toISOString();
@@ -1081,10 +1466,49 @@
                     } else {
                         showToast('Item status updated!', 'success');
                     }
-                } catch(e) {
-                    alert("Failed to update item: " + e.message);
-                }
+                } catch(e) { alert("Failed to update item: " + e.message); }
             }
+        };
+
+        window.sendVendorEmail = function(btn) {
+            const row = btn.closest('.item-row-card'); 
+            const vendorEmail = row.querySelector('.item-vendor').value;
+            
+            if (!vendorEmail) {
+                alert("Please select a vendor from the dropdown to send an email!");
+                return;
+            }
+
+            const itemName = row.querySelector('.item-search').value || 'Item';
+            const qty = row.querySelector('.item-qty').value || '1';
+            const printType = row.querySelector('.print-search').value || 'N/A';
+            const material = row.querySelector('.item-material').value || 'N/A';
+            const finishing = row.querySelector('.item-finishing').value || 'N/A';
+            const notes = row.querySelector('.item-desc').value || 'None';
+            const orderId = document.getElementById('orderIdDisplay').value || 'New Order';
+
+            const subjectTemplate = window.appState.settings.vendorEmailSubject || 'New Print Order - {order_id} - {item_name}';
+            const bodyTemplate = window.appState.settings.vendorEmailBody || 'Please find the order details below:\n\nOrder ID: {order_id}\nItem: {item_name}\nQuantity: {qty}\nPrint Type: {print_type}\nMaterial: {material}\nFinishing: {finishing}\nNotes: {notes}\n\nPlease find the print file attached.\n\nRegards,\nAdmin';
+            
+            let subject = subjectTemplate
+                .replace(/{order_id}/g, orderId)
+                .replace(/{item_name}/g, itemName);
+                
+            let body = bodyTemplate
+                .replace(/{order_id}/g, orderId)
+                .replace(/{item_name}/g, itemName)
+                .replace(/{qty}/g, qty)
+                .replace(/{print_type}/g, printType)
+                .replace(/{material}/g, material)
+                .replace(/{finishing}/g, finishing)
+                .replace(/{notes}/g, notes);
+
+            window.location.href = `mailto:${vendorEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            row.querySelector('.item-email-sent').value = 'true';
+            row.querySelector('.email-status-badge').style.display = 'inline-block';
+            btn.innerHTML = '<i class="fas fa-envelope"></i> Send Again';
+            markUnsaved();
         };
 
         window.viewFullImage = function(src) {
@@ -1102,9 +1526,9 @@
                 orders = [...appState.orders];
                 switch(type) {
                     case 'pending': orders = orders.filter(o => o.status === 'Pending' || o.status === 'In Progress'); break;
-                    case 'overdue': orders = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed'].includes(o.status)); break;
-                    case 'payment': orders = orders.filter(o => o.status === 'Payment Pending'); break;
-                    case 'completed': orders = orders.filter(o => ['Completed', 'Delivered', 'Paid'].includes(o.status)); break;
+                    case 'overdue': orders = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed', 'Ready to Deliver'].includes(o.status)); break;
+                    case 'payment': orders = orders.filter(o => o.status === 'Payment Pending' || o.status === 'Delivered'); break;
+                    case 'completed': orders = orders.filter(o => ['Completed', 'Delivered', 'Paid', 'Ready to Deliver'].includes(o.status)); break;
                 }
             }
             
@@ -1123,21 +1547,26 @@
                         <div class="table-responsive">
                         <table>
                             <thead>
-                                <tr><th>Item</th><th>Image</th><th>Print</th><th>Qty</th><th>Description</th><th>Status</th></tr>
+                                <tr><th>Item</th><th>Image</th><th>Details</th><th>Qty</th><th>Notes</th><th>Status</th></tr>
                             </thead>
                             <tbody>
                 `;
                 
                 order.items?.forEach((item, index) => {
                     const imgHtml = item.image ? 
-                        `<img src="${item.image}" style="max-width:50px; max-height:50px; cursor:pointer; border-radius:4px; border:1px solid #ddd;" onclick="window.viewFullImage('${item.image}')" alt="Item Image">` : 
+                        `<img src="${item.image}" style="max-width:50px; max-height:50px; cursor:pointer; border-radius:4px; border:1px solid #ddd;" onclick="window.viewFullImage('${item.image}')" alt="Image">` : 
                         '<span style="color:#999;font-size:12px;">No Image</span>';
                     
+                    let detailsHtml = `${item.printType || 'None'}`;
+                    if (item.material) detailsHtml += `<br><small style="color:#666;">Mat: ${item.material}</small>`;
+                    if (item.finishing) detailsHtml += `<br><small style="color:#666;">Fin: ${item.finishing}</small>`;
+                    if (item.emailSent) detailsHtml += `<br><span style="color:var(--success); font-size:10px; font-weight:bold;"><i class="fas fa-check"></i> Vendor Mailed</span>`;
+
                     html += `
                         <tr>
-                            <td>${item.name}</td>
+                            <td><strong>${item.name}</strong></td>
                             <td>${imgHtml}</td>
-                            <td>${item.printType || 'None'}</td>
+                            <td>${detailsHtml}</td>
                             <td>${item.qty}</td>
                             <td>${item.description || ''}</td>
                             <td>
@@ -1182,9 +1611,7 @@
                 `;
             });
             
-            if (orders.length === 0) {
-                html = '<p style="text-align: center; padding: 40px;">No orders found</p>';
-            }
+            if (orders.length === 0) { html = '<p style="text-align: center; padding: 40px;">No orders found</p>'; }
             
             let modalTitle = 'Order Details';
             if (!orderId) {
@@ -1204,9 +1631,9 @@
         };
 
         window.updateOrderIdPreview = function() {
-            const prefix = document.getElementById('orderIdPrefix').value;
-            const dateFormat = document.getElementById('orderIdDateFormat').value;
-            const counter = document.getElementById('orderIdCounter').value;
+            const prefix = document.getElementById('orderIdPrefix').value || 'ORD';
+            const dateFormat = document.getElementById('orderIdDateFormat').value || 'YYMMDD';
+            const counter = document.getElementById('orderIdCounter').value || '3';
             const date = new Date();
             let dateStr = '';
             switch(dateFormat) {
@@ -1218,8 +1645,37 @@
             }
             let lastNum = parseInt(appState.settings.lastNumber || 0);
             let counterStr = (lastNum + 1).toString().padStart(parseInt(counter || 3), '0');
-            document.getElementById('orderIdPreview').textContent = `${prefix || 'ORD'}${dateStr}${counterStr}`;
+            document.getElementById('orderIdPreview').textContent = `${prefix}${dateStr}${counterStr}`;
         }
+
+        window.loadSettings = function() {
+            document.getElementById('orderIdPrefix').value = appState.settings.prefix || 'ORD';
+            document.getElementById('orderIdDateFormat').value = appState.settings.dateFormat || 'YYMMDD';
+            document.getElementById('orderIdCounter').value = appState.settings.counter || '3';
+            
+            document.getElementById('vendorEmailSubject').value = appState.settings.vendorEmailSubject || 'New Print Order - {order_id} - {item_name}';
+            document.getElementById('vendorEmailBody').value = appState.settings.vendorEmailBody || 'Please find the order details below:\n\nOrder ID: {order_id}\nItem: {item_name}\nQuantity: {qty}\nPrint Type: {print_type}\nMaterial: {material}\nFinishing: {finishing}\nNotes: {notes}\n\nPlease find the print file attached.\n\nRegards,\nAdmin';
+            
+            window.updateOrderIdPreview();
+        }
+
+        window.saveAdminSettings = async function() {
+            if(!window.dbAPI) return;
+            
+            // Safely update appState.settings
+            appState.settings.prefix = document.getElementById('orderIdPrefix').value;
+            appState.settings.dateFormat = document.getElementById('orderIdDateFormat').value;
+            appState.settings.counter = document.getElementById('orderIdCounter').value;
+            appState.settings.vendorEmailSubject = document.getElementById('vendorEmailSubject').value;
+            appState.settings.vendorEmailBody = document.getElementById('vendorEmailBody').value;
+            // Preserving lastNumber!
+            appState.settings.lastNumber = parseInt(appState.settings.lastNumber) || 0;
+
+            try {
+                await window.dbAPI.saveSettings(appState.settings);
+                showToast('Settings saved to Cloud!', 'success');
+            } catch(e) { alert("Failed to save settings: " + e.message); }
+        };
 
         function generateOrderId() {
             const date = new Date();
@@ -1248,8 +1704,13 @@
             document.getElementById('deleteOrderBtn').style.display = 'none';
             document.getElementById('orderFormTitle').textContent = 'Create New Order';
             document.getElementById('itemsContainer').innerHTML = '';
+            
+            const mainSelect = document.getElementById('orderStatus');
+            mainSelect.value = 'Pending';
+            mainSelect.disabled = true;
+
             setupCustomerSearch();
-            addItemRow();
+            window.addItemRow();
             unsavedChanges = false;
             document.getElementById('unsavedWarning').style.display = 'none';
         }
@@ -1291,37 +1752,46 @@
             markUnsaved();
         };
 
-        function addItemRow() {
+        window.addItemRow = function() {
             const container = document.getElementById('itemsContainer');
             const row = document.createElement('div');
-            row.className = 'item-row-single';
+            row.className = 'item-row-card';
+            
+            // Generate Vendor Dropdown Options dynamically
+            let vendorOptions = '<option value="">Select Vendor...</option>';
+            if(appState.vendors) {
+                appState.vendors.forEach(v => {
+                    vendorOptions += `<option value="${v.email}">${v.name}</option>`;
+                });
+            }
+
             row.innerHTML = `
-                <div class="item-fields-single">
-                    <div>
-                        <div class="field-label">Item Name</div>
+                <div class="item-row-header">
+                    <strong style="color: var(--primary);">Item Details</strong>
+                    <button type="button" class="btn-icon" onclick="window.removeItemRow(this)" style="color: var(--danger);"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Item Name</label>
                         <div class="searchable-select">
                             <input type="text" class="form-control item-search" placeholder="Search item...">
                             <div class="dropdown item-dropdown"></div>
                         </div>
                     </div>
-                    <div>
-                        <div class="field-label">Description</div>
-                        <input type="text" class="form-control item-desc" placeholder="Notes/Specs...">
-                    </div>
-                    <div>
-                        <div class="field-label">Qty</div>
+                    <div class="form-group" style="max-width: 100px;">
+                        <label>Qty</label>
                         <input type="number" class="form-control item-qty" value="1" min="1">
                     </div>
-                    <div>
-                        <div class="field-label">Print Type</div>
+                    <div class="form-group">
+                        <label>Print Type</label>
                         <div class="searchable-select">
                             <input type="text" class="form-control print-search" placeholder="Search print...">
                             <div class="dropdown print-dropdown"></div>
                         </div>
                     </div>
-                    <div>
-                        <div class="field-label">Status</div>
-                        <select class="item-status-select status-select status-Pending" style="width:100%; padding:10px;">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="item-status-select form-control status-Pending">
                             <option value="Pending">Pending</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Completed">Completed</option>
@@ -1329,24 +1799,48 @@
                             <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
-                    <div style="text-align: center;">
-                        <div class="field-label">Image</div>
-                        <button type="button" class="btn-icon item-image-upload" onclick="window.uploadItemImage(this)" title="Upload Image" style="background:#f0f0f0;"><i class="fas fa-camera"></i></button>
-                        <input type="file" class="item-image-input" accept="image/*" style="display: none;">
-                        <div class="image-preview-container" style="display:none; position:relative; margin:auto; width:40px;">
-                            <img class="item-image-preview" src="#" alt="Img" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); cursor:pointer;" onclick="window.viewFullImage(this.src)">
-                            <div onclick="window.removeImage(this)" style="position:absolute; top:-6px; right:-6px; background:var(--danger); color:white; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer;" title="Remove"><i class="fas fa-times"></i></div>
-                        </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Material</label>
+                        <input type="text" class="form-control item-material" placeholder="e.g. 300GSM Glossy">
                     </div>
-                    <div style="text-align: center;">
-                        <div class="field-label">Delete</div>
-                        <button type="button" class="btn-icon" onclick="window.removeItemRow(this)" style="color: var(--danger);"><i class="fas fa-trash"></i></button>
+                    <div class="form-group">
+                        <label>Finishing</label>
+                        <input type="text" class="form-control item-finishing" placeholder="e.g. Matte Lamination">
+                    </div>
+                    <div class="form-group">
+                        <label>Vendor</label>
+                        <select class="form-control item-vendor">
+                            ${vendorOptions}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row align-bottom">
+                    <div class="form-group" style="flex: 2;">
+                        <label>Description / Notes</label>
+                        <input type="text" class="form-control item-desc" placeholder="Notes/Specs...">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items: flex-end; gap: 10px; flex-direction: row; justify-content: flex-start;">
+                        <button type="button" class="btn-info item-email-btn" onclick="window.sendVendorEmail(this)">
+                            <i class="fas fa-envelope"></i> Email Vendor
+                        </button>
+                        <span class="email-status-badge" style="display:none; padding: 12px 15px; background: #e8f5e9; color: #2e7d32; border-radius: 8px; font-size: 14px; font-weight: bold; border: 1px solid #c8e6c9;"><i class="fas fa-check-circle"></i> Sent</span>
+                        <input type="hidden" class="item-email-sent" value="false">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; text-align: left;">
+                    <div class="field-label" style="font-weight: bold; margin-bottom: 5px;">Item Design / Image</div>
+                    <button type="button" class="btn-outline item-image-upload" onclick="window.uploadItemImage(this)" title="Upload Image"><i class="fas fa-camera mr-2"></i> Attach Image</button>
+                    <input type="file" class="item-image-input" accept="image/*" style="display: none;">
+                    <div class="image-preview-container" style="display:none; position:relative; width:80px;">
+                        <img class="item-image-preview" src="#" alt="Img" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); cursor:pointer;" onclick="window.viewFullImage(this.src)">
+                        <div onclick="window.removeImage(this)" style="position:absolute; top:-8px; right:-8px; background:var(--danger); color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" title="Remove"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
             `;
             container.appendChild(row);
             
-            // Hook up item status change to auto-update main Order Status
             row.querySelector('.item-status-select').addEventListener('change', function() {
                 this.className = this.className.replace(/status-[^\s]+/g, '');
                 this.classList.add('status-' + this.value.replace(/ /g, '-'));
@@ -1361,7 +1855,7 @@
                     if (allDelivered && mainSelect.value !== 'Paid') {
                         mainSelect.value = 'Delivered';
                     } else if (allCompleted && mainSelect.value !== 'Paid' && mainSelect.value !== 'Delivered') {
-                        mainSelect.value = 'Completed';
+                        mainSelect.value = 'Ready to Deliver';
                     }
                 }
             });
@@ -1405,14 +1899,14 @@
         }
 
         window.selectItem = function(element, itemName) {
-            const row = element.closest('.item-row-single');
+            const row = element.closest('.item-row-card');
             row.querySelector('.item-search').value = itemName;
             element.closest('.dropdown').classList.remove('show');
             markUnsaved();
         };
 
         window.selectPrint = function(element, printName) {
-            const row = element.closest('.item-row-single');
+            const row = element.closest('.item-row-card');
             row.querySelector('.print-search').value = printName;
             element.closest('.dropdown').classList.remove('show');
             markUnsaved();
@@ -1423,14 +1917,12 @@
             const item = { id: Date.now().toString(), name: itemName };
             try {
                 await window.dbAPI.saveItem(item);
-                const row = element.closest('.item-row-single');
+                const row = element.closest('.item-row-card');
                 row.querySelector('.item-search').value = itemName;
                 element.closest('.dropdown').classList.remove('show');
                 showToast(`Added "${itemName}" to Cloud`, 'success');
                 markUnsaved();
-            } catch (e) {
-                alert("Failed to add item: " + e.message);
-            }
+            } catch (e) { alert("Failed to add item: " + e.message); }
         };
 
         window.addNewPrintFromSearch = async function(printName, element) {
@@ -1438,18 +1930,16 @@
             const print = { id: Date.now().toString(), name: printName };
             try {
                 await window.dbAPI.savePrint(print);
-                const row = element.closest('.item-row-single');
+                const row = element.closest('.item-row-card');
                 row.querySelector('.print-search').value = printName;
                 element.closest('.dropdown').classList.remove('show');
                 showToast(`Added "${printName}" to Cloud`, 'success');
                 markUnsaved();
-            } catch (e) {
-                alert("Failed to add print type: " + e.message);
-            }
+            } catch (e) { alert("Failed to add print type: " + e.message); }
         };
 
         window.removeItemRow = function(button) {
-            if (confirm('Remove this item?')) { button.closest('.item-row-single').remove(); markUnsaved(); }
+            if (confirm('Remove this item?')) { button.closest('.item-row-card').remove(); markUnsaved(); }
         };
 
         window.uploadItemImage = function(btn) {
@@ -1465,7 +1955,7 @@
                         const img = new Image();
                         img.onload = function() {
                             const canvas = document.createElement('canvas');
-                            const MAX_SIZE = 800; // Increased max size for better quality in DB
+                            const MAX_SIZE = 800; 
                             let width = img.width;
                             let height = img.height;
                             if (width > height) {
@@ -1479,7 +1969,7 @@
                             ctx.fillStyle = '#FFFFFF';
                             ctx.fillRect(0, 0, width, height);
                             ctx.drawImage(img, 0, 0, width, height);
-                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8); // Higher quality
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
                             const container = parent.querySelector('.image-preview-container');
                             const preview = container.querySelector('.item-image-preview');
@@ -1521,12 +2011,7 @@
             if (!customerId && customerSearchName) {
                 customerId = Date.now().toString();
                 const newCustomer = {
-                    id: customerId,
-                    name: customerSearchName,
-                    contactPerson: '',
-                    phone: '',
-                    address: '',
-                    regular: false
+                    id: customerId, name: customerSearchName, contactPerson: '', phone: '', address: '', regular: false
                 };
                 try {
                     await window.dbAPI.saveCustomer(newCustomer);
@@ -1542,7 +2027,7 @@
             }
             
             const items = [];
-            document.querySelectorAll('.item-row-single').forEach((row, index) => {
+            document.querySelectorAll('.item-row-card').forEach((row, index) => {
                 const itemName = row.querySelector('.item-search')?.value;
                 if (itemName) {
                     let imageSrc = '';
@@ -1554,6 +2039,10 @@
                         id: index, name: itemName,
                         qty: parseInt(row.querySelector('.item-qty')?.value) || 1,
                         printType: row.querySelector('.print-search')?.value || '',
+                        material: row.querySelector('.item-material')?.value || '',
+                        finishing: row.querySelector('.item-finishing')?.value || '',
+                        vendor: row.querySelector('.item-vendor')?.value || '',
+                        emailSent: row.querySelector('.item-email-sent')?.value === 'true',
                         description: row.querySelector('.item-desc')?.value || '',
                         status: row.querySelector('.item-status-select')?.value || 'Pending',
                         image: imageSrc
@@ -1561,10 +2050,7 @@
                 }
             });
             
-            if (items.length === 0) { 
-                alert('Please add at least one item'); 
-                return; 
-            }
+            if (items.length === 0) { alert('Please add at least one item'); return; }
             
             const customer = appState.customers.find(c => c.id.toString() === customerId.toString()) || { name: customerSearchName };
             const isNew = !document.getElementById('orderId').value;
@@ -1585,7 +2071,6 @@
                 updatedAt: new Date().toISOString()
             };
             
-            // Re-calculate order status in case it was left out of sync, unless user manually set to Paid/Delivered
             if (order.status !== 'Paid' && order.status !== 'Delivered') {
                 order.status = calculateNewOrderStatus(order);
             }
@@ -1593,7 +2078,7 @@
             try {
                 if (isNew) {
                     order.createdAt = new Date().toISOString();
-                    appState.settings.lastNumber = (parseInt(appState.settings.lastNumber || 0) + 1);
+                    appState.settings.lastNumber = (parseInt(appState.settings.lastNumber) || 0) + 1;
                     await window.dbAPI.saveSettings(appState.settings);
                 }
                 
@@ -1622,6 +2107,7 @@
             document.getElementById('orderPaid').value = order.paidAmount || 0;
             document.getElementById('dueDate').value = order.dueDate || '';
             document.getElementById('orderStatus').value = order.status || 'Pending';
+            document.getElementById('orderStatus').disabled = true;
             
             const customer = appState.customers.find(c => c.id.toString() === order.customerId.toString());
             if (customer) {
@@ -1636,13 +2122,23 @@
             document.getElementById('itemsContainer').innerHTML = '';
             if (order.items && order.items.length) {
                 order.items.forEach(item => {
-                    addItemRow();
-                    const rows = document.querySelectorAll('.item-row-single');
+                    window.addItemRow();
+                    const rows = document.querySelectorAll('.item-row-card');
                     const lastRow = rows[rows.length - 1];
                     lastRow.querySelector('.item-search').value = item.name || '';
                     lastRow.querySelector('.item-qty').value = item.qty || 1;
                     lastRow.querySelector('.print-search').value = item.printType || '';
+                    lastRow.querySelector('.item-material').value = item.material || '';
+                    lastRow.querySelector('.item-finishing').value = item.finishing || '';
+                    lastRow.querySelector('.item-vendor').value = item.vendor || '';
                     lastRow.querySelector('.item-desc').value = item.description || '';
+                    
+                    if (item.emailSent) {
+                        lastRow.querySelector('.item-email-sent').value = 'true';
+                        lastRow.querySelector('.email-status-badge').style.display = 'inline-block';
+                        lastRow.querySelector('.item-email-btn').innerHTML = '<i class="fas fa-envelope"></i> Send Again';
+                    }
+
                     if (lastRow.querySelector('.item-status-select')) {
                         let statusSel = lastRow.querySelector('.item-status-select');
                         statusSel.value = item.status || 'Pending';
@@ -1673,9 +2169,7 @@
                 showToast('Order deleted from Cloud!', 'success');
                 window.closeModal('orderDetailModal');
                 window.closeModal('orderModal');
-            } catch(e) {
-                alert("Failed to delete order: " + e.message);
-            }
+            } catch(e) { alert("Failed to delete order: " + e.message); }
         };
         
         window.printOrderInvoice = function() {
@@ -1700,7 +2194,7 @@
             if(eDate) eDate.textContent = new Date().toLocaleDateString();
             
             let tbody = '';
-            document.querySelectorAll('.item-row-single').forEach((row, index) => {
+            document.querySelectorAll('.item-row-card').forEach((row, index) => {
                 let name = row.querySelector('.item-search')?.value;
                 let desc = row.querySelector('.item-desc')?.value;
                 let qty = row.querySelector('.item-qty')?.value;
@@ -1725,13 +2219,24 @@
             const customers = appState.customers;
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
-                orders = orders.filter(o => o.orderId.toLowerCase().includes(term) || (o.customerName && o.customerName.toLowerCase().includes(term)));
+                if (term === 'overdue') {
+                    orders = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed', 'Ready to Deliver'].includes(o.status));
+                } else if (term === 'payment pending' || term === 'payment pending / delivered' || term === 'delivered') {
+                    orders = orders.filter(o => o.status === 'Payment Pending' || o.status === 'Delivered');
+                } else if (term === 'ready to deliver' || term === 'ready to deliver / completed' || term === 'completed') {
+                    orders = orders.filter(o => o.status === 'Ready to Deliver' || o.status === 'Completed');
+                } else {
+                    orders = orders.filter(o => 
+                        o.orderId.toLowerCase().includes(term) || 
+                        (o.customerName && o.customerName.toLowerCase().includes(term)) ||
+                        (o.status && o.status.toLowerCase().includes(term))
+                    );
+                }
             }
             
-            // Sort: Pending first, then by Date
             orders.sort((a, b) => {
-                const aActive = ['Pending', 'In Progress'].includes(a.status);
-                const bActive = ['Pending', 'In Progress'].includes(b.status);
+                const aActive = ['Pending', 'In Progress', 'Ready to Deliver'].includes(a.status);
+                const bActive = ['Pending', 'In Progress', 'Ready to Deliver'].includes(b.status);
                 if (aActive && !bActive) return -1;
                 if (!aActive && bActive) return 1;
                 return new Date(b.date) - new Date(a.date);
@@ -1748,7 +2253,18 @@
                         <td>${formatDate(order.date)}</td>
                         <td>${customer.name}</td>
                         <td>${itemsListHtml}</td>
-                        <td><span class="status-badge status-${order.status.replace(/ /g, '-')}">${order.status}</span></td>
+                        <td>
+                            <select class="status-select status-${order.status.replace(/ /g, '-')}" onchange="window.updateOrderStatus('${order.id}', this)">
+                                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Ready to Deliver" ${order.status === 'Ready to Deliver' ? 'selected' : ''}>Ready to Deliver</option>
+                                <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Payment Pending" ${order.status === 'Payment Pending' ? 'selected' : ''}>Payment Pending</option>
+                                <option value="Paid" ${order.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
                         <td>
                             <button class="btn-icon" onclick="window.editOrder('${order.id}')" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn-icon" onclick="window.showOrderDetails('order', '${order.id}')" title="Details"><i class="fas fa-eye"></i></button>
@@ -1783,7 +2299,7 @@
             showToast('Orders exported successfully!', 'success');
         };
 
-        function loadCustomersList(searchTerm = '') {
+        window.loadCustomersList = function(searchTerm = '') {
             let customers = [...appState.customers];
             const orders = appState.orders;
             if (searchTerm) {
@@ -1830,9 +2346,7 @@
                 await window.dbAPI.saveCustomer(customer);
                 window.closeModal('customerModal');
                 showToast('Customer saved to Cloud!', 'success');
-            } catch(e) {
-                alert("Failed to save customer: " + e.message);
-            }
+            } catch(e) { alert("Failed to save customer: " + e.message); }
         };
 
         window.editCustomer = function(id) {
@@ -1854,21 +2368,35 @@
             try {
                 await window.dbAPI.deleteCustomer(id.toString());
                 showToast('Customer deleted', 'success');
-            } catch(e) {
-                alert("Failed to delete customer: " + e.message);
-            }
+            } catch(e) { alert("Failed to delete customer: " + e.message); }
         };
 
-        function loadItemsList() {
+        window.loadItemsList = function() {
             document.getElementById('itemsTableBody').innerHTML = appState.items.map(item => `<tr><td>${item.name}</td><td><button class="btn-icon" onclick="window.deleteItem('${item.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-        }
+        };
 
-        function loadPrintsList() {
+        window.loadPrintsList = function() {
             document.getElementById('printsTableBody').innerHTML = appState.prints.map(p => `<tr><td>${p.name}</td><td><button class="btn-icon" onclick="window.deletePrint('${p.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-        }
+        };
+
+        window.loadVendorsList = function() {
+            if(!appState.vendors) appState.vendors = [];
+            document.getElementById('vendorsTableBody').innerHTML = appState.vendors.map(v => `
+                <tr>
+                    <td><strong>${v.name}</strong></td>
+                    <td>${v.phone || '-'}</td>
+                    <td>${v.email || '-'}</td>
+                    <td>
+                        <button class="btn-icon" onclick="window.editVendor('${v.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon" onclick="window.deleteVendor('${v.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        };
 
         window.showItemModal = function() { document.getElementById('itemForm').reset(); document.getElementById('itemModal').style.display = 'block'; };
         window.showPrintModal = function() { document.getElementById('printForm').reset(); document.getElementById('printModal').style.display = 'block'; };
+        window.showVendorModal = function() { document.getElementById('vendorForm').reset(); document.getElementById('vendorId').value = ''; document.getElementById('vendorModal').style.display = 'block'; };
 
         window.saveItem = async function(event) {
             event.preventDefault();
@@ -1878,9 +2406,7 @@
                 await window.dbAPI.saveItem(item);
                 window.closeModal('itemModal');
                 showToast('Item saved to Cloud!', 'success');
-            } catch(e) {
-                alert("Failed to save item: " + e.message);
-            }
+            } catch(e) { alert("Failed to save item: " + e.message); }
         };
 
         window.savePrint = async function(event) {
@@ -1891,8 +2417,33 @@
                 await window.dbAPI.savePrint(print);
                 window.closeModal('printModal');
                 showToast('Print type saved to Cloud!', 'success');
-            } catch(e) {
-                alert("Failed to save print type: " + e.message);
+            } catch(e) { alert("Failed to save print type: " + e.message); }
+        };
+
+        window.saveVendor = async function(event) {
+            event.preventDefault();
+            if(!window.dbAPI) return;
+            const vendor = { 
+                id: document.getElementById('vendorId').value || Date.now().toString(), 
+                name: document.getElementById('vendorName').value,
+                phone: document.getElementById('vendorPhone').value,
+                email: document.getElementById('vendorEmail').value
+            };
+            try {
+                await window.dbAPI.saveVendor(vendor);
+                window.closeModal('vendorModal');
+                showToast('Vendor saved to Cloud!', 'success');
+            } catch(e) { alert("Failed to save vendor: " + e.message); }
+        };
+
+        window.editVendor = function(id) {
+            const vendor = appState.vendors.find(v => v.id === id);
+            if (vendor) {
+                document.getElementById('vendorId').value = vendor.id;
+                document.getElementById('vendorName').value = vendor.name;
+                document.getElementById('vendorPhone').value = vendor.phone || '';
+                document.getElementById('vendorEmail').value = vendor.email || '';
+                document.getElementById('vendorModal').style.display = 'block';
             }
         };
 
@@ -1902,9 +2453,7 @@
             try {
                 await window.dbAPI.deleteItem(id.toString());
                 showToast('Item deleted', 'success');
-            } catch(e) {
-                alert("Failed to delete item: " + e.message);
-            }
+            } catch(e) { alert("Failed to delete item: " + e.message); }
         };
 
         window.deletePrint = async function(id) {
@@ -1913,9 +2462,16 @@
             try {
                 await window.dbAPI.deletePrint(id.toString());
                 showToast('Print type deleted', 'success');
-            } catch(e) {
-                alert("Failed to delete print type: " + e.message);
-            }
+            } catch(e) { alert("Failed to delete print type: " + e.message); }
+        };
+
+        window.deleteVendor = async function(id) {
+            if(!window.dbAPI) return;
+            if (!confirm('Delete this vendor?')) return;
+            try {
+                await window.dbAPI.deleteVendor(id.toString());
+                showToast('Vendor deleted', 'success');
+            } catch(e) { alert("Failed to delete vendor: " + e.message); }
         };
 
         window.showReportTab = function(tab) {
@@ -2062,21 +2618,10 @@
             setTimeout(() => window.generateCustomerReport(), 200);
         }
 
-        window.loadSettings = function() {
-            document.getElementById('orderIdPrefix').value = appState.settings.prefix || 'ORD';
-            document.getElementById('orderIdDateFormat').value = appState.settings.dateFormat || 'YYMMDD';
-            document.getElementById('orderIdCounter').value = appState.settings.counter || '3';
-            window.updateOrderIdPreview();
-            
-            document.getElementById('orderIdPrefix').addEventListener('input', window.updateOrderIdPreview);
-            document.getElementById('orderIdDateFormat').addEventListener('change', window.updateOrderIdPreview);
-            document.getElementById('orderIdCounter').addEventListener('change', window.updateOrderIdPreview);
-        }
-
         function setupEventListeners() {
             document.querySelectorAll('.nav-links li').forEach(li => {
                 li.addEventListener('click', function(e) {
-                    e.preventDefault(); showPage(this.dataset.page);
+                    e.preventDefault(); window.showPage(this.dataset.page);
                     if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('show');
                 });
             });
@@ -2092,17 +2637,9 @@
                 }
             });
 
-            document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('show');
-            });
-
-            document.getElementById('addItemBtn')?.addEventListener('click', addItemRow);
-            document.getElementById('orderSearch')?.addEventListener('input', e => loadOrdersList(e.target.value));
-            document.getElementById('customerSearchInput')?.addEventListener('input', e => loadCustomersList(e.target.value));
-            document.getElementById('deleteOrderBtn')?.addEventListener('click', function() { 
-                const orderId = document.getElementById('orderId').value; 
-                if (orderId) window.deleteOrder(orderId); 
-            });
+            document.getElementById('orderIdPrefix')?.addEventListener('input', window.updateOrderIdPreview);
+            document.getElementById('orderIdDateFormat')?.addEventListener('change', window.updateOrderIdPreview);
+            document.getElementById('orderIdCounter')?.addEventListener('change', window.updateOrderIdPreview);
             
             document.getElementById('restoreFileInput')?.addEventListener('change', function(e) {
                 if(!window.dbAPI) return showToast('Please wait for cloud connection.', 'warning');
@@ -2117,6 +2654,7 @@
                             if (backup.orders) backup.orders.forEach(o => window.dbAPI.saveOrder({...o, id: o.id.toString()}));
                             if (backup.items) backup.items.forEach(i => window.dbAPI.saveItem({...i, id: i.id.toString()}));
                             if (backup.prints) backup.prints.forEach(p => window.dbAPI.savePrint({...p, id: p.id.toString()}));
+                            if (backup.vendors) backup.vendors.forEach(v => window.dbAPI.saveVendor({...v, id: v.id.toString()}));
                             if (backup.orderIdFormat) window.dbAPI.saveSettings(backup.orderIdFormat);
                             showToast('Cloud Import started!', 'success');
                         }
@@ -2161,6 +2699,7 @@
                 orders: appState.orders,
                 items: appState.items,
                 prints: appState.prints,
+                vendors: appState.vendors || [],
                 orderIdFormat: appState.settings,
                 timestamp: new Date().toISOString()
             };
@@ -2176,8 +2715,8 @@
     <!-- ==================== CUSTOM FIREBASE CLOUD SYNC MODULE ==================== -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const badge = document.getElementById('cloudBadge');
         
@@ -2197,7 +2736,7 @@
             const auth = getAuth(app);
             const db = getFirestore(app);
 
-            // Admin Login Handler
+            // Export to window to be accessible
             window.handleAdminLogin = async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('adminEmail').value;
@@ -2219,10 +2758,114 @@
                 }
             };
 
-            // Admin Logout Handler
+            window.handleCustomerLogin = async function(e, phoneOverride = null) {
+                if (e) e.preventDefault();
+                const phone = phoneOverride || document.getElementById('customerPhoneInput').value.trim();
+                if (!phone) return;
+                
+                const btn = document.getElementById('customerLoginBtn');
+                const errEl = document.getElementById('customerLoginError');
+                
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                    btn.disabled = true;
+                }
+                if (errEl) errEl.style.display = 'none';
+                
+                try {
+                    if (!auth.currentUser) {
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (anonErr) {
+                            console.warn("Anonymous auth failed, proceeding without auth.");
+                        }
+                    }
+                    
+                    const ordersRef = collectionGroup(db, 'orders');
+                    const querySnapshot = await getDocs(ordersRef);
+                    
+                    const uniqueOrders = new Map();
+                    let customerName = "Customer";
+                    
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.customerPhone === phone) {
+                            if (!uniqueOrders.has(data.id) || new Date(data.updatedAt) > new Date(uniqueOrders.get(data.id).updatedAt)) {
+                                uniqueOrders.set(data.id, data);
+                                if(data.customerName) customerName = data.customerName;
+                            }
+                        }
+                    });
+                    
+                    window.customerOrdersData = Array.from(uniqueOrders.values());
+                    
+                    if (window.customerOrdersData.length === 0) {
+                        if(errEl) {
+                            errEl.textContent = "No orders found for this mobile number.";
+                            errEl.style.display = 'block';
+                        }
+                        if (btn) {
+                            btn.innerHTML = 'Continue <i class="fas fa-arrow-right"></i>';
+                            btn.disabled = false;
+                        }
+                        return;
+                    }
+
+                    localStorage.setItem('customerPhone', phone);
+                    window.currentCustomerPhone = phone;
+                    
+                    document.getElementById('customerLoginScreen').style.display = 'none';
+                    document.getElementById('landingScreen').style.display = 'none';
+                    document.getElementById('customerDashboardScreen').style.display = 'block';
+                    document.getElementById('customerNameDisplay').innerText = customerName;
+                    
+                    window.setPortalFilter('All Pending');
+
+                } catch (error) {
+                    console.error("Error fetching orders:", error);
+                    if(errEl) {
+                        errEl.textContent = "Connection error. Check Firebase Rules.";
+                        errEl.style.display = 'block';
+                    }
+                    if (btn) {
+                        btn.innerHTML = 'Continue <i class="fas fa-arrow-right"></i>';
+                        btn.disabled = false;
+                    }
+                }
+            };
+
+            window.fetchCustomerOrders = async function() {
+                if(!window.currentCustomerPhone) return;
+                const syncIcon = document.getElementById('portalSyncBtn').querySelector('i');
+                if(syncIcon) syncIcon.classList.add('fa-spin');
+                
+                try {
+                    const ordersRef = collectionGroup(db, 'orders');
+                    const querySnapshot = await getDocs(ordersRef);
+                    
+                    const uniqueOrders = new Map();
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        if (data.customerPhone === window.currentCustomerPhone) {
+                            if (!uniqueOrders.has(data.id) || new Date(data.updatedAt) > new Date(uniqueOrders.get(data.id).updatedAt)) {
+                                uniqueOrders.set(data.id, data);
+                            }
+                        }
+                    });
+                    
+                    window.customerOrdersData = Array.from(uniqueOrders.values());
+                    window.renderCustomerOrders();
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    if(syncIcon) setTimeout(() => syncIcon.classList.remove('fa-spin'), 500);
+                }
+            };
+
             window.handleAdminLogout = async function() {
                 try {
                     await signOut(auth);
+                    window.showLanding();
                 } catch(e) {
                     console.error("Logout error", e);
                 }
@@ -2231,11 +2874,16 @@
             let activeListeners = [];
 
             onAuthStateChanged(auth, (user) => {
-                const loginScreen = document.getElementById('loginScreen');
+                const landingScreen = document.getElementById('landingScreen');
+                const adminLoginScreen = document.getElementById('adminLoginScreen');
+                const customerLoginScreen = document.getElementById('customerLoginScreen');
                 const mainApp = document.getElementById('mainAppContainer');
 
-                if (user) {
-                    loginScreen.style.display = 'none';
+                if (user && !user.isAnonymous) {
+                    // Authenticated Admin User
+                    landingScreen.style.display = 'none';
+                    adminLoginScreen.style.display = 'none';
+                    customerLoginScreen.style.display = 'none';
                     mainApp.style.display = 'flex';
 
                     badge.classList.add('connected');
@@ -2246,13 +2894,14 @@
                     setupDbAPI(db, user.uid);
                     setupListeners(db, user.uid);
                 } else {
-                    loginScreen.style.display = 'flex';
+                    // Not an admin user, cleanup
                     mainApp.style.display = 'none';
-
                     document.getElementById('adminPassword').value = '';
                     const btn = document.getElementById('adminLoginBtn');
-                    btn.innerHTML = 'Sign In';
-                    btn.disabled = false;
+                    if (btn) {
+                        btn.innerHTML = 'Sign In';
+                        btn.disabled = false;
+                    }
 
                     badge.classList.remove('connected');
                     badge.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span id="cloudStatusText">Disconnected</span>';
@@ -2276,7 +2925,7 @@
                         const defSettings = { prefix: 'ORD', dateFormat: 'YYMMDD', counter: '3', lastNumber: 0 };
                         setDoc(doc(db, 'users', uid, 'settings', 'main'), defSettings);
                     }
-                    window.refreshCurrentView();
+                    if (window.refreshCurrentView) window.refreshCurrentView();
                 }, err => console.error(err)));
 
                 // Customers Sync
@@ -2288,7 +2937,19 @@
                     }
                     isFirstCust = false;
                     window.appState.customers = snap.docs.map(d => d.data());
-                    window.refreshCurrentView();
+                    if (window.refreshCurrentView) window.refreshCurrentView();
+                }, err => console.error(err)));
+
+                // Vendors Sync
+                let isFirstVendors = true;
+                activeListeners.push(onSnapshot(getRef(db, uid, 'vendors'), snap => {
+                    if (snap.empty && isFirstVendors) {
+                        const defVendor = { id: '1', name: 'Sample Vendor', phone: '', email: '' };
+                        setDoc(doc(db, 'users', uid, 'vendors', '1'), defVendor);
+                    }
+                    isFirstVendors = false;
+                    window.appState.vendors = snap.docs.map(d => d.data());
+                    if (window.refreshCurrentView) window.refreshCurrentView();
                 }, err => console.error(err)));
 
                 // Items Sync
@@ -2303,7 +2964,7 @@
                     }
                     isFirstItems = false;
                     window.appState.items = snap.docs.map(d => d.data());
-                    window.refreshCurrentView();
+                    if (window.refreshCurrentView) window.refreshCurrentView();
                 }, err => console.error(err)));
 
                 // Prints Sync
@@ -2317,13 +2978,13 @@
                     }
                     isFirstPrints = false;
                     window.appState.prints = snap.docs.map(d => d.data());
-                    window.refreshCurrentView();
+                    if (window.refreshCurrentView) window.refreshCurrentView();
                 }, err => console.error(err)));
 
                 // Orders Sync
                 activeListeners.push(onSnapshot(getRef(db, uid, 'orders'), snap => {
                     window.appState.orders = snap.docs.map(d => d.data());
-                    window.refreshCurrentView();
+                    if (window.refreshCurrentView) window.refreshCurrentView();
                 }, err => console.error(err)));
             }
 
@@ -2337,6 +2998,9 @@
                     
                     saveCustomer: async (customer) => await setDoc(docPath('customers', customer.id.toString()), customer),
                     deleteCustomer: async (id) => await deleteDoc(docPath('customers', id.toString())),
+
+                    saveVendor: async (vendor) => await setDoc(docPath('vendors', vendor.id.toString()), vendor),
+                    deleteVendor: async (id) => await deleteDoc(docPath('vendors', id.toString())),
                     
                     saveItem: async (item) => await setDoc(docPath('items', item.id.toString()), item),
                     deleteItem: async (id) => await deleteDoc(docPath('items', id.toString())),
@@ -2344,7 +3008,7 @@
                     savePrint: async (print) => await setDoc(docPath('prints', print.id.toString()), print),
                     deletePrint: async (id) => await deleteDoc(docPath('prints', id.toString())),
                     
-                    saveSettings: async (settings) => await setDoc(docPath('settings', 'main'), settings)
+                    saveSettings: async (settings) => await setDoc(docPath('settings', 'main'), settings, { merge: true }) // Added merge: true here
                 };
             }
 
