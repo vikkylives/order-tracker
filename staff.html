@@ -16,7 +16,6 @@
         body {
             background: radial-gradient(circle at 10% 20%, rgba(15, 25, 45, 1) 0%, rgba(5, 12, 24, 1) 100%);
             min-height: 100vh;
-            backdrop-filter: blur(2px);
         }
 
         /* Glassmorphism container */
@@ -170,7 +169,7 @@
             background: rgba(255,255,255,0.15);
         }
 
-        /* Filter pills */
+        /* Filter bar with sort */
         .filter-bar {
             background: rgba(18, 28, 45, 0.6);
             backdrop-filter: blur(8px);
@@ -198,6 +197,16 @@
             border-color: #3b82f6;
             color: white;
             box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+        }
+        .sort-select {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 2rem;
+            padding: 6px 12px;
+            color: #e2e8f0;
+            font-size: 0.8rem;
+            cursor: pointer;
+            outline: none;
         }
         .stats-badge {
             background: rgba(37,99,235,0.3);
@@ -309,6 +318,8 @@
             padding-top: 10px;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .empty-state {
             background: rgba(0,0,0,0.3);
@@ -400,6 +411,10 @@
         <button data-filter="Completed" class="filter-pill">✅ Completed</button>
         <button data-filter="Delivered" class="filter-pill">🚚 Delivered</button>
         <button data-filter="Cancelled" class="filter-pill">❌ Cancelled</button>
+        <select id="sortSelect" class="sort-select">
+            <option value="newest">📅 Latest first</option>
+            <option value="oldest">📅 Oldest first</option>
+        </select>
         <div class="stats-badge" id="itemCounter">0 items</div>
     </div>
 
@@ -443,10 +458,11 @@
     const searchInput = document.getElementById('searchInput');
     const itemsContainer = document.getElementById('itemsContainer');
     const itemCounterSpan = document.getElementById('itemCounter');
+    const sortSelect = document.getElementById('sortSelect');
 
-    let allOrders = [];       // full orders array
+    let allOrders = [];
     let allCustomers = [];
-    let flatItems = [];       // flattened list: each item with order & customer context
+    let flatItems = [];
     let currentFilter = 'all';
     let searchTerm = '';
     let uid = null;
@@ -474,7 +490,6 @@
         }
     }
 
-    // Build flat items array from orders
     function rebuildFlatItems() {
         const items = [];
         for (const order of allOrders) {
@@ -494,14 +509,15 @@
                     paidAmount: order.paidAmount,
                     description: order.description,
                     item: { ...item, index: idx },
-                    originalOrderId: order.id
+                    originalOrderId: order.id,
+                    sortTimestamp: new Date(order.date || 0).getTime()
                 });
             });
         }
         flatItems = items;
     }
 
-    function filterItems() {
+    function filterAndSortItems() {
         let filtered = [...flatItems];
         if (currentFilter !== 'all') {
             filtered = filtered.filter(fi => fi.item.status === currentFilter);
@@ -515,11 +531,18 @@
                 return matchItemName || matchOrderId || matchCustomer;
             });
         }
+        // Apply sorting based on order date
+        const sortOrder = sortSelect.value;
+        if (sortOrder === 'newest') {
+            filtered.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
+        } else {
+            filtered.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+        }
         return filtered;
     }
 
     function renderItems() {
-        const filtered = filterItems();
+        const filtered = filterAndSortItems();
         itemCounterSpan.innerText = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
         if (filtered.length === 0) {
             itemsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i> No items match current filters.</div>';
@@ -536,10 +559,13 @@
             const paid = fi.paidAmount || 0;
             const balance = totalVal - paid;
 
+            // Check if image data is valid (non-empty string)
+            const imageSrc = item.image && item.image.trim() !== '' ? item.image : null;
+
             return `
                 <div class="item-card">
                     <div class="item-img-section">
-                        ${item.image ? `<img src="${item.image}" class="item-img" onclick="window.showLightbox('${item.image}')" loading="lazy">` : 
+                        ${imageSrc ? `<img src="${imageSrc}" class="item-img" onclick="window.showLightbox('${imageSrc.replace(/'/g, "\\'")}')" loading="lazy">` : 
                             `<div class="no-img"><i class="fas fa-image" style="font-size:2rem; opacity:0.5"></i><span>No image</span></div>`}
                     </div>
                     <div class="item-content">
@@ -649,6 +675,11 @@
         });
     });
 
+    // Sort change
+    sortSelect.addEventListener('change', () => {
+        renderItems();
+    });
+
     searchInput.addEventListener('input', (e) => {
         searchTerm = e.target.value;
         renderItems();
@@ -665,6 +696,7 @@
             document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
             const allBtn = document.querySelector('.filter-pill[data-filter="all"]');
             if(allBtn) allBtn.classList.add('active');
+            sortSelect.value = 'newest'; // default
             showToast(`Welcome, ${user.email}`);
         } else {
             loginPanel.style.display = 'flex';
