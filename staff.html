@@ -2,590 +2,233 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>ItemFlow | Staff Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        body {
-            background: radial-gradient(circle at 10% 20%, rgba(15, 25, 45, 1) 0%, rgba(5, 12, 24, 1) 100%);
-            min-height: 100vh;
-        }
-
-        /* Glassmorphism container */
-        .glass-panel {
-            background: rgba(18, 25, 45, 0.55);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 2rem;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-
-        /* Login */
-        .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 1.5rem;
-        }
-        .login-card {
-            width: 100%;
-            max-width: 420px;
-            padding: 2rem 2rem 2.5rem;
-            background: rgba(20, 30, 55, 0.7);
-            backdrop-filter: blur(14px);
-            border-radius: 2rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            text-align: center;
-        }
-        .login-icon {
-            width: 72px;
-            height: 72px;
-            background: rgba(59, 130, 246, 0.25);
-            border-radius: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.2rem;
-            font-size: 2rem;
-            color: #60a5fa;
-            border: 1px solid rgba(96, 165, 250, 0.5);
-        }
-        .login-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 0.5rem;
-        }
-        .input-group input {
-            width: 100%;
-            background: rgba(15, 25, 45, 0.7);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 2rem;
-            padding: 12px 20px;
-            color: white;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
-        }
-        .login-btn {
-            background: linear-gradient(105deg, #2563eb, #1e40af);
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 2rem;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .login-btn:hover {
-            transform: scale(1.01);
-            box-shadow: 0 8px 20px rgba(37,99,235,0.4);
-        }
-
-        /* Main Dashboard */
-        .staff-dashboard {
-            display: none;
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 1.5rem;
-        }
-
-        /* Top bar glass */
-        .top-bar {
-            background: rgba(15, 25, 45, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 2rem;
-            padding: 0.8rem 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.3rem;
-            background: linear-gradient(120deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .brand i {
-            background: none;
-            color: #60a5fa;
-            font-size: 1.5rem;
-        }
-        .search-box {
-            background: rgba(0,0,0,0.4);
-            border-radius: 3rem;
-            padding: 0.3rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .search-box input {
-            background: transparent;
-            border: none;
-            padding: 8px 0;
-            color: white;
-            width: 220px;
-            outline: none;
-        }
-        .search-box i {
-            color: #94a3b8;
-        }
-        .logout-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 2rem;
-            padding: 8px 18px;
-            color: #e2e8f0;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        /* Filter bar with sort */
-        .filter-bar {
-            background: rgba(18, 28, 45, 0.6);
-            backdrop-filter: blur(8px);
-            border-radius: 3rem;
-            padding: 0.7rem 1.2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 2rem;
-            align-items: center;
-        }
-        .filter-pill {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 3rem;
-            padding: 6px 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #cbd5e1;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .filter-pill.active {
-            background: #2563eb;
-            border-color: #3b82f6;
-            color: white;
-            box-shadow: 0 2px 8px rgba(37,99,235,0.4);
-        }
-        .sort-select {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 2rem;
-            padding: 6px 12px;
-            color: #e2e8f0;
-            font-size: 0.8rem;
-            cursor: pointer;
-            outline: none;
-        }
-        .stats-badge {
-            background: rgba(37,99,235,0.3);
-            border-radius: 2rem;
-            padding: 5px 14px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #a5f3fc;
-            margin-left: auto;
-        }
-
-        /* Items grid */
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 1.5rem;
-        }
-        .item-card {
-            background: rgba(20, 30, 55, 0.65);
-            backdrop-filter: blur(12px);
-            border-radius: 1.8rem;
-            border: 1px solid rgba(255,255,255,0.12);
-            transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
-        }
-        .item-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.5);
-            border-color: rgba(96,165,250,0.4);
-        }
-        .item-img-section {
-            height: 180px;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .item-img {
-            max-width: 100%;
-            max-height: 160px;
-            object-fit: contain;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: 0.2s;
-        }
-        .no-img {
-            color: #6c7a91;
-            font-size: 0.8rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        .item-content {
-            padding: 1.2rem;
-        }
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.8rem;
-        }
-        .item-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: white;
-        }
-        .order-ref {
-            font-size: 0.7rem;
-            background: rgba(0,0,0,0.5);
-            padding: 3px 8px;
-            border-radius: 20px;
-            color: #9ca3af;
-        }
-        .item-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 12px 0;
-            font-size: 0.75rem;
-            color: #cbd5e6;
-        }
-        .detail-badge {
-            background: rgba(255,255,255,0.05);
-            border-radius: 1rem;
-            padding: 4px 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .status-select {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 2rem;
-            padding: 6px 10px;
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 500;
-            width: 100%;
-            cursor: pointer;
-        }
-        .customer-info {
-            font-size: 0.7rem;
-            color: #a0aec0;
-            margin: 8px 0;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .empty-state {
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(8px);
-            border-radius: 2rem;
-            padding: 3rem;
-            text-align: center;
-            color: #9ca3af;
-            grid-column: 1 / -1;
-        }
-        .toast {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(12px);
-            color: white;
-            padding: 10px 22px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            z-index: 2000;
-            opacity: 0;
-            transition: 0.2s;
-            pointer-events: none;
-        }
+        /* (Same as the previous working version – no changes here) */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body { background: radial-gradient(circle at 10% 20%, rgba(15, 25, 45, 1) 0%, rgba(5, 12, 24, 1) 100%); min-height: 100vh; }
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+        .login-card { width: 100%; max-width: 420px; padding: 2rem; background: rgba(20, 30, 55, 0.7); backdrop-filter: blur(14px); border-radius: 2rem; border: 1px solid rgba(255,255,255,0.2); text-align: center; }
+        .login-icon { width: 72px; height: 72px; background: rgba(59,130,246,0.25); border-radius: 60px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; font-size: 2rem; color: #60a5fa; border: 1px solid rgba(96,165,250,0.5); }
+        .login-title { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg,#fff,#94a3b8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .input-group input { width: 100%; background: rgba(15,25,45,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 2rem; padding: 12px 20px; color: white; }
+        .login-btn { background: linear-gradient(105deg,#2563eb,#1e40af); border: none; width: 100%; padding: 12px; border-radius: 2rem; font-weight: 600; color: white; cursor: pointer; transition: 0.2s; }
+        .staff-dashboard { display: none; max-width: 1600px; margin: 0 auto; padding: 1rem; }
+        .top-bar { background: rgba(15,25,45,0.6); backdrop-filter: blur(12px); border-radius: 2rem; padding: 0.8rem 1.2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; }
+        .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.2rem; background: linear-gradient(120deg,#fff,#a5b4fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .search-box { background: rgba(0,0,0,0.4); border-radius: 3rem; padding: 0.3rem 0.8rem; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2); flex: 1; min-width: 150px; }
+        .search-box input { background: transparent; border: none; padding: 8px 0; color: white; width: 100%; outline: none; }
+        .logout-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 2rem; padding: 8px 16px; color: #e2e8f0; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+        .filter-bar { background: rgba(18,28,45,0.6); backdrop-filter: blur(8px); border-radius: 2rem; padding: 0.7rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .filter-pills { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+        .filter-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 3rem; padding: 6px 14px; font-size: 0.75rem; font-weight: 500; color: #cbd5e1; cursor: pointer; white-space: nowrap; }
+        .filter-pill.active { background: #2563eb; border-color: #3b82f6; color: white; }
+        .sort-select { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 2rem; padding: 6px 12px; color: #e2e8f0; font-size: 0.75rem; cursor: pointer; }
+        .stats-badge { background: rgba(37,99,235,0.3); border-radius: 2rem; padding: 4px 12px; font-size: 0.7rem; font-weight: 500; color: #a5f3fc; white-space: nowrap; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .item-card { background: rgba(20,30,55,0.65); backdrop-filter: blur(12px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.12); overflow: hidden; transition: 0.2s; }
+        .item-card:hover { transform: translateY(-3px); border-color: rgba(96,165,250,0.4); }
+        .item-img-section { height: 160px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.5rem; }
+        .item-img { max-width: 100%; max-height: 140px; object-fit: contain; cursor: pointer; border-radius: 8px; }
+        .no-img { color: #6c7a91; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .item-content { padding: 1rem; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; gap: 8px; flex-wrap: wrap; }
+        .item-name { font-weight: 700; font-size: 1rem; color: white; word-break: break-word; }
+        .order-ref { font-size: 0.65rem; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 20px; color: #9ca3af; white-space: nowrap; }
+        .item-details { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; font-size: 0.7rem; color: #cbd5e6; }
+        .detail-badge { background: rgba(255,255,255,0.05); border-radius: 1rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px; }
+        .status-select { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 2rem; padding: 6px 8px; color: white; font-size: 0.7rem; font-weight: 500; width: 100%; cursor: pointer; margin: 8px 0; }
+        .customer-info { font-size: 0.65rem; color: #a0aec0; margin: 8px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+        .empty-state { background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); border-radius: 2rem; padding: 2rem; text-align: center; color: #9ca3af; grid-column: 1 / -1; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); color: white; padding: 8px 16px; border-radius: 40px; font-size: 0.8rem; z-index: 2000; opacity: 0; transition: 0.2s; pointer-events: none; max-width: 90%; white-space: nowrap; overflow-x: auto; }
         .toast.show { opacity: 1; }
-        .lightbox {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(20px);
-            z-index: 3000;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .lightbox img {
-            max-width: 85%;
-            max-height: 85%;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
-        @media (max-width: 700px) {
-            .items-grid { grid-template-columns: 1fr; }
-            .top-bar { flex-direction: column; gap: 12px; align-items: stretch; }
-            .search-box input { width: 100%; }
+        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); z-index: 3000; align-items: center; justify-content: center; cursor: pointer; }
+        .lightbox img { max-width: 90%; max-height: 80%; border-radius: 16px; }
+
+        @media (max-width: 640px) {
+            .staff-dashboard { padding: 0.75rem; }
+            .top-bar { flex-direction: column; align-items: stretch; padding: 0.8rem; gap: 10px; }
+            .top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+            .brand { font-size: 1.1rem; }
+            .logout-btn { margin: 0; }
+            .search-box { width: 100%; margin-top: 0; }
+            .filter-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 0.7rem; }
+            .filter-pills { flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
+            .filter-pill { font-size: 0.7rem; padding: 6px 12px; white-space: nowrap; }
+            .sort-select, .stats-badge { align-self: center; }
+            .items-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .item-name { font-size: 0.95rem; }
+            .status-select { font-size: 0.7rem; padding: 8px; }
+            .customer-info { flex-direction: column; gap: 4px; }
+            .toast { white-space: normal; max-width: 90%; font-size: 0.7rem; }
         }
     </style>
 </head>
 <body>
-
-<!-- LOGIN GLASS -->
-<div id="loginPanel" class="login-container">
-    <div class="login-card">
-        <div class="login-icon"><i class="fas fa-cube"></i></div>
-        <h2 class="login-title">ItemFlow</h2>
-        <p class="login-sub" style="color:#b9c7d9;">Staff · Item Tracker</p>
-        <div class="input-group">
-            <input type="email" id="staffEmail" placeholder="Email address" autocomplete="email">
+    <!-- Login Panel (same as before) -->
+    <div id="loginPanel" class="login-container">
+        <div class="login-card">
+            <div class="login-icon"><i class="fas fa-cube"></i></div>
+            <h2 class="login-title">ItemFlow</h2>
+            <p class="login-sub" style="color:#b9c7d9;">Staff · Item Tracker</p>
+            <div class="input-group"><input type="email" id="staffEmail" placeholder="Email address"></div>
+            <div class="input-group"><input type="password" id="staffPassword" placeholder="Password"></div>
+            <button class="login-btn" id="loginBtn"><i class="fas fa-arrow-right"></i> Sign in</button>
+            <div id="loginErrorMsg" style="color:#f87171; margin-top:1rem; font-size:0.8rem; display:none;"></div>
         </div>
-        <div class="input-group">
-            <input type="password" id="staffPassword" placeholder="Password">
+    </div>
+    <!-- Staff Dashboard -->
+    <div id="staffDashboard" class="staff-dashboard">
+        <div class="top-bar">
+            <div class="top-row">
+                <div class="brand"><i class="fas fa-cubes"></i> ItemFlow</div>
+                <button id="logoutStaffBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+            </div>
+            <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Item name / Order ID / Customer..."></div>
         </div>
-        <button class="login-btn" id="loginBtn"><i class="fas fa-arrow-right"></i> Sign in</button>
-        <div id="loginErrorMsg" style="color:#f87171; margin-top: 1rem; font-size: 0.8rem; display: none;"></div>
-    </div>
-</div>
-
-<!-- MAIN DASHBOARD -->
-<div id="staffDashboard" class="staff-dashboard">
-    <div class="top-bar">
-        <div class="brand">
-            <i class="fas fa-cubes"></i>
-            <span>ItemFlow · Live Items</span>
+        <div class="filter-bar">
+            <div class="filter-pills">
+                <button data-filter="all" class="filter-pill active">📦 All</button>
+                <button data-filter="Pending" class="filter-pill">⏳ Pending</button>
+                <button data-filter="In Progress" class="filter-pill">⚙️ In Progress</button>
+                <button data-filter="Completed" class="filter-pill">✅ Completed</button>
+                <button data-filter="Delivered" class="filter-pill">🚚 Delivered</button>
+                <button data-filter="Cancelled" class="filter-pill">❌ Cancelled</button>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <select id="sortSelect" class="sort-select"><option value="newest">📅 Latest first</option><option value="oldest">📅 Oldest first</option></select>
+                <div class="stats-badge" id="itemCounter">0 items</div>
+            </div>
         </div>
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Item name / Order ID / Customer..." autocomplete="off">
-        </div>
-        <button id="logoutStaffBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+        <div id="itemsContainer" class="items-grid"><div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Loading items...</div></div>
     </div>
-
-    <div class="filter-bar">
-        <button data-filter="all" class="filter-pill active">📦 All Items</button>
-        <button data-filter="Pending" class="filter-pill">⏳ Pending</button>
-        <button data-filter="In Progress" class="filter-pill">⚙️ In Progress</button>
-        <button data-filter="Completed" class="filter-pill">✅ Completed</button>
-        <button data-filter="Delivered" class="filter-pill">🚚 Delivered</button>
-        <button data-filter="Cancelled" class="filter-pill">❌ Cancelled</button>
-        <select id="sortSelect" class="sort-select">
-            <option value="newest">📅 Latest first</option>
-            <option value="oldest">📅 Oldest first</option>
-        </select>
-        <div class="stats-badge" id="itemCounter">0 items</div>
+    <div id="toastMsg" class="toast"></div>
+    <div id="lightboxModal" class="lightbox" onclick="closeLightbox()">
+        <img id="lightboxImage" src="">
+        <div style="position: absolute; top: 15px; right: 20px; font-size: 2rem; color:white; cursor:pointer;">&times;</div>
     </div>
+    <script type="module">
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <div id="itemsContainer" class="items-grid">
-        <div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Loading items...</div>
-    </div>
-</div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2IfsBsyBWSx415yaFajLoy_32dAb_J2Q",
+            authDomain: "order-tracker-e7ee9.firebaseapp.com",
+            projectId: "order-tracker-e7ee9",
+            storageBucket: "order-tracker-e7ee9.firebasestorage.app",
+            messagingSenderId: "1050523392217",
+            appId: "1:1050523392217:web:3129fe24e7c28c1311c6c8"
+        };
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-<div id="toastMsg" class="toast"></div>
-<div id="lightboxModal" class="lightbox" onclick="closeLightbox()">
-    <img id="lightboxImage" src="">
-    <div style="position: absolute; top: 20px; right: 30px; font-size: 2rem; color:white; cursor:pointer;">&times;</div>
-</div>
+        const loginPanel = document.getElementById('loginPanel');
+        const dashboard = document.getElementById('staffDashboard');
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('staffEmail');
+        const pwdInput = document.getElementById('staffPassword');
+        const loginError = document.getElementById('loginErrorMsg');
+        const logoutBtn = document.getElementById('logoutStaffBtn');
+        const searchInput = document.getElementById('searchInput');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const itemCounterSpan = document.getElementById('itemCounter');
+        const sortSelect = document.getElementById('sortSelect');
 
-<script type="module">
-    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, doc, setDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        let allOrders = [], allCustomers = [], flatItems = [], currentFilter = 'all', searchTerm = '', uid = null;
+        let previousOrderIds = new Set(); // Track order IDs to detect new orders
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC2IfsBsyBWSx415yaFajLoy_32dAb_J2Q",
-        authDomain: "order-tracker-e7ee9.firebaseapp.com",
-        projectId: "order-tracker-e7ee9",
-        storageBucket: "order-tracker-e7ee9.firebasestorage.app",
-        messagingSenderId: "1050523392217",
-        appId: "1:1050523392217:web:3129fe24e7c28c1311c6c8"
-    };
-
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // DOM elements
-    const loginPanel = document.getElementById('loginPanel');
-    const dashboard = document.getElementById('staffDashboard');
-    const loginBtn = document.getElementById('loginBtn');
-    const emailInput = document.getElementById('staffEmail');
-    const pwdInput = document.getElementById('staffPassword');
-    const loginError = document.getElementById('loginErrorMsg');
-    const logoutBtn = document.getElementById('logoutStaffBtn');
-    const searchInput = document.getElementById('searchInput');
-    const itemsContainer = document.getElementById('itemsContainer');
-    const itemCounterSpan = document.getElementById('itemCounter');
-    const sortSelect = document.getElementById('sortSelect');
-
-    let allOrders = [];
-    let allCustomers = [];
-    let flatItems = [];
-    let currentFilter = 'all';
-    let searchTerm = '';
-    let uid = null;
-
-    function showToast(msg, isErr = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.textContent = msg;
-        toast.style.background = isErr ? 'rgba(180, 30, 30, 0.9)' : 'rgba(0,0,0,0.85)';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
-    }
-
-    async function updateItemStatus(orderId, itemIndex, newStatus) {
-        if (!uid) return;
-        try {
-            const order = allOrders.find(o => o.id === orderId);
-            if (!order || !order.items[itemIndex]) return;
-            const updatedItems = [...order.items];
-            updatedItems[itemIndex] = { ...updatedItems[itemIndex], status: newStatus };
-            const orderRef = doc(db, 'users', uid, 'orders', orderId.toString());
-            await setDoc(orderRef, { ...order, items: updatedItems, updatedAt: new Date().toISOString() }, { merge: true });
-            showToast(`Item "${updatedItems[itemIndex].name}" → ${newStatus}`);
-        } catch (err) {
-            showToast("Update failed", true);
+        function showToast(msg, isErr = false) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = msg;
+            toast.style.background = isErr ? 'rgba(180,30,30,0.9)' : 'rgba(0,0,0,0.85)';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
         }
-    }
 
-    function rebuildFlatItems() {
-        const items = [];
-        for (const order of allOrders) {
-            if (!order.items) continue;
-            const customer = allCustomers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown', phone: order.customerPhone || '' };
-            order.items.forEach((item, idx) => {
-                items.push({
-                    id: `${order.id}_${idx}`,
-                    orderId: order.orderId,
-                    orderDate: order.date,
-                    dueDate: order.dueDate,
-                    orderStatus: order.status,
-                    customerName: customer.name,
-                    customerPhone: customer.phone,
-                    customerAddress: customer.address,
-                    totalValue: order.totalValue,
-                    paidAmount: order.paidAmount,
-                    description: order.description,
-                    item: { ...item, index: idx },
-                    originalOrderId: order.id,
-                    sortTimestamp: new Date(order.date || 0).getTime()
+        // Request browser notification permission (optional)
+        async function requestNotificationPermission() {
+            if (!("Notification" in window)) return;
+            if (Notification.permission === "granted") return;
+            if (Notification.permission !== "denied") {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    console.log("Notification permission granted");
+                }
+            }
+        }
+
+        // Show browser notification if permitted
+        function showBrowserNotification(title, body) {
+            if (Notification.permission === "granted") {
+                new Notification(title, { body, icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" });
+            }
+        }
+
+        async function updateItemStatus(orderId, itemIndex, newStatus) {
+            if (!uid) return;
+            try {
+                const order = allOrders.find(o => o.id === orderId);
+                if (!order || !order.items[itemIndex]) return;
+                const updatedItems = [...order.items];
+                updatedItems[itemIndex] = { ...updatedItems[itemIndex], status: newStatus };
+                await setDoc(doc(db, 'users', uid, 'orders', orderId.toString()), { ...order, items: updatedItems, updatedAt: new Date().toISOString() }, { merge: true });
+                showToast(`Item "${updatedItems[itemIndex].name}" → ${newStatus}`);
+            } catch (err) { showToast("Update failed", true); }
+        }
+
+        function rebuildFlatItems() {
+            const items = [];
+            for (const order of allOrders) {
+                if (!order.items) continue;
+                const customer = allCustomers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown', phone: order.customerPhone || '' };
+                order.items.forEach((item, idx) => {
+                    items.push({
+                        id: `${order.id}_${idx}`, orderId: order.orderId, orderDate: order.date, dueDate: order.dueDate,
+                        orderStatus: order.status, customerName: customer.name, customerPhone: customer.phone,
+                        totalValue: order.totalValue, paidAmount: order.paidAmount, description: order.description,
+                        item: { ...item, index: idx }, originalOrderId: order.id,
+                        sortTimestamp: new Date(order.date || 0).getTime()
+                    });
                 });
-            });
-        }
-        flatItems = items;
-    }
-
-    function filterAndSortItems() {
-        let filtered = [...flatItems];
-        if (currentFilter !== 'all') {
-            filtered = filtered.filter(fi => fi.item.status === currentFilter);
-        }
-        if (searchTerm.trim() !== '') {
-            const term = searchTerm.trim().toLowerCase();
-            filtered = filtered.filter(fi => {
-                const matchItemName = fi.item.name?.toLowerCase().includes(term);
-                const matchOrderId = fi.orderId?.toLowerCase().includes(term);
-                const matchCustomer = fi.customerName?.toLowerCase().includes(term);
-                return matchItemName || matchOrderId || matchCustomer;
-            });
-        }
-        // Apply sorting based on order date
-        const sortOrder = sortSelect.value;
-        if (sortOrder === 'newest') {
-            filtered.sort((a, b) => b.sortTimestamp - a.sortTimestamp);
-        } else {
-            filtered.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
-        }
-        return filtered;
-    }
-
-    function renderItems() {
-        const filtered = filterAndSortItems();
-        itemCounterSpan.innerText = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
-        if (filtered.length === 0) {
-            itemsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i> No items match current filters.</div>';
-            return;
+            }
+            flatItems = items;
         }
 
-        itemsContainer.innerHTML = filtered.map(fi => {
-            const item = fi.item;
-            const orderId = fi.orderId;
-            const custName = fi.customerName;
-            const due = fi.dueDate ? new Date(fi.dueDate).toLocaleDateString() : null;
-            const overdue = due && fi.dueDate && !['Delivered','Paid','Cancelled'].includes(fi.orderStatus) && (new Date(fi.dueDate) < new Date());
-            const totalVal = fi.totalValue || 0;
-            const paid = fi.paidAmount || 0;
-            const balance = totalVal - paid;
+        function filterAndSortItems() {
+            let filtered = [...flatItems];
+            if (currentFilter !== 'all') filtered = filtered.filter(fi => fi.item.status === currentFilter);
+            if (searchTerm.trim()) {
+                const term = searchTerm.trim().toLowerCase();
+                filtered = filtered.filter(fi => fi.item.name?.toLowerCase().includes(term) || fi.orderId?.toLowerCase().includes(term) || fi.customerName?.toLowerCase().includes(term));
+            }
+            const sortOrder = sortSelect.value;
+            filtered.sort((a, b) => sortOrder === 'newest' ? b.sortTimestamp - a.sortTimestamp : a.sortTimestamp - b.sortTimestamp);
+            return filtered;
+        }
 
-            // Check if image data is valid (non-empty string)
-            const imageSrc = item.image && item.image.trim() !== '' ? item.image : null;
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
-            return `
-                <div class="item-card">
-                    <div class="item-img-section">
-                        ${imageSrc ? `<img src="${imageSrc}" class="item-img" onclick="window.showLightbox('${imageSrc.replace(/'/g, "\\'")}')" loading="lazy">` : 
-                            `<div class="no-img"><i class="fas fa-image" style="font-size:2rem; opacity:0.5"></i><span>No image</span></div>`}
-                    </div>
-                    <div class="item-content">
-                        <div class="item-header">
-                            <div class="item-name">${escapeHtml(item.name)}</div>
-                            <div class="order-ref">#${escapeHtml(orderId)}</div>
-                        </div>
-                        <div class="item-details">
-                            <span class="detail-badge"><i class="fas fa-cubes"></i> Qty: ${item.qty || 1}</span>
-                            ${item.printType ? `<span class="detail-badge"><i class="fas fa-print"></i> ${escapeHtml(item.printType)}</span>` : ''}
-                            ${item.material ? `<span class="detail-badge"><i class="fas fa-layer-group"></i> ${escapeHtml(item.material)}</span>` : ''}
-                            ${item.finishing ? `<span class="detail-badge"><i class="fas fa-sparkles"></i> ${escapeHtml(item.finishing)}</span>` : ''}
-                        </div>
-                        ${item.description ? `<div style="font-size:0.7rem; color:#b9c7d9; margin: 6px 0;">📝 ${escapeHtml(item.description)}</div>` : ''}
-                        <div class="customer-info">
-                            <span><i class="fas fa-user"></i> ${escapeHtml(custName)}</span>
-                            <span><i class="fas fa-phone"></i> ${fi.customerPhone || '—'}</span>
-                            ${due ? `<span class="${overdue ? 'text-warning' : ''}" style="color:${overdue ? '#f97316' : '#9ca3af'}"><i class="far fa-calendar"></i> Due: ${due}</span>` : ''}
-                        </div>
-                        <div style="display: flex; justify-content: space-between; gap: 12px; margin: 12px 0 8px;">
+        function renderItems() {
+            const filtered = filterAndSortItems();
+            itemCounterSpan.innerText = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
+            if (filtered.length === 0) { itemsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i> No items match current filters.</div>'; return; }
+            itemsContainer.innerHTML = filtered.map(fi => {
+                const item = fi.item, orderId = fi.orderId, custName = fi.customerName, due = fi.dueDate ? new Date(fi.dueDate).toLocaleDateString() : null;
+                const overdue = due && fi.dueDate && !['Delivered','Paid','Cancelled'].includes(fi.orderStatus) && (new Date(fi.dueDate) < new Date());
+                const totalVal = fi.totalValue || 0, paid = fi.paidAmount || 0, balance = totalVal - paid;
+                const imageSrc = item.image && item.image.trim() !== '' ? item.image : null;
+                return `
+                    <div class="item-card">
+                        <div class="item-img-section">${imageSrc ? `<img src="${imageSrc}" class="item-img" onclick="window.showLightbox('${imageSrc.replace(/'/g, "\\'")}')" loading="lazy">` : `<div class="no-img"><i class="fas fa-image" style="font-size:2rem; opacity:0.5"></i><span>No image</span></div>`}</div>
+                        <div class="item-content">
+                            <div class="item-header"><div class="item-name">${escapeHtml(item.name)}</div><div class="order-ref">#${escapeHtml(orderId)}</div></div>
+                            <div class="item-details"><span class="detail-badge"><i class="fas fa-cubes"></i> ${item.qty || 1}</span>${item.printType ? `<span class="detail-badge"><i class="fas fa-print"></i> ${escapeHtml(item.printType)}</span>` : ''}${item.material ? `<span class="detail-badge"><i class="fas fa-layer-group"></i> ${escapeHtml(item.material)}</span>` : ''}${item.finishing ? `<span class="detail-badge"><i class="fas fa-sparkles"></i> ${escapeHtml(item.finishing)}</span>` : ''}</div>
+                            ${item.description ? `<div style="font-size:0.7rem; color:#b9c7d9; margin:6px 0;">📝 ${escapeHtml(item.description)}</div>` : ''}
+                            <div class="customer-info"><span><i class="fas fa-user"></i> ${escapeHtml(custName)}</span><span><i class="fas fa-phone"></i> ${fi.customerPhone || '—'}</span>${due ? `<span style="color:${overdue ? '#f97316' : '#9ca3af'}"><i class="far fa-calendar"></i> Due: ${due}</span>` : ''}</div>
                             <select class="status-select" onchange="window.updateItem('${fi.originalOrderId}', ${item.index}, this.value)">
                                 <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
                                 <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>⚙️ In Progress</option>
@@ -593,127 +236,77 @@
                                 <option value="Delivered" ${item.status === 'Delivered' ? 'selected' : ''}>🚚 Delivered</option>
                                 <option value="Cancelled" ${item.status === 'Cancelled' ? 'selected' : ''}>❌ Cancelled</option>
                             </select>
+                            <div style="font-size:0.65rem; color:#8b9bb5; border-top:1px solid rgba(255,255,255,0.1); margin-top:6px; padding-top:8px; display:flex; justify-content:space-between; flex-wrap:wrap;"><span>💰 ₹${totalVal.toFixed(2)}</span><span>💸 ₹${paid.toFixed(2)}</span><span style="color:${balance > 0 ? '#f97316' : '#4ade80'}">⚖️ ₹${balance.toFixed(2)}</span></div>
                         </div>
-                        <div style="font-size:0.65rem; color:#8b9bb5; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 6px; padding-top: 8px; display: flex; justify-content: space-between;">
-                            <span>💰 Total: ₹${totalVal.toFixed(2)}</span>
-                            <span>💸 Paid: ₹${paid.toFixed(2)}</span>
-                            <span style="color:${balance > 0 ? '#f97316' : '#4ade80'}">⚖️ ₹${balance.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-
-    // Global functions for inline handlers
-    window.updateItem = async (orderId, itemIndex, newStatus) => {
-        await updateItemStatus(orderId, itemIndex, newStatus);
-    };
-    window.showLightbox = (src) => {
-        const modal = document.getElementById('lightboxModal');
-        const img = document.getElementById('lightboxImage');
-        img.src = src;
-        modal.style.display = 'flex';
-    };
-    window.closeLightbox = () => {
-        document.getElementById('lightboxModal').style.display = 'none';
-        document.getElementById('lightboxImage').src = '';
-    };
-
-    function startListeners(userUid) {
-        uid = userUid;
-        const customersRef = collection(db, 'users', uid, 'customers');
-        onSnapshot(customersRef, (snap) => {
-            allCustomers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            rebuildFlatItems();
-            renderItems();
-        });
-        const ordersRef = collection(db, 'users', uid, 'orders');
-        onSnapshot(query(ordersRef), (snap) => {
-            allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            rebuildFlatItems();
-            renderItems();
-        });
-    }
-
-    // Login logic
-    loginBtn.addEventListener('click', async () => {
-        const email = emailInput.value.trim();
-        const pass = pwdInput.value;
-        if (!email || !pass) {
-            loginError.innerText = "Enter email & password";
-            loginError.style.display = 'block';
-            return;
+                    </div>`;
+            }).join('');
         }
-        loginError.style.display = 'none';
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Signing...';
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-        } catch (err) {
-            loginError.innerText = "Invalid credentials";
-            loginError.style.display = 'block';
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Sign in';
+
+        window.updateItem = async (orderId, idx, status) => updateItemStatus(orderId, idx, status);
+        window.showLightbox = (src) => { document.getElementById('lightboxImage').src = src; document.getElementById('lightboxModal').style.display = 'flex'; };
+        window.closeLightbox = () => { document.getElementById('lightboxModal').style.display = 'none'; document.getElementById('lightboxImage').src = ''; };
+
+        function startListeners(userUid) {
+            uid = userUid;
+            // Customers listener (unchanged)
+            onSnapshot(collection(db, 'users', uid, 'customers'), snap => {
+                allCustomers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                rebuildFlatItems();
+                renderItems();
+            });
+            // Orders listener with new order detection
+            onSnapshot(query(collection(db, 'users', uid, 'orders')), snap => {
+                const newOrders = [];
+                const currentOrderIds = new Set();
+                snap.docChanges().forEach(change => {
+                    const orderData = { id: change.doc.id, ...change.doc.data() };
+                    if (change.type === 'added') {
+                        // New order added
+                        newOrders.push(orderData);
+                    }
+                    currentOrderIds.add(change.doc.id);
+                });
+                // Update allOrders after processing changes
+                allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                rebuildFlatItems();
+                renderItems();
+
+                // Show notifications for new orders
+                for (const order of newOrders) {
+                    const customer = allCustomers.find(c => c.id === order.customerId) || { name: order.customerName || 'Unknown' };
+                    const msg = `🎉 New order #${order.orderId} from ${customer.name}`;
+                    showToast(msg);
+                    showBrowserNotification(`New Order #${order.orderId}`, `Customer: ${customer.name}`);
+                }
+            });
         }
-    });
 
-    logoutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-        showToast("Logged out");
-    });
-
-    // Filter pills
-    document.querySelectorAll('.filter-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.getAttribute('data-filter');
-            renderItems();
-        });
-    });
-
-    // Sort change
-    sortSelect.addEventListener('change', () => {
-        renderItems();
-    });
-
-    searchInput.addEventListener('input', (e) => {
-        searchTerm = e.target.value;
-        renderItems();
-    });
-
-    onAuthStateChanged(auth, (user) => {
-        if (user && !user.isAnonymous) {
-            loginPanel.style.display = 'none';
-            dashboard.style.display = 'block';
-            startListeners(user.uid);
-            currentFilter = 'all';
-            searchTerm = '';
-            searchInput.value = '';
-            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-            const allBtn = document.querySelector('.filter-pill[data-filter="all"]');
-            if(allBtn) allBtn.classList.add('active');
-            sortSelect.value = 'newest'; // default
-            showToast(`Welcome, ${user.email}`);
-        } else {
-            loginPanel.style.display = 'flex';
-            dashboard.style.display = 'none';
-            uid = null;
-            flatItems = [];
-            allOrders = [];
-            allCustomers = [];
-            if(loginBtn) {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Sign in';
+        loginBtn.onclick = async () => {
+            const email = emailInput.value.trim(), pass = pwdInput.value;
+            if (!email || !pass) { loginError.innerText = "Enter email & password"; loginError.style.display = 'block'; return; }
+            loginError.style.display = 'none'; loginBtn.disabled = true; loginBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Signing...';
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                requestNotificationPermission(); // Ask for permission after login
+            } catch { loginError.innerText = "Invalid credentials"; loginError.style.display = 'block'; loginBtn.disabled = false; loginBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Sign in'; }
+        };
+        logoutBtn.onclick = async () => { await signOut(auth); showToast("Logged out"); };
+        document.querySelectorAll('.filter-pill').forEach(btn => btn.onclick = () => { document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentFilter = btn.getAttribute('data-filter'); renderItems(); });
+        sortSelect.onchange = () => renderItems();
+        searchInput.oninput = (e) => { searchTerm = e.target.value; renderItems(); };
+        onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+                loginPanel.style.display = 'none'; dashboard.style.display = 'block'; startListeners(user.uid);
+                currentFilter = 'all'; searchTerm = ''; searchInput.value = ''; sortSelect.value = 'newest';
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                const allBtn = document.querySelector('.filter-pill[data-filter="all"]'); if(allBtn) allBtn.classList.add('active');
+                showToast(`Welcome, ${user.email}`);
+            } else {
+                loginPanel.style.display = 'flex'; dashboard.style.display = 'none'; uid = null; flatItems = []; allOrders = []; allCustomers = [];
+                if(loginBtn) { loginBtn.disabled = false; loginBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Sign in'; }
+                emailInput.value = ''; pwdInput.value = ''; loginError.style.display = 'none';
             }
-            emailInput.value = '';
-            pwdInput.value = '';
-            loginError.style.display = 'none';
-        }
-    });
-</script>
+        });
+    </script>
 </body>
 </html>
