@@ -51,11 +51,19 @@
         .action-buttons { display: flex; gap: 12px; margin-bottom: 24px; }
         .primary-btn { background: #6C4DFF; border: none; padding: 14px; border-radius: 60px; font-weight: 700; flex: 1; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .secondary-btn { background: transparent; border: 1.5px solid #383E55; padding: 14px; border-radius: 60px; font-weight: 600; flex: 1; cursor: pointer; color: #D9E0FF; }
+        .send-money-btn { background: #F59E0B; border: none; padding: 14px; border-radius: 60px; font-weight: 700; flex: 1; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
         .stat-card { background: #13141E; border-radius: 20px; padding: 14px; border: 1px solid #262836; text-align: center; }
         .stat-label { font-size: 12px; color: #8B93B0; margin-bottom: 6px; }
         .stat-value { font-size: 20px; font-weight: 700; }
+        
+        .transfer-card { background: linear-gradient(135deg, #1A1C26, #13141E); border-radius: 28px; padding: 20px; margin-bottom: 20px; border: 1px solid #F59E0B; }
+        .transfer-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; color: #F59E0B; }
+        .transfer-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .transfer-row select, .transfer-row input { flex: 1; background: #0F111A; border: 1px solid #2C3142; border-radius: 40px; padding: 14px 18px; color: white; font-size: 15px; outline: none; }
+        .transfer-btn { background: #F59E0B; border: none; padding: 14px 24px; border-radius: 60px; font-weight: 700; color: #1A1C26; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; }
+        .transfer-btn:hover { background: #D97706; transform: scale(0.98); }
         
         .expense-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-bottom: 20px; }
         .expense-card { background: #13141E; border-radius: 24px; padding: 14px; border: 1px solid #282D3A; transition: 0.2s; }
@@ -70,6 +78,7 @@
         .action-buttons-card { display: flex; gap: 8px; align-items: center; }
         .edit-btn { background: none; border: none; color: #F59E0B; font-size: 18px; cursor: pointer; padding: 0 8px; }
         .delete-btn { background: none; border: none; color: #6B7280; font-size: 18px; cursor: pointer; padding: 0 8px; }
+        .delete-btn.disabled { opacity: 0.3; cursor: not-allowed; }
         
         .settings-panel { background: #13141E; border-radius: 28px; padding: 20px; margin-bottom: 24px; border: 1px solid #2A2D3E; }
         .category-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
@@ -106,8 +115,6 @@
         @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         
         .demo-creds { background: #1A1C26; border-radius: 16px; padding: 16px; margin-top: 20px; font-size: 13px; text-align: left; border: 1px solid #2C3142; }
-        .credit-badge { background: #2ED15E20; color: #2ED15E; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
-        .debit-badge { background: #FF5E6E20; color: #FF5E6E; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
     </style>
 </head>
 <body>
@@ -216,6 +223,27 @@
             <div class="stat-card"><div class="stat-label">Total Income</div><div class="stat-value" id="totalIncome">₹0</div></div>
             <div class="stat-card"><div class="stat-label">Net Flow</div><div class="stat-value" id="netFlow">₹0</div></div>
             <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="totalUsers">0</div></div>
+        </div>
+        
+        <div class="transfer-card">
+            <div class="transfer-title">
+                <span>🔄 Easy Money Transfer</span>
+                <span style="font-size: 12px;">Admin can send money between any users</span>
+            </div>
+            <div class="transfer-row">
+                <select id="transferFromUser">
+                    <option value="">Select Sender</option>
+                </select>
+                <span style="color: #F59E0B; display: flex; align-items: center;">→</span>
+                <select id="transferToUser">
+                    <option value="">Select Receiver</option>
+                </select>
+            </div>
+            <div class="transfer-row">
+                <input type="number" id="transferAmount" placeholder="Amount (₹)" step="1">
+                <input type="text" id="transferNote" placeholder="Reason / Note (Optional)">
+            </div>
+            <button class="transfer-btn" id="sendMoneyBtn">💰 Send Money</button>
         </div>
         
         <div class="filter-bar">
@@ -333,20 +361,26 @@
     function calculateBalance(userId) {
         let balance = 0;
         expenses.forEach(exp => {
-            // User spent money (expense)
             if (exp.userId === userId && exp.type === "EXPENSE") {
                 balance -= exp.amount;
             }
-            // User received money (income)
             if (exp.userId === userId && exp.type === "INCOME") {
                 balance += exp.amount;
             }
-            // User was mentioned in an expense (they received money from someone else)
             if (exp.mentionedUserId === userId && exp.type === "EXPENSE") {
                 balance += exp.amount;
             }
         });
         return balance;
+    }
+    
+    function canDeleteTransaction(transaction) {
+        // Admin can delete any transaction
+        if (userProfile?.isAdmin) return true;
+        // Sender can delete the transaction
+        if (transaction.userId === currentUser.uid) return true;
+        // Receiver cannot delete the transaction
+        return false;
     }
     
     function compressImage(file, maxWidth = 400, quality = 0.6) {
@@ -377,6 +411,68 @@
         if (type === "month") return { start: new Date(now.getFullYear(), now.getMonth(), 1).getTime(), end: new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() };
         if (type === "year") return { start: new Date(now.getFullYear(), 0, 1).getTime(), end: new Date(now.getFullYear() + 1, 0, 1).getTime() };
         return null;
+    }
+    
+    // Send Money Function - Admin can transfer between any users
+    async function sendMoney(senderId, receiverId, amount, note = "") {
+        if (senderId === receiverId) {
+            showToast("Cannot send money to yourself");
+            return false;
+        }
+        if (amount <= 0) {
+            showToast("Please enter a valid amount");
+            return false;
+        }
+        
+        const sender = allUsers.find(u => u.id === senderId);
+        const receiver = allUsers.find(u => u.id === receiverId);
+        
+        if (!sender || !receiver) {
+            showToast("Invalid user selected");
+            return false;
+        }
+        
+        // Check if sender has enough balance (optional - can allow negative)
+        const senderBalance = calculateBalance(senderId);
+        if (senderBalance < amount) {
+            if (!confirm(`Warning: ${sender.name} has balance ₹${senderBalance.toFixed(2)}. Sending ₹${amount} will make it negative. Continue?`)) {
+                return false;
+            }
+        }
+        
+        const timestamp = Date.now();
+        const date = new Date().toISOString().split('T')[0];
+        
+        // Create transaction record - this single transaction handles both debit and credit
+        const transaction = {
+            userId: senderId,
+            mentionedUserId: receiverId,
+            type: "EXPENSE",
+            category: "Money Transfer",
+            amount: amount,
+            description: note ? `Transfer to ${receiver.name}: ${note}` : `Money transfer to ${receiver.name}`,
+            date: date,
+            timestamp: timestamp,
+            photoURL: null,
+            createdAt: new Date()
+        };
+        
+        try {
+            const docRef = await db.collection("expenses").add(transaction);
+            const savedEntry = { id: docRef.id, ...transaction };
+            expenses.push(savedEntry);
+            
+            // Refresh balances
+            await loadUserData();
+            renderAll();
+            
+            showToast(`✅ ₹${amount} sent from ${sender.name} to ${receiver.name}`);
+            return true;
+        } catch (e) {
+            console.error("Send money error:", e);
+            showToast("Error sending money");
+            return false;
+        }
     }
     
     // Voice Confirmation Popup
@@ -462,7 +558,6 @@
     async function addTransaction(type, category, amount, description, mentionedUserId = null, photoFile = null, customDate = null) {
         if (amount <= 0) { showToast("Invalid amount"); return false; }
         
-        // If category is not recognized, use default
         const allValidCats = [...expenseCategories, ...incomeCategories];
         let finalCategory = category;
         if (!allValidCats.includes(category)) {
@@ -494,7 +589,6 @@
             expenses.push(savedEntry);
             renderAll();
             
-            // Show appropriate success message
             if (mentionedUserId) {
                 showToast(`${type === "EXPENSE" ? "Expense" : "Transfer"} added: ₹${amount} from ${getUserName(currentUser.uid)} → ${getUserName(mentionedUserId)}`);
             } else {
@@ -526,7 +620,17 @@
     }
     
     async function deleteTransaction(id) {
-        if (!confirm("Delete this entry?")) return;
+        const transaction = expenses.find(e => e.id === id);
+        if (!transaction) return;
+        
+        // Check if user can delete this transaction
+        if (!canDeleteTransaction(transaction)) {
+            showToast("Only the sender can delete this transaction");
+            return;
+        }
+        
+        if (!confirm("Delete this entry? This will affect both sender and receiver balances.")) return;
+        
         try {
             await db.collection("expenses").doc(id).delete();
             expenses = expenses.filter(e => e.id !== id);
@@ -540,6 +644,12 @@
     
     // Edit Modal
     function openEditModal(transaction) {
+        // Only sender or admin can edit
+        if (!userProfile?.isAdmin && transaction.userId !== currentUser.uid) {
+            showToast("Only the sender can edit this transaction");
+            return;
+        }
+        
         const modal = document.createElement('div');
         modal.className = 'modal-mask';
         const categories = transaction.type === 'EXPENSE' ? expenseCategories : incomeCategories;
@@ -555,7 +665,7 @@
                 <input type="text" id="editDesc" placeholder="Description" class="input-field" value="${transaction.description || ''}">
                 ${transaction.type === 'EXPENSE' ? `
                 <select id="editMention" class="select-field">
-                    <option value="">Mention User (Money goes to this person)</option>
+                    <option value="">Send money to (Optional - select user)</option>
                     ${allUsers.filter(u => u.id !== transaction.userId).map(u => `<option value="${u.id}" ${transaction.mentionedUserId === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
                 </select>
                 ` : ''}
@@ -632,13 +742,32 @@
         
         const fundSelect = document.getElementById('fundUserId');
         if (fundSelect && userProfile?.isAdmin) {
-            fundSelect.innerHTML = '';
+            fundSelect.innerHTML = '<option value="">Select User</option>';
+            allUsers.forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user.id;
+                opt.textContent = `${user.name} (₹${calculateBalance(user.id).toFixed(2)})`;
+                fundSelect.appendChild(opt);
+            });
+        }
+        
+        // Transfer dropdowns
+        const transferFrom = document.getElementById('transferFromUser');
+        const transferTo = document.getElementById('transferToUser');
+        if (transferFrom && transferTo && userProfile?.isAdmin) {
+            const currentFrom = transferFrom.value;
+            const currentTo = transferTo.value;
+            transferFrom.innerHTML = '<option value="">Select Sender</option>';
+            transferTo.innerHTML = '<option value="">Select Receiver</option>';
             allUsers.forEach(user => {
                 const opt = document.createElement('option');
                 opt.value = user.id;
                 opt.textContent = user.name;
-                fundSelect.appendChild(opt);
+                transferFrom.appendChild(opt.cloneNode(true));
+                transferTo.appendChild(opt);
             });
+            if (allUsers.some(u => u.id === currentFrom)) transferFrom.value = currentFrom;
+            if (allUsers.some(u => u.id === currentTo)) transferTo.value = currentTo;
         }
         
         // Default category dropdown
@@ -657,6 +786,7 @@
     
     function getTransactionDisplay(exp, isAdminView = false, forCurrentUser = null) {
         const isExpense = exp.type === "EXPENSE";
+        const isTransfer = exp.category === "Money Transfer" && exp.mentionedUserId;
         const isIncoming = (exp.mentionedUserId === (forCurrentUser || currentUser?.uid) && isExpense);
         const isOutgoing = (exp.userId === (forCurrentUser || currentUser?.uid) && isExpense);
         const isIncome = (exp.type === "INCOME" && exp.userId === (forCurrentUser || currentUser?.uid));
@@ -665,7 +795,15 @@
         let color = "#2ED15E";
         let prefix = "";
         
-        if (isOutgoing) {
+        if (isOutgoing && isTransfer) {
+            sign = "-";
+            color = "#F59E0B";
+            prefix = "Sent to";
+        } else if (isIncoming && isTransfer) {
+            sign = "+";
+            color = "#F59E0B";
+            prefix = "Received from";
+        } else if (isOutgoing) {
             sign = "-";
             color = "#FF5E6E";
             prefix = "Paid";
@@ -677,31 +815,29 @@
             sign = "+";
             color = "#2ED15E";
             prefix = "Income";
-        } else if (isExpense && exp.userId === (forCurrentUser || currentUser?.uid)) {
-            sign = "-";
-            color = "#FF5E6E";
-            prefix = "Paid";
         }
         
         let title = "";
         if (exp.mentionedUserId && isExpense) {
             if (exp.userId === (forCurrentUser || currentUser?.uid)) {
-                title = `📤 ${prefix} ${exp.category} → ${getUserName(exp.mentionedUserId)}`;
+                title = `${prefix} ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
             } else if (exp.mentionedUserId === (forCurrentUser || currentUser?.uid)) {
-                title = `📥 ${prefix} ${getUserName(exp.userId)} for ${exp.category}`;
+                title = `${prefix} ${getUserName(exp.userId)} for ${exp.category}`;
             } else {
-                title = `🔄 ${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+                title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
             }
         } else if (isExpense) {
-            title = `📤 ${prefix} ${exp.category}`;
+            title = `${prefix} ${exp.category}`;
         } else {
-            title = `💰 ${prefix} ${exp.category}`;
+            title = `${prefix} ${exp.category}`;
         }
         
         const userTag = isAdminView ? `<span class="expense-user">👤 ${getUserName(exp.userId)}</span>` : '';
-        const mentionBadge = exp.mentionedUserId ? `<span class="${exp.userId === (forCurrentUser || currentUser?.uid) ? 'debit-badge' : 'credit-badge'}">${exp.userId === (forCurrentUser || currentUser?.uid) ? '→ Sent' : '← Received'}</span>` : '';
         
-        return { title, sign, color, userTag, mentionBadge };
+        // Determine if delete should be disabled for receiver
+        const isDeleteDisabled = !isAdminView && !canDeleteTransaction(exp);
+        
+        return { title, sign, color, userTag, isDeleteDisabled };
     }
     
     function renderActivity() {
@@ -727,18 +863,20 @@
         }
         
         container.innerHTML = filtered.map(exp => {
-            const { title, sign, color, mentionBadge } = getTransactionDisplay(exp, false, currentUser.uid);
+            const { title, sign, color, isDeleteDisabled } = getTransactionDisplay(exp, false, currentUser.uid);
             const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')"><img src="${exp.photoURL}" style="width:100%;height:100%;object-fit:cover;"></div>` : `<div class="photo-thumb">📷</div>`;
+            const deleteClass = isDeleteDisabled ? 'delete-btn disabled' : 'delete-btn';
+            const deleteDisabledAttr = isDeleteDisabled ? 'disabled' : '';
             return `
                 <div class="expense-card">
                     <div class="expense-row">
                         <div class="expense-info">
-                            <div class="expense-category">${title} ${mentionBadge}</div>
+                            <div class="expense-category">${title}</div>
                             <div class="expense-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
                         </div>
                         <div class="action-buttons-card">
                             <button class="edit-btn" data-id="${exp.id}">✏️</button>
-                            <button class="delete-btn" data-id="${exp.id}">🗑️</button>
+                            <button class="${deleteClass}" data-id="${exp.id}" ${deleteDisabledAttr}>🗑️</button>
                             <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
                         </div>
                     </div>
@@ -747,7 +885,7 @@
             `;
         }).join('');
         
-        document.querySelectorAll('.delete-btn').forEach(btn => {
+        document.querySelectorAll('.delete-btn:not(.disabled)').forEach(btn => {
             btn.onclick = () => deleteTransaction(btn.getAttribute('data-id'));
         });
         document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -889,7 +1027,7 @@
     function renderAnalytics() {
         const filterType = document.getElementById('analyticsFilterType').value;
         const range = getDateRange(filterType);
-        let filtered = expenses.filter(e => e.type === "EXPENSE");
+        let filtered = expenses.filter(e => e.type === "EXPENSE" && e.category !== "Money Transfer");
         if (range) filtered = filtered.filter(e => e.timestamp >= range.start && e.timestamp < range.end);
         
         const totals = {};
@@ -1163,6 +1301,29 @@
     document.getElementById('addMoneyBtn').onclick = () => openModal('INCOME');
     document.getElementById('floatingMicBtn').onclick = startQuickVoice;
     
+    // Send Money Button
+    document.getElementById('sendMoneyBtn')?.addEventListener('click', async () => {
+        const fromUserId = document.getElementById('transferFromUser').value;
+        const toUserId = document.getElementById('transferToUser').value;
+        const amount = parseFloat(document.getElementById('transferAmount').value);
+        const note = document.getElementById('transferNote').value;
+        
+        if (!fromUserId || !toUserId) {
+            showToast("Please select both sender and receiver");
+            return;
+        }
+        if (isNaN(amount) || amount <= 0) {
+            showToast("Please enter a valid amount");
+            return;
+        }
+        
+        await sendMoney(fromUserId, toUserId, amount, note);
+        
+        // Clear form
+        document.getElementById('transferAmount').value = '';
+        document.getElementById('transferNote').value = '';
+    });
+    
     document.querySelectorAll('.tab').forEach(tab => {
         tab.onclick = () => {
             currentTab = tab.getAttribute('data-tab');
@@ -1234,10 +1395,10 @@
     document.getElementById('addFundsBtn').onclick = () => {
         const userId = document.getElementById('fundUserId').value;
         const amount = parseFloat(document.getElementById('fundAmount').value);
-        if (amount && amount > 0) {
+        if (userId && amount && amount > 0) {
             addFundsToUser(userId, amount);
             document.getElementById('fundAmount').value = '';
-        } else showToast("Valid amount required");
+        } else showToast("Select user and valid amount");
     };
     document.getElementById('downloadFullReportBtn').onclick = () => {
         let csv = "Date,Type,Category,Amount,Description,From User,To User\n";
