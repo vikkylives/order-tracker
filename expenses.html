@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>DesignSpace Khata | Secure Ledger</title>
+    <title>DesignSpace Khata | Smart Ledger</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -24,7 +24,6 @@
         .login-btn { background: #6C4DFF; border: none; padding: 16px; border-radius: 60px; width: 100%; font-weight: 700; font-size: 18px; color: white; cursor: pointer; margin-top: 12px; transition: 0.2s; }
         .switch-mode { background: transparent; border: none; color: #6C4DFF; margin-top: 16px; cursor: pointer; font-size: 14px; }
         .error-msg { color: #FF5E6E; font-size: 13px; margin-top: 12px; }
-        .success-msg { color: #2ED15E; font-size: 13px; margin-top: 12px; }
         
         .app-container { max-width: 600px; margin: 0 auto; padding: 20px 16px 100px; display: none; }
         .cred-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
@@ -59,7 +58,8 @@
         .stat-value { font-size: 20px; font-weight: 700; }
         
         .expense-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-bottom: 20px; }
-        .expense-card { background: #13141E; border-radius: 24px; padding: 14px; border: 1px solid #282D3A; }
+        .expense-card { background: #13141E; border-radius: 24px; padding: 14px; border: 1px solid #282D3A; transition: 0.2s; }
+        .expense-card:hover { border-color: #6C4DFF; }
         .expense-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
         .expense-info { flex: 1; }
         .expense-user { display: inline-block; background: #6C4DFF20; color: #6C4DFF; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
@@ -67,6 +67,8 @@
         .expense-meta { font-size: 11px; color: #8B93B0; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
         .expense-amount { font-weight: 800; font-size: 18px; }
         .photo-thumb { width: 40px; height: 40px; background: #262B3C; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+        .action-buttons-card { display: flex; gap: 8px; align-items: center; }
+        .edit-btn { background: none; border: none; color: #F59E0B; font-size: 18px; cursor: pointer; padding: 0 8px; }
         .delete-btn { background: none; border: none; color: #6B7280; font-size: 18px; cursor: pointer; padding: 0 8px; }
         
         .settings-panel { background: #13141E; border-radius: 28px; padding: 20px; margin-bottom: 24px; border: 1px solid #2A2D3E; }
@@ -83,7 +85,7 @@
         
         .chart-container { background: #13141E; border-radius: 24px; padding: 16px; border: 1px solid #262836; margin-bottom: 20px; height: 300px; width: 100%; }
         
-        .floating-mic { position: fixed; bottom: 30px; right: 20px; background: #6C4DFF; width: 60px; height: 60px; border-radius: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(108,77,255,0.4); cursor: pointer; z-index: 200; font-size: 28px; border: none; color: white; }
+        .floating-mic { position: fixed; bottom: 30px; right: 20px; background: #6C4DFF; width: 60px; height: 60px; border-radius: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(108,77,255,0.4); cursor: pointer; z-index: 200; font-size: 28px; border: none; color: white; transition: 0.2s; }
         .floating-mic.listening { background: #FF5E6E; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         
@@ -94,11 +96,18 @@
         .photo-preview { background: #0E0F17; border-radius: 28px; padding: 12px; text-align: center; margin: 12px 0; border: 1px dashed #4B4F6E; cursor: pointer; }
         .flex-btns { display: flex; gap: 12px; margin-top: 16px; }
         .voice-icon { background: #2D3042; border-radius: 60px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; }
+        
+        .voice-confirm-modal { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: #1E1F2A; padding: 16px 24px; border-radius: 60px; z-index: 4000; border: 2px solid #6C4DFF; animation: slideUp 0.3s ease; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .voice-confirm-modal button { background: #6C4DFF; border: none; padding: 8px 20px; border-radius: 40px; color: white; cursor: pointer; font-weight: 600; }
+        .voice-confirm-modal .cancel { background: #2A2D3E; }
+        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        
         .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #1E1F2A; padding: 10px 20px; border-radius: 60px; z-index: 4000; border: 1px solid #6C4DFF; animation: fadeUp 0.3s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         
         .demo-creds { background: #1A1C26; border-radius: 16px; padding: 16px; margin-top: 20px; font-size: 13px; text-align: left; border: 1px solid #2C3142; }
-        .demo-creds p { margin: 4px 0; color: #8B93B0; }
+        .credit-badge { background: #2ED15E20; color: #2ED15E; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
+        .debit-badge { background: #FF5E6E20; color: #FF5E6E; padding: 2px 8px; border-radius: 20px; font-size: 10px; margin-left: 8px; }
     </style>
 </head>
 <body>
@@ -131,7 +140,6 @@
         </div>
         
         <div id="loginError" class="error-msg"></div>
-        <div id="loginSuccess" class="success-msg"></div>
     </div>
 </div>
 
@@ -241,6 +249,12 @@
                     <input type="text" id="newExpenseCat" placeholder="New expense category">
                     <button id="addExpenseCatBtn">Add</button>
                 </div>
+                <div class="add-cat-row" style="margin-top: 8px;">
+                    <select id="defaultExpenseCat" class="filter-select">
+                        <option value="">Set Default Category (for unrecognized)</option>
+                    </select>
+                    <button id="setDefaultCatBtn">Set Default</button>
+                </div>
             </div>
             <div style="margin-top: 24px;">
                 <h4>💰 Income Categories</h4>
@@ -290,12 +304,13 @@
     const db = firebase.firestore();
     
     // App State
-    let currentUser = null; // Firebase user object
-    let userProfile = null; // User profile from Firestore
+    let currentUser = null;
+    let userProfile = null;
     let expenses = [];
     let allUsers = [];
     let expenseCategories = ["Cutting", "Punching", "Lamination", "Tea", "Coffee", "Transport", "Stationery", "Food", "Other"];
     let incomeCategories = ["Salary", "Petty Cash", "Client Payment", "Reimbursement", "Advance", "Other"];
+    let defaultExpenseCategory = "Other";
     let currentTab = "activity";
     let filterState = { type: "month", category: "all", search: "" };
     let adminFilterState = { user: "all", category: "all", search: "" };
@@ -315,19 +330,21 @@
         return user ? user.name : "Unknown";
     }
     
-    function getUserEmail(userId) {
-        const user = allUsers.find(u => u.id === userId);
-        return user ? user.email : "";
-    }
-    
     function calculateBalance(userId) {
         let balance = 0;
         expenses.forEach(exp => {
-            if (exp.userId === userId) {
-                if (exp.type === "INCOME") balance += exp.amount;
-                if (exp.type === "EXPENSE") balance -= exp.amount;
+            // User spent money (expense)
+            if (exp.userId === userId && exp.type === "EXPENSE") {
+                balance -= exp.amount;
             }
-            if (exp.mentionedUserId === userId && exp.type === "EXPENSE") balance += exp.amount;
+            // User received money (income)
+            if (exp.userId === userId && exp.type === "INCOME") {
+                balance += exp.amount;
+            }
+            // User was mentioned in an expense (they received money from someone else)
+            if (exp.mentionedUserId === userId && exp.type === "EXPENSE") {
+                balance += exp.amount;
+            }
         });
         return balance;
     }
@@ -362,18 +379,48 @@
         return null;
     }
     
+    // Voice Confirmation Popup
+    function showVoiceConfirmPopup(details, onConfirm) {
+        const existingPopup = document.querySelector('.voice-confirm-modal');
+        if (existingPopup) existingPopup.remove();
+        
+        const popup = document.createElement('div');
+        popup.className = 'voice-confirm-modal';
+        popup.innerHTML = `
+            <span>🎤 Voice detected:</span>
+            <span style="font-weight: 600;">${details.category} ₹${details.amount}</span>
+            <span style="font-size: 12px; color: #8B93B0;">${details.description || ""}</span>
+            ${details.mention ? `<span style="background: #2A2D3E; padding: 2px 8px; border-radius: 20px;">→ ${details.mention}</span>` : ''}
+            <button id="voiceConfirmYes">✓ Add</button>
+            <button id="voiceConfirmNo" class="cancel">✗ Cancel</button>
+        `;
+        document.body.appendChild(popup);
+        
+        document.getElementById('voiceConfirmYes').onclick = () => {
+            popup.remove();
+            onConfirm(true);
+        };
+        document.getElementById('voiceConfirmNo').onclick = () => {
+            popup.remove();
+            onConfirm(false);
+            showToast("Voice command cancelled");
+        };
+        
+        setTimeout(() => {
+            if (document.body.contains(popup)) popup.remove();
+        }, 15000);
+    }
+    
     // Firestore Operations
     async function loadUserData() {
         if (!currentUser) return;
         
         try {
-            // Load user profile
             const userDoc = await db.collection("users").doc(currentUser.uid).get();
             if (userDoc.exists) {
                 userProfile = userDoc.data();
                 userProfile.id = currentUser.uid;
             } else {
-                // Create profile for new user
                 userProfile = {
                     name: currentUser.email.split('@')[0],
                     email: currentUser.email,
@@ -383,30 +430,22 @@
                 await db.collection("users").doc(currentUser.uid).set(userProfile);
             }
             
-            // Load all users (for admin and mentions)
+            // Load all users
             const usersSnapshot = await db.collection("users").get();
             allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            // Load expenses (only user's own expenses + where mentioned)
-            const expensesSnapshot = await db.collection("expenses")
-                .where("userId", "==", currentUser.uid)
-                .get();
-            const mentionedSnapshot = await db.collection("expenses")
-                .where("mentionedUserId", "==", currentUser.uid)
-                .get();
-            
-            const userExpenses = expensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const mentionedExpenses = mentionedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            expenses = [...userExpenses, ...mentionedExpenses];
-            expenses = [...new Map(expenses.map(e => [e.id, e])).values()];
+            // Load ALL expenses for admin
+            const expensesSnapshot = await db.collection("expenses").get();
+            expenses = expensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             expenses.sort((a, b) => b.timestamp - a.timestamp);
             
-            // Load categories from metadata
-            const metaDoc = await db.collection("metadata").doc("categories").get();
+            // Load categories and settings
+            const metaDoc = await db.collection("metadata").doc("settings").get();
             if (metaDoc.exists) {
                 const data = metaDoc.data();
                 if (data.expenseCategories) expenseCategories = data.expenseCategories;
                 if (data.incomeCategories) incomeCategories = data.incomeCategories;
+                if (data.defaultExpenseCategory) defaultExpenseCategory = data.defaultExpenseCategory;
             }
             
             document.getElementById('cloudIcon').innerHTML = '🔒';
@@ -423,6 +462,14 @@
     async function addTransaction(type, category, amount, description, mentionedUserId = null, photoFile = null, customDate = null) {
         if (amount <= 0) { showToast("Invalid amount"); return false; }
         
+        // If category is not recognized, use default
+        const allValidCats = [...expenseCategories, ...incomeCategories];
+        let finalCategory = category;
+        if (!allValidCats.includes(category)) {
+            finalCategory = defaultExpenseCategory;
+            showToast(`Category "${category}" not found, using "${defaultExpenseCategory}"`);
+        }
+        
         let photoURL = null;
         if (photoFile) photoURL = await compressImage(photoFile);
         
@@ -431,7 +478,7 @@
         const newEntry = {
             userId: currentUser.uid,
             type: type,
-            category: category,
+            category: finalCategory,
             amount: amount,
             description: description || "",
             date: entryDate,
@@ -446,11 +493,34 @@
             const savedEntry = { id: docRef.id, ...newEntry };
             expenses.push(savedEntry);
             renderAll();
-            showToast(`${type === "EXPENSE" ? "Expense" : "Income"} added: ₹${amount}`);
+            
+            // Show appropriate success message
+            if (mentionedUserId) {
+                showToast(`${type === "EXPENSE" ? "Expense" : "Transfer"} added: ₹${amount} from ${getUserName(currentUser.uid)} → ${getUserName(mentionedUserId)}`);
+            } else {
+                showToast(`${type === "EXPENSE" ? "Expense" : "Income"} added: ₹${amount}`);
+            }
             return true;
         } catch (e) {
             console.error("Add error:", e);
             showToast("Error adding transaction");
+            return false;
+        }
+    }
+    
+    async function updateTransaction(id, updatedData) {
+        try {
+            await db.collection("expenses").doc(id).update(updatedData);
+            const index = expenses.findIndex(e => e.id === id);
+            if (index !== -1) {
+                expenses[index] = { ...expenses[index], ...updatedData };
+            }
+            renderAll();
+            showToast("Transaction updated");
+            return true;
+        } catch (e) {
+            console.error("Update error:", e);
+            showToast("Error updating transaction");
             return false;
         }
     }
@@ -468,30 +538,53 @@
         }
     }
     
-    async function addUser(name, email, password) {
-        try {
-            // Create auth user
-            const userCred = await auth.createUserWithEmailAndPassword(email, password);
-            // Create profile
-            await db.collection("users").doc(userCred.user.uid).set({
-                name: name,
-                email: email,
-                isAdmin: false,
-                createdAt: new Date()
-            });
-            showToast(`User ${name} created`);
-            if (userProfile?.isAdmin) await loadUserData();
-        } catch (e) {
-            console.error("Add user error:", e);
-            showToast(e.message);
-        }
-    }
-    
-    async function addFundsToUser(userId, amount) {
-        if (isNaN(amount) || amount <= 0) return showToast("Valid amount required");
+    // Edit Modal
+    function openEditModal(transaction) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-mask';
+        const categories = transaction.type === 'EXPENSE' ? expenseCategories : incomeCategories;
         
-        await addTransaction("INCOME", "Admin Fund", amount, "Funds added by admin", null, null);
-        showToast(`₹${amount} added to user`);
+        modal.innerHTML = `
+            <div class="modal-container">
+                <div class="modal-title">✏️ Edit ${transaction.type === "EXPENSE" ? "Expense" : "Income"}</div>
+                <input type="date" id="editDate" class="date-field" value="${transaction.date}">
+                <select id="editCat" class="select-field">
+                    ${categories.map(c => `<option value="${c}" ${c === transaction.category ? 'selected' : ''}>${c}</option>`).join('')}
+                </select>
+                <input type="number" id="editAmt" placeholder="Amount (₹)" class="input-field" value="${transaction.amount}">
+                <input type="text" id="editDesc" placeholder="Description" class="input-field" value="${transaction.description || ''}">
+                ${transaction.type === 'EXPENSE' ? `
+                <select id="editMention" class="select-field">
+                    <option value="">Mention User (Money goes to this person)</option>
+                    ${allUsers.filter(u => u.id !== transaction.userId).map(u => `<option value="${u.id}" ${transaction.mentionedUserId === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+                </select>
+                ` : ''}
+                <div class="flex-btns">
+                    <button id="saveEditBtn" class="primary-btn">Save Changes</button>
+                    <button id="cancelEditBtn" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        modal.querySelector('#saveEditBtn').onclick = async () => {
+            const updated = {
+                date: modal.querySelector('#editDate').value,
+                category: modal.querySelector('#editCat').value,
+                amount: parseFloat(modal.querySelector('#editAmt').value),
+                description: modal.querySelector('#editDesc').value,
+            };
+            if (transaction.type === 'EXPENSE') {
+                updated.mentionedUserId = modal.querySelector('#editMention').value || null;
+            }
+            if (isNaN(updated.amount) || updated.amount <= 0) {
+                showToast("Valid amount required");
+                return;
+            }
+            await updateTransaction(transaction.id, updated);
+            modal.remove();
+        };
+        modal.querySelector('#cancelEditBtn').onclick = () => modal.remove();
     }
     
     // Render Functions
@@ -547,6 +640,68 @@
                 fundSelect.appendChild(opt);
             });
         }
+        
+        // Default category dropdown
+        const defaultCatSelect = document.getElementById('defaultExpenseCat');
+        if (defaultCatSelect && userProfile?.isAdmin) {
+            defaultCatSelect.innerHTML = '<option value="">Select default category</option>';
+            expenseCategories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                if (cat === defaultExpenseCategory) opt.selected = true;
+                defaultCatSelect.appendChild(opt);
+            });
+        }
+    }
+    
+    function getTransactionDisplay(exp, isAdminView = false, forCurrentUser = null) {
+        const isExpense = exp.type === "EXPENSE";
+        const isIncoming = (exp.mentionedUserId === (forCurrentUser || currentUser?.uid) && isExpense);
+        const isOutgoing = (exp.userId === (forCurrentUser || currentUser?.uid) && isExpense);
+        const isIncome = (exp.type === "INCOME" && exp.userId === (forCurrentUser || currentUser?.uid));
+        
+        let sign = "+";
+        let color = "#2ED15E";
+        let prefix = "";
+        
+        if (isOutgoing) {
+            sign = "-";
+            color = "#FF5E6E";
+            prefix = "Paid";
+        } else if (isIncoming) {
+            sign = "+";
+            color = "#2ED15E";
+            prefix = "Received from";
+        } else if (isIncome) {
+            sign = "+";
+            color = "#2ED15E";
+            prefix = "Income";
+        } else if (isExpense && exp.userId === (forCurrentUser || currentUser?.uid)) {
+            sign = "-";
+            color = "#FF5E6E";
+            prefix = "Paid";
+        }
+        
+        let title = "";
+        if (exp.mentionedUserId && isExpense) {
+            if (exp.userId === (forCurrentUser || currentUser?.uid)) {
+                title = `📤 ${prefix} ${exp.category} → ${getUserName(exp.mentionedUserId)}`;
+            } else if (exp.mentionedUserId === (forCurrentUser || currentUser?.uid)) {
+                title = `📥 ${prefix} ${getUserName(exp.userId)} for ${exp.category}`;
+            } else {
+                title = `🔄 ${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+            }
+        } else if (isExpense) {
+            title = `📤 ${prefix} ${exp.category}`;
+        } else {
+            title = `💰 ${prefix} ${exp.category}`;
+        }
+        
+        const userTag = isAdminView ? `<span class="expense-user">👤 ${getUserName(exp.userId)}</span>` : '';
+        const mentionBadge = exp.mentionedUserId ? `<span class="${exp.userId === (forCurrentUser || currentUser?.uid) ? 'debit-badge' : 'credit-badge'}">${exp.userId === (forCurrentUser || currentUser?.uid) ? '→ Sent' : '← Received'}</span>` : '';
+        
+        return { title, sign, color, userTag, mentionBadge };
     }
     
     function renderActivity() {
@@ -572,22 +727,19 @@
         }
         
         container.innerHTML = filtered.map(exp => {
-            const isExpense = exp.type === "EXPENSE";
-            const sign = isExpense ? "-" : "+";
-            const color = isExpense ? "#FF5E6E" : "#2ED15E";
-            const title = isExpense ? `📤 ${exp.category}` : `💰 ${exp.category}`;
-            const mentionHtml = exp.mentionedUserId ? `<span style="background:#2A2D3E; padding:2px 8px; border-radius:20px; font-size:10px;">→ ${getUserName(exp.mentionedUserId)}</span>` : "";
+            const { title, sign, color, mentionBadge } = getTransactionDisplay(exp, false, currentUser.uid);
             const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')"><img src="${exp.photoURL}" style="width:100%;height:100%;object-fit:cover;"></div>` : `<div class="photo-thumb">📷</div>`;
             return `
                 <div class="expense-card">
                     <div class="expense-row">
                         <div class="expense-info">
-                            <div class="expense-category">${title} ${mentionHtml}</div>
+                            <div class="expense-category">${title} ${mentionBadge}</div>
                             <div class="expense-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
+                        <div class="action-buttons-card">
+                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
                             <button class="delete-btn" data-id="${exp.id}">🗑️</button>
+                            <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:flex-end; margin-top:8px;">${photoHtml}</div>
@@ -597,6 +749,13 @@
         
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.onclick = () => deleteTransaction(btn.getAttribute('data-id'));
+        });
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const transaction = expenses.find(e => e.id === id);
+                if (transaction) openEditModal(transaction);
+            };
         });
     }
     
@@ -626,24 +785,20 @@
         
         filtered.sort((a, b) => b.timestamp - a.timestamp);
         container.innerHTML = filtered.map(exp => {
-            const isExpense = exp.type === "EXPENSE";
-            const sign = isExpense ? "-" : "+";
-            const color = isExpense ? "#FF5E6E" : "#2ED15E";
-            const title = isExpense ? `📤 ${exp.category}` : `💰 ${exp.category}`;
-            const userTag = `<span class="expense-user">👤 ${getUserName(exp.userId)}</span>`;
-            const mentionHtml = exp.mentionedUserId ? `<span>→ ${getUserName(exp.mentionedUserId)}</span>` : "";
+            const { title, sign, color, userTag } = getTransactionDisplay(exp, true);
             const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')"><img src="${exp.photoURL}" style="width:100%;height:100%;object-fit:cover;"></div>` : `<div class="photo-thumb">📷</div>`;
             return `
                 <div class="expense-card">
                     <div class="expense-row">
                         <div class="expense-info">
                             ${userTag}
-                            <div class="expense-category">${title} ${mentionHtml}</div>
+                            <div class="expense-category">${title}</div>
                             <div class="expense-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
+                        <div class="action-buttons-card">
+                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
                             <button class="delete-btn" data-id="${exp.id}">🗑️</button>
+                            <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
                         </div>
                     </div>
                     <div style="display:flex; justify-content:flex-end; margin-top:8px;">${photoHtml}</div>
@@ -653,6 +808,13 @@
         
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.onclick = () => deleteTransaction(btn.getAttribute('data-id'));
+        });
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const transaction = expenses.find(e => e.id === id);
+                if (transaction) openEditModal(transaction);
+            };
         });
     }
     
@@ -680,9 +842,11 @@
                 const cat = btn.getAttribute('data-cat');
                 if (expenseCategories.length > 1) {
                     expenseCategories = expenseCategories.filter(c => c !== cat);
-                    await db.collection("metadata").doc("categories").set({
+                    if (defaultExpenseCategory === cat) defaultExpenseCategory = expenseCategories[0];
+                    await db.collection("metadata").doc("settings").set({
                         expenseCategories: expenseCategories,
-                        incomeCategories: incomeCategories
+                        incomeCategories: incomeCategories,
+                        defaultExpenseCategory: defaultExpenseCategory
                     }, { merge: true });
                     renderAll();
                 } else showToast("Need at least one category");
@@ -694,12 +858,30 @@
                 const cat = btn.getAttribute('data-cat');
                 if (incomeCategories.length > 1) {
                     incomeCategories = incomeCategories.filter(c => c !== cat);
-                    await db.collection("metadata").doc("categories").set({
+                    await db.collection("metadata").doc("settings").set({
                         expenseCategories: expenseCategories,
-                        incomeCategories: incomeCategories
+                        incomeCategories: incomeCategories,
+                        defaultExpenseCategory: defaultExpenseCategory
                     }, { merge: true });
                     renderAll();
                 } else showToast("Need at least one category");
+            };
+        });
+        
+        document.querySelectorAll('.delete-user').forEach(btn => {
+            btn.onclick = async () => {
+                const userId = btn.getAttribute('data-id');
+                const user = allUsers.find(u => u.id === userId);
+                if (user && !user.isAdmin && confirm(`Delete ${user.name}? All their transactions will be deleted.`)) {
+                    const userExpenses = expenses.filter(e => e.userId === userId || e.mentionedUserId === userId);
+                    for (const exp of userExpenses) {
+                        await db.collection("expenses").doc(exp.id).delete();
+                    }
+                    await db.collection("users").doc(userId).delete();
+                    await loadUserData();
+                    renderAll();
+                    showToast(`User ${user.name} deleted`);
+                }
             };
         });
     }
@@ -758,7 +940,7 @@
         else if (currentTab === 'analytics' && showAdmin) renderAnalytics();
     }
     
-    // Modal
+    // Modal for adding transaction
     function openModal(type) {
         const modal = document.createElement('div');
         modal.className = 'modal-mask';
@@ -767,24 +949,45 @@
         
         modal.innerHTML = `
             <div class="modal-container">
-                <div class="modal-title">${type === "EXPENSE" ? "Add Expense" : "Add Money"}</div>
+                <div class="modal-title">${type === "EXPENSE" ? "➕ Add Expense" : "💰 Add Money"}</div>
                 <div class="voice-icon" id="voiceBtn">🎙️ Voice Command</div>
                 <input type="date" id="transDate" class="date-field" value="${today}">
-                <select id="transCat" class="select-field"><option disabled selected>Select Category</option>${categories.map(c => `<option>${c}</option>`).join('')}</select>
+                <select id="transCat" class="select-field">
+                    <option value="" disabled selected>Select Category</option>
+                    ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
+                </select>
                 <input type="number" id="transAmt" placeholder="Amount (₹)" class="input-field">
                 <input type="text" id="transDesc" placeholder="Description" class="input-field">
-                ${type === 'EXPENSE' ? `<select id="transMention" class="select-field"><option value="">Mention User</option>${allUsers.filter(u => u.id !== currentUser.uid).map(u => `<option value="${u.id}">${u.name}</option>`).join('')}</select>` : ''}
-                <div id="photoArea" class="photo-preview">📸 Attach Photo</div>
+                ${type === 'EXPENSE' ? `
+                <select id="transMention" class="select-field">
+                    <option value="">Send money to (Optional - select user)</option>
+                    ${allUsers.filter(u => u.id !== currentUser.uid).map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+                </select>
+                <small style="color: #8B93B0; margin-top: -10px; display: block;">If you select a user, this amount will be deducted from you and added to them</small>
+                ` : ''}
+                <div id="photoArea" class="photo-preview">📸 Attach Photo (Optional)</div>
                 <input type="file" id="photoInput" accept="image/*" style="display:none">
-                <div class="flex-btns"><button id="confirmBtn" class="primary-btn">Save</button><button id="cancelBtn" class="secondary-btn">Cancel</button></div>
+                <div class="flex-btns">
+                    <button id="confirmBtn" class="primary-btn">Save</button>
+                    <button id="cancelBtn" class="secondary-btn">Cancel</button>
+                </div>
             </div>
         `;
         document.body.appendChild(modal);
         
         let selectedPhoto = null;
-        modal.querySelector('#photoArea').onclick = () => modal.querySelector('#photoInput').click();
-        modal.querySelector('#photoInput').onchange = async (e) => {
-            if (e.target.files[0]) { selectedPhoto = e.target.files[0]; modal.querySelector('#photoArea').innerHTML = '✅ Photo selected'; }
+        const photoArea = modal.querySelector('#photoArea');
+        const photoInput = modal.querySelector('#photoInput');
+        photoArea.onclick = () => photoInput.click();
+        photoInput.onchange = async (e) => {
+            if (e.target.files[0]) {
+                photoArea.innerHTML = '⏳ Compressing...';
+                selectedPhoto = e.target.files[0];
+                const compressed = await compressImage(selectedPhoto);
+                selectedPhoto = compressed;
+                photoArea.innerHTML = '✅ Photo attached';
+                photoArea.style.borderColor = '#2ED15E';
+            }
         };
         
         modal.querySelector('#voiceBtn').onclick = () => {
@@ -793,11 +996,37 @@
             rec.lang = 'en-IN';
             rec.onresult = (e) => {
                 const text = e.results[0][0].transcript;
-                const amt = text.match(/(\d+(?:\.\d+)?)/);
-                if (amt) modal.querySelector('#transAmt').value = parseFloat(amt[0]);
-                categories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) modal.querySelector('#transCat').value = c; });
-                modal.querySelector('#transDesc').value = text;
-                modal.querySelector('#voiceBtn').innerHTML = '✅ Voice captured';
+                const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
+                const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
+                let category = null;
+                categories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
+                let mentionedUser = null;
+                if (type === 'EXPENSE') {
+                    const foundUser = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
+                    if (foundUser) mentionedUser = foundUser.id;
+                }
+                
+                if (amount) {
+                    showVoiceConfirmPopup({
+                        category: category || defaultExpenseCategory,
+                        amount: amount,
+                        description: text,
+                        mention: mentionedUser ? getUserName(mentionedUser) : null
+                    }, async (confirmed) => {
+                        if (confirmed) {
+                            if (category) modal.querySelector('#transCat').value = category;
+                            modal.querySelector('#transAmt').value = amount;
+                            modal.querySelector('#transDesc').value = text;
+                            if (mentionedUser && type === 'EXPENSE') {
+                                modal.querySelector('#transMention').value = mentionedUser;
+                            }
+                            modal.querySelector('#voiceBtn').innerHTML = '✅ Voice captured';
+                            showToast("Voice captured, click Save to confirm");
+                        }
+                    });
+                } else {
+                    showToast("Could not detect amount. Try again.");
+                }
             };
             rec.start();
             modal.querySelector('#voiceBtn').innerHTML = '🎙️ Listening...';
@@ -809,28 +1038,51 @@
             const desc = modal.querySelector('#transDesc').value;
             const mention = type === 'EXPENSE' ? modal.querySelector('#transMention').value || null : null;
             const date = modal.querySelector('#transDate').value;
-            if (!amt || amt <= 0) return showToast("Valid amount");
-            if (!cat || cat === "Select Category") return showToast("Select category");
+            if (!amt || amt <= 0) return showToast("Valid amount required");
+            if (!cat || cat === "Select Category") return showToast("Select a category");
             await addTransaction(type, cat, amt, desc, mention, selectedPhoto, date);
             modal.remove();
         };
         modal.querySelector('#cancelBtn').onclick = () => modal.remove();
     }
     
-    function startVoice() {
+    // Quick Voice Command from Floating Mic
+    function startQuickVoice() {
         if (!('webkitSpeechRecognition' in window)) return showToast("Voice not supported");
         const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         rec.lang = 'en-IN';
         const micBtn = document.getElementById('floatingMicBtn');
         micBtn.classList.add('listening');
-        rec.onresult = async (e) => {
+        
+        rec.onresult = (e) => {
             const text = e.results[0][0].transcript;
             micBtn.classList.remove('listening');
             const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
-            if (!amtMatch) return showToast("No amount detected");
-            let category = expenseCategories[0];
+            const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
+            if (!amount) {
+                showToast("No amount detected. Say like 'Cutting 150'");
+                return;
+            }
+            let category = null;
             expenseCategories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
-            await addTransaction("EXPENSE", category, parseFloat(amtMatch[0]), "Voice: " + text);
+            let mentionedUser = null;
+            const foundUser = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
+            if (foundUser) mentionedUser = foundUser.id;
+            
+            showVoiceConfirmPopup({
+                category: category || defaultExpenseCategory,
+                amount: amount,
+                description: text,
+                mention: mentionedUser ? getUserName(mentionedUser) : null
+            }, async (confirmed) => {
+                if (confirmed) {
+                    await addTransaction("EXPENSE", category || defaultExpenseCategory, amount, "Voice: " + text, mentionedUser, null);
+                }
+            });
+        };
+        rec.onerror = () => {
+            micBtn.classList.remove('listening');
+            showToast("Voice recognition failed");
         };
         rec.onend = () => micBtn.classList.remove('listening');
         rec.start();
@@ -839,7 +1091,7 @@
     // Auth Functions
     async function login(email, password) {
         try {
-            const userCred = await auth.signInWithEmailAndPassword(email, password);
+            await auth.signInWithEmailAndPassword(email, password);
             showToast("Login successful!");
             document.getElementById('loginError').innerText = "";
         } catch (e) {
@@ -909,7 +1161,7 @@
     document.getElementById('logoutBtn').onclick = logout;
     document.getElementById('addExpenseBtn').onclick = () => openModal('EXPENSE');
     document.getElementById('addMoneyBtn').onclick = () => openModal('INCOME');
-    document.getElementById('floatingMicBtn').onclick = startVoice;
+    document.getElementById('floatingMicBtn').onclick = startQuickVoice;
     
     document.querySelectorAll('.tab').forEach(tab => {
         tab.onclick = () => {
@@ -932,26 +1184,40 @@
         const cat = document.getElementById('newExpenseCat').value.trim();
         if (cat && !expenseCategories.includes(cat)) {
             expenseCategories.push(cat);
-            await db.collection("metadata").doc("categories").set({
+            await db.collection("metadata").doc("settings").set({
                 expenseCategories: expenseCategories,
-                incomeCategories: incomeCategories
+                incomeCategories: incomeCategories,
+                defaultExpenseCategory: defaultExpenseCategory
             }, { merge: true });
             renderAll();
             document.getElementById('newExpenseCat').value = '';
             showToast("Added");
-        }
+        } else showToast("Category exists or empty");
     };
     document.getElementById('addIncomeCatBtn').onclick = async () => {
         const cat = document.getElementById('newIncomeCat').value.trim();
         if (cat && !incomeCategories.includes(cat)) {
             incomeCategories.push(cat);
-            await db.collection("metadata").doc("categories").set({
+            await db.collection("metadata").doc("settings").set({
                 expenseCategories: expenseCategories,
-                incomeCategories: incomeCategories
+                incomeCategories: incomeCategories,
+                defaultExpenseCategory: defaultExpenseCategory
             }, { merge: true });
             renderAll();
             document.getElementById('newIncomeCat').value = '';
             showToast("Added");
+        } else showToast("Category exists or empty");
+    };
+    document.getElementById('setDefaultCatBtn').onclick = async () => {
+        const newDefault = document.getElementById('defaultExpenseCat').value;
+        if (newDefault) {
+            defaultExpenseCategory = newDefault;
+            await db.collection("metadata").doc("settings").set({
+                expenseCategories: expenseCategories,
+                incomeCategories: incomeCategories,
+                defaultExpenseCategory: defaultExpenseCategory
+            }, { merge: true });
+            showToast(`Default category set to: ${defaultExpenseCategory}`);
         }
     };
     document.getElementById('addUserAdminBtn').onclick = () => {
@@ -971,19 +1237,42 @@
         if (amount && amount > 0) {
             addFundsToUser(userId, amount);
             document.getElementById('fundAmount').value = '';
-        }
+        } else showToast("Valid amount required");
     };
     document.getElementById('downloadFullReportBtn').onclick = () => {
-        let csv = "Date,Type,Category,Amount,Description,User,To/From\n";
+        let csv = "Date,Type,Category,Amount,Description,From User,To User\n";
         expenses.forEach(e => {
-            csv += `"${e.date}","${e.type}","${e.category}",${e.amount},"${e.description || ""}","${getUserName(e.userId)}","${e.mentionedUserId ? getUserName(e.mentionedUserId) : ""}"\n`;
+            const fromUser = getUserName(e.userId);
+            const toUser = e.mentionedUserId ? getUserName(e.mentionedUserId) : "";
+            csv += `"${e.date}","${e.type}","${e.category}",${e.amount},"${e.description || ""}","${fromUser}","${toUser}"\n`;
         });
         const blob = new Blob([csv], { type: "text/csv" });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `khata_report_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
+        showToast("Report downloaded");
     };
+    
+    async function addUser(name, email, password) {
+        try {
+            const userCred = await auth.createUserWithEmailAndPassword(email, password);
+            await db.collection("users").doc(userCred.user.uid).set({
+                name: name,
+                email: email,
+                isAdmin: false,
+                createdAt: new Date()
+            });
+            await loadUserData();
+            showToast(`User ${name} created`);
+        } catch (e) {
+            showToast(e.message);
+        }
+    }
+    
+    async function addFundsToUser(userId, amount) {
+        await addTransaction("INCOME", "Admin Fund", amount, "Funds added by admin", null, null);
+    }
     
     // Auth State Listener
     auth.onAuthStateChanged(async (user) => {
