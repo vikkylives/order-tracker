@@ -253,6 +253,116 @@
             cursor: pointer;
         }
         .lightbox img { max-width: 85%; max-height: 85%; border-radius: 1rem; }
+        
+        /* Reports & Share Modal Overlay Elements */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 12, 24, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 2500;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: var(--text-primary);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+        }
+        .report-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 1.2rem;
+        }
+        .report-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .report-field label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .report-input {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.8rem;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            outline: none;
+            width: 100%;
+        }
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .rep-stat-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 12px;
+            text-align: center;
+        }
+        .rep-stat-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .rep-stat-lbl {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        .report-results-wrapper {
+            background: rgba(0,0,0,0.2);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            text-align: left;
+        }
+        .report-table th {
+            background: rgba(255,255,255,0.04);
+            padding: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+        .report-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+        .report-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
         .login-container {
             display: flex;
             align-items: center;
@@ -294,8 +404,9 @@
                 <img src="ds icon.png" alt="Design Space">
                 <span>ItemFlow · Staff</span>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button id="themeToggle" class="theme-toggle"><i class="fas fa-moon"></i> Dark</button>
+                <button id="analyticsReportsBtn" class="btn-icon"><i class="fas fa-chart-line"></i> Analytics &amp; Reports</button>
                 <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Item / Order / Customer / Phone"></div>
                 <button id="logoutBtn" class="btn-icon"><i class="fas fa-sign-out-alt"></i> Exit</button>
             </div>
@@ -318,6 +429,156 @@
 
         <div id="itemsContainer" class="items-grid">
             <div class="glass-card" style="text-align: center;">Loading items...</div>
+        </div>
+    </div>
+
+    <!-- Analytics & Reports Modal Layout -->
+    <div id="analyticsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-print" style="color: var(--accent); font-size: 1.4rem;"></i>
+                    <div>
+                        <h2 style="font-size: 1.1rem; font-weight: 700;">Production &amp; Billing Report</h2>
+                        <p style="font-size: 0.65rem; color: var(--text-secondary);">Filter active order structures &amp; items of Design Space</p>
+                    </div>
+                </div>
+                <button id="closeReportsBtn" class="btn-icon" style="border-radius: 50%; padding: 6px 10px;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Parameters Selection Grid -->
+            <div class="report-form-grid">
+                <div class="report-field">
+                    <label>From Date</label>
+                    <input type="date" id="repFromDate" class="report-input">
+                </div>
+                <div class="report-field">
+                    <label>To Date</label>
+                    <input type="date" id="repToDate" class="report-input">
+                </div>
+                <div class="report-field">
+                    <label>Date Filter Basis</label>
+                    <select id="repDateBasis" class="report-input">
+                        <option value="order">Order Created Date</option>
+                        <option value="due">Job Target Due Date</option>
+                    </select>
+                </div>
+                <div class="report-field">
+                    <label>Client / Customer</label>
+                    <select id="repClient" class="report-input">
+                        <option value="all">All Clients</option>
+                    </select>
+                </div>
+                <div class="report-field">
+                    <label>Type of Print (Engine)</label>
+                    <select id="repPrintType" class="report-input">
+                        <option value="all">All Print Engines</option>
+                    </select>
+                </div>
+                <div class="report-field">
+                    <label>Product / Item Search</label>
+                    <input type="text" id="repProductSearch" class="report-input" placeholder="Keyword matching...">
+                </div>
+            </div>
+
+            <!-- Dynamic Column Selector Options (NEW) -->
+            <div style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 1rem; align-items: center;">
+                <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; width: 100%; display: block; margin-bottom: 2px; letter-spacing: 0.5px;">Include in Report Columns</span>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-primary); cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="repOptPhoto" checked style="width: 16px; height: 16px; accent-color: var(--accent);">
+                    <i class="fas fa-image" style="color: var(--accent); opacity: 0.85;"></i> Mockup Photo
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-primary); cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="repOptDates" checked style="width: 16px; height: 16px; accent-color: var(--accent);">
+                    <i class="far fa-calendar-alt" style="color: #a78bfa; opacity: 0.85;"></i> Dates (Order &amp; Due)
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-primary); cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="repOptSpecs" checked style="width: 16px; height: 16px; accent-color: var(--accent);">
+                    <i class="fas fa-layer-group" style="color: #f59e0b; opacity: 0.85;"></i> Item Specifications
+                </label>
+            </div>
+
+            <!-- Financials & Volumes Summary Section -->
+            <div class="report-stats">
+                <div class="rep-stat-card">
+                    <div class="rep-stat-val" id="repStatTotalJobs">0</div>
+                    <div class="rep-stat-lbl">Matched Items</div>
+                </div>
+                <div class="rep-stat-card">
+                    <div class="rep-stat-val" id="repStatTotalQty">0</div>
+                    <div class="rep-stat-lbl">Volume (Qty)</div>
+                </div>
+                <div class="rep-stat-card" style="border-color: rgba(34,197,94,0.3);">
+                    <div class="rep-stat-val" id="repStatEstRevenue" style="color: var(--success);">₹0.00</div>
+                    <div class="rep-stat-lbl">Job Value Est.</div>
+                </div>
+                <div class="rep-stat-card">
+                    <div class="rep-stat-val" id="repStatAvgAOV">₹0.00</div>
+                    <div class="rep-stat-lbl">AOV (per item)</div>
+                </div>
+            </div>
+
+            <!-- Scrollable Report Records Table -->
+            <div class="report-results-wrapper">
+                <div style="max-height: 280px; overflow-y: auto;">
+                    <table class="report-table">
+                        <thead id="reportTableHead">
+                            <!-- Dynamic report headers -->
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 20px;">Adjust parameters to build preview sheets.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Actions Suite -->
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button id="repBtnExportCSV" class="btn-icon" style="background: rgba(255,255,255,0.05);"><i class="fas fa-file-csv"></i> Save CSV Spreadsheet</button>
+                <button id="repBtnPrint" class="btn-icon" style="background: var(--accent); color: white; border: none;"><i class="fas fa-print"></i> Print Report Sheet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Share Configuration Dialog -->
+    <div id="shareSettingsModal" class="modal-overlay" style="z-index: 2600;">
+        <div class="glass-card modal-content" style="max-width: 420px; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fab fa-whatsapp" style="color: var(--whatsapp); font-size: 1.5rem;"></i>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">WhatsApp Share Configuration</h3>
+                </div>
+                <button id="closeShareModalBtn" class="btn-icon" style="border-radius: 50%; padding: 4px 8px;"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.2rem; line-height: 1.4;">
+                Configure order specifics, dates, and mockup options to render in the customized Job Ticket. Client contact info remains completely confidential.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.8rem; color: var(--text-primary); font-weight: 500;">
+                    <span><i class="fas fa-image" style="margin-right: 8px; color: var(--accent); width: 16px;"></i> Include Mockup Photo</span>
+                    <input type="checkbox" id="shareOptPhoto" style="width: 18px; height: 18px; accent-color: var(--accent);" checked>
+                </label>
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.8rem; color: var(--text-primary); font-weight: 500;">
+                    <span><i class="far fa-calendar-alt" style="margin-right: 8px; color: #a78bfa; width: 16px;"></i> Include Order &amp; Due Dates</span>
+                    <input type="checkbox" id="shareOptDates" style="width: 18px; height: 18px; accent-color: var(--accent);" checked>
+                </label>
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.8rem; color: var(--text-primary); font-weight: 500;">
+                    <span><i class="fas fa-rupee-sign" style="margin-right: 8px; color: var(--success); width: 16px;"></i> Include Pricing / Amount</span>
+                    <input type="checkbox" id="shareOptAmount" style="width: 18px; height: 18px; accent-color: var(--accent);" checked>
+                </label>
+                <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.8rem; color: var(--text-primary); font-weight: 500;">
+                    <span><i class="fas fa-comment-alt" style="margin-right: 8px; color: #f59e0b; width: 16px;"></i> Include Special Instructions</span>
+                    <input type="checkbox" id="shareOptInstructions" style="width: 18px; height: 18px; accent-color: var(--accent);" checked>
+                </label>
+            </div>
+            
+            <button id="confirmShareBtn" style="background: var(--whatsapp); color: white; border: none; width: 100%; padding: 12px; border-radius: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(37,211,102,0.25);">
+                <i class="fab fa-whatsapp"></i> Generate &amp; Open WhatsApp
+            </button>
         </div>
     </div>
 
@@ -356,7 +617,44 @@
         const itemCounterSpan = document.getElementById('itemCounter');
         const sortSelect = document.getElementById('sortSelect');
 
+        // Report elements mapping
+        const analyticsModal = document.getElementById('analyticsModal');
+        const analyticsReportsBtn = document.getElementById('analyticsReportsBtn');
+        const closeReportsBtn = document.getElementById('closeReportsBtn');
+        const repFromDate = document.getElementById('repFromDate');
+        const repToDate = document.getElementById('repToDate');
+        const repDateBasis = document.getElementById('repDateBasis');
+        const repClient = document.getElementById('repClient');
+        const repPrintType = document.getElementById('repPrintType');
+        const repProductSearch = document.getElementById('repProductSearch');
+        
+        // Report columns selectors (NEW)
+        const repOptPhoto = document.getElementById('repOptPhoto');
+        const repOptDates = document.getElementById('repOptDates');
+        const repOptSpecs = document.getElementById('repOptSpecs');
+        
+        const reportTableHead = document.getElementById('reportTableHead');
+        const reportTableBody = document.getElementById('reportTableBody');
+
+        const repStatTotalJobs = document.getElementById('repStatTotalJobs');
+        const repStatTotalQty = document.getElementById('repStatTotalQty');
+        const repStatEstRevenue = document.getElementById('repStatEstRevenue');
+        const repStatAvgAOV = document.getElementById('repStatAvgAOV');
+
+        const repBtnExportCSV = document.getElementById('repBtnExportCSV');
+        const repBtnPrint = document.getElementById('repBtnPrint');
+
+        // Share Configuration Elements mapping
+        const shareSettingsModal = document.getElementById('shareSettingsModal');
+        const closeShareModalBtn = document.getElementById('closeShareModalBtn');
+        const shareOptPhoto = document.getElementById('shareOptPhoto');
+        const shareOptDates = document.getElementById('shareOptDates');
+        const shareOptAmount = document.getElementById('shareOptAmount');
+        const shareOptInstructions = document.getElementById('shareOptInstructions');
+        const confirmShareBtn = document.getElementById('confirmShareBtn');
+
         let allOrders = [], allCustomers = [], flatItems = [], currentFilter = 'all', searchTerm = '', uid = null;
+        let pendingShareItemData = null; // Stash item config context safely
 
         function setTheme(theme) {
             document.body.classList.toggle('light', theme === 'light');
@@ -389,8 +687,8 @@
             } catch (err) { showToast("Update failed", true); }
         }
 
-        // Elegant, Premium & Compact Job Card Layout Generator (Omits Client Data)
-        async function generateItemImage(itemData) {
+        // Elegant & Customizable Compact Job Card Layout Generator (Configurable options)
+        async function generateItemImage(itemData, options) {
             return new Promise((resolve) => {
                 const tempDiv = document.createElement('div');
                 tempDiv.style.position = 'fixed';
@@ -399,22 +697,40 @@
                 tempDiv.style.width = '380px'; // Compact and solid ticket width
                 tempDiv.style.background = 'linear-gradient(135deg, #0b1528 0%, #030712 100%)';
                 tempDiv.style.color = '#f1f5f9';
-                tempDiv.style.padding = '16px'; // Tighter premium padding
+                tempDiv.style.padding = '16px'; 
                 tempDiv.style.fontFamily = "'Inter', system-ui, -apple-system, sans-serif";
                 tempDiv.style.borderRadius = '18px';
                 tempDiv.style.border = '1px solid rgba(255, 255, 255, 0.08)';
                 tempDiv.style.boxShadow = '0 20px 40px -10px rgba(0, 0, 0, 0.5)';
                 
-                // Tight aspect ratio image container
-                const imageHtml = itemData.item.image ? 
-                    `<div style="text-align:center; margin-bottom:12px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; height: 160px;">
+                // Photo Option implementation: conditionally inject the mockup element
+                let imageHtml = '';
+                if (options.includePhoto && itemData.item.image && itemData.item.image.trim() !== '') {
+                    imageHtml = `
+                    <div style="text-align:center; margin-bottom:12px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; height: 160px;">
                         <img src="${itemData.item.image}" style="max-width:100%; max-height:144px; width:auto; height:auto; object-fit:contain; border-radius:8px;">
-                    </div>` : 
-                    `<div style="text-align:center; margin-bottom:12px; padding:24px 12px; background: rgba(255,255,255,0.02); border-radius:12px; border: 1px dashed rgba(255,255,255,0.1);">
-                        <i class="fas fa-layer-group" style="font-size:28px; color:rgba(255,255,255,0.15); margin-bottom: 6px; display:block;"></i>
-                        <span style="color:rgba(255,255,255,0.3); font-size:11px; font-weight:500; letter-spacing: 0.5px;">VISUAL PROOF NOT ATTACHED</span>
                     </div>`;
+                }
                 
+                // Date Details implementation: conditionally render Created & Target Timelines
+                let dateHtml = '';
+                if (options.includeDates) {
+                    const formattedOrderDate = itemData.orderDate ? new Date(itemData.orderDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '—';
+                    const formattedDueDate = itemData.dueDate ? new Date(itemData.dueDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '—';
+                    
+                    dateHtml = `
+                    <div style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 6px 10px; font-size: 10px;">
+                        <div>
+                            <span style="color:rgba(255,255,255,0.3); text-transform:uppercase; font-size:7px; display:block; font-weight:600; margin-bottom: 2px;">Ordered</span>
+                            <span style="color:#cbd5e1; font-weight:600;"><i class="far fa-calendar" style="margin-right:3px; opacity:0.6;"></i> ${formattedOrderDate}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="color:rgba(255,255,255,0.3); text-transform:uppercase; font-size:7px; display:block; font-weight:600; margin-bottom: 2px;">Due Target</span>
+                            <span style="color:#f43f5e; font-weight:600;"><i class="far fa-clock" style="margin-right:3px; opacity:0.6;"></i> ${formattedDueDate}</span>
+                        </div>
+                    </div>`;
+                }
+
                 const statusColors = {
                     'Pending': { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24', dot: '#f59e0b' },
                     'In Progress': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa', dot: '#3b82f6' },
@@ -426,10 +742,53 @@
                 };
                 const currentStatus = itemData.item.status || 'Pending';
                 const stStyle = statusColors[currentStatus] || { bg: 'rgba(255,255,255,0.08)', text: '#94a3b8', dot: '#6b7280' };
-                const formattedDue = itemData.dueDate ? new Date(itemData.dueDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : null;
+
+                // Build Specification grid conditionally
+                let gridHtml = `
+                    <div>
+                        <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Quantity</span>
+                        <span style="font-size:12px; font-weight:700; color:#ffffff;"><i class="fas fa-box-open" style="font-size:10px; color:#60a5fa; margin-right:3px;"></i> ${itemData.item.qty || 1} Nos</span>
+                    </div>
+                    <div>
+                        <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Status</span>
+                        <span style="display:inline-flex; align-items:center; gap:4px; background:${stStyle.bg}; color:${stStyle.text}; padding:1px 8px; border-radius:12px; font-size:10px; font-weight:700;">
+                            <span style="width:4px; height:4px; background:${stStyle.dot}; border-radius:50%;"></span>${currentStatus}
+                        </span>
+                    </div>`;
+
+                if (itemData.item.printType) {
+                    gridHtml += `
+                    <div>
+                        <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Print Engine</span>
+                        <span style="font-size:11px; color:#e2e8f0; font-weight:500;"><i class="fas fa-print" style="font-size:9px; color:rgba(255,255,255,0.3); margin-right:3px;"></i> ${escapeHtml(itemData.item.printType)}</span>
+                    </div>`;
+                }
+                if (itemData.item.material) {
+                    gridHtml += `
+                    <div>
+                        <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Media Base</span>
+                        <span style="font-size:11px; color:#e2e8f0; font-weight:500;"><i class="fas fa-scroll" style="font-size:9px; color:rgba(255,255,255,0.3); margin-right:3px;"></i> ${escapeHtml(itemData.item.material)}</span>
+                    </div>`;
+                }
+                if (options.includeAmount && parseFloat(itemData.item.amount || 0) > 0) {
+                    gridHtml += `
+                    <div>
+                        <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Job Value</span>
+                        <span style="font-size:12px; font-weight:700; color:#10b981;"><i class="fas fa-rupee-sign" style="font-size:10px; margin-right:2px;"></i> ₹${parseFloat(itemData.item.amount).toFixed(2)}</span>
+                    </div>`;
+                }
+
+                // Instructions Notes details section
+                let notesHtml = '';
+                if (options.includeInstructions && itemData.item.description && itemData.item.description.trim() !== '') {
+                    notesHtml = `
+                    <div style="background: rgba(59,130,246,0.04); border-radius: 8px; padding: 8px 10px; border-left: 2px solid #3b82f6; margin-top: 10px;">
+                        <p style="font-size:10px; color:#cbd5e1; margin:0; line-height:1.3; font-weight:400;"><strong style="text-transform:uppercase; font-size:8px; color:#60a5fa; display:block; margin-bottom:1px;">Instructions:</strong>${escapeHtml(itemData.item.description)}</p>
+                    </div>`;
+                }
 
                 tempDiv.innerHTML = `
-                    <!-- Compact Header -->
+                    <!-- Header -->
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08);">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <img src="ds icon.png" style="height: 28px; width: auto; object-fit: contain;">
@@ -437,13 +796,13 @@
                                 <h2 style="margin:0; font-size:13px; font-weight:800; color:#ffffff; letter-spacing:0.3px; text-transform: uppercase;">Design Space</h2>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px;">
+                        <div>
                             <span style="font-size: 10px; font-weight: 700; color: #60a5fa; background: rgba(96,165,250,0.1); padding: 2px 8px; border-radius: 12px;">#${itemData.orderId}</span>
-                            ${formattedDue ? `<span style="font-size: 10px; font-weight: 700; color: #f43f5e; background: rgba(244,63,94,0.1); padding: 2px 8px; border-radius: 12px;"><i class="far fa-clock" style="margin-right:2px;"></i> ${formattedDue}</span>` : ''}
                         </div>
                     </div>
                     
                     ${imageHtml}
+                    ${dateHtml}
                     
                     <!-- Main Item Title Info -->
                     <div style="margin-bottom: 12px;">
@@ -451,27 +810,10 @@
                         <h1 style="margin: 2px 0 0; font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.25;">${escapeHtml(itemData.item.name)}</h1>
                     </div>
 
-                    <!-- Layout Specifications Compact Grid -->
-                    <div style="background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); padding: 10px; margin-bottom: 10px;">
+                    <!-- Layout Specifications Grid -->
+                    <div style="background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); padding: 10px;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px;">
-                            <div>
-                                <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Quantity</span>
-                                <span style="font-size:12px; font-weight:700; color:#ffffff;"><i class="fas fa-box-open" style="font-size:10px; color:#60a5fa; margin-right:3px;"></i> ${itemData.item.qty || 1} Nos</span>
-                            </div>
-                            <div>
-                                <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Status</span>
-                                <span style="display:inline-flex; align-items:center; gap:4px; background:${stStyle.bg}; color:${stStyle.text}; padding:1px 8px; border-radius:12px; font-size:10px; font-weight:700;">
-                                    <span style="width:4px; height:4px; background:${stStyle.dot}; border-radius:50%;"></span>${currentStatus}
-                                </span>
-                            </div>
-                            ${itemData.item.printType ? `<div>
-                                <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Print Engine</span>
-                                <span style="font-size:11px; color:#e2e8f0; font-weight:500;"><i class="fas fa-print" style="font-size:9px; color:rgba(255,255,255,0.3); margin-right:3px;"></i> ${escapeHtml(itemData.item.printType)}</span>
-                            </div>` : ''}
-                            ${itemData.item.material ? `<div>
-                                <span style="font-size:8px; color:rgba(255,255,255,0.4); display:block; margin-bottom:1px; text-transform:uppercase; font-weight:600;">Media Base</span>
-                                <span style="font-size:11px; color:#e2e8f0; font-weight:500;"><i class="fas fa-scroll" style="font-size:9px; color:rgba(255,255,255,0.3); margin-right:3px;"></i> ${escapeHtml(itemData.item.material)}</span>
-                            </div>` : ''}
+                            ${gridHtml}
                         </div>
                         
                         ${itemData.item.finishing ? `
@@ -483,12 +825,7 @@
                         </div>` : ''}
                     </div>
                     
-                    <!-- Compact Process Instruction Note -->
-                    ${itemData.item.description ? `
-                    <div style="background: rgba(59,130,246,0.04); border-radius: 8px; padding: 8px 10px; border-left: 2px solid #3b82f6;">
-                        <p style="font-size:10px; color:#cbd5e1; margin:0; line-height:1.3; font-weight:400;"><strong style="text-transform:uppercase; font-size:8px; color:#60a5fa; display:block; margin-bottom:1px;">Instructions:</strong>${escapeHtml(itemData.item.description)}</p>
-                    </div>
-                    ` : ''}
+                    ${notesHtml}
                 `;
                 
                 document.body.appendChild(tempDiv);
@@ -504,9 +841,50 @@
             });
         }
 
-        async function shareOnWhatsApp(itemData) {
+        // Launches configuration modal to allow user setup prior to export
+        function openShareSettings(itemData) {
+            pendingShareItemData = itemData;
+
+            // Intuitively configure and check options availability based on data
+            const hasPhoto = !!(itemData.item.image && itemData.item.image.trim() !== '');
+            if (!hasPhoto) {
+                shareOptPhoto.checked = false;
+                shareOptPhoto.disabled = true;
+                shareOptPhoto.parentElement.style.opacity = '0.5';
+            } else {
+                shareOptPhoto.checked = true;
+                shareOptPhoto.disabled = false;
+                shareOptPhoto.parentElement.style.opacity = '1';
+            }
+
+            const hasAmount = parseFloat(itemData.item.amount || 0) > 0;
+            if (!hasAmount) {
+                shareOptAmount.checked = false;
+                shareOptAmount.disabled = true;
+                shareOptAmount.parentElement.style.opacity = '0.5';
+            } else {
+                shareOptAmount.checked = true;
+                shareOptAmount.disabled = false;
+                shareOptAmount.parentElement.style.opacity = '1';
+            }
+
+            const hasInstructions = !!(itemData.item.description && itemData.item.description.trim() !== '');
+            if (!hasInstructions) {
+                shareOptInstructions.checked = false;
+                shareOptInstructions.disabled = true;
+                shareOptInstructions.parentElement.style.opacity = '0.5';
+            } else {
+                shareOptInstructions.checked = true;
+                shareOptInstructions.disabled = false;
+                shareOptInstructions.parentElement.style.opacity = '1';
+            }
+
+            shareSettingsModal.style.display = 'flex';
+        }
+
+        async function executeWhatsAppShare(itemData, options) {
             showToast("Generating premium job card...");
-            const canvas = await generateItemImage(itemData);
+            const canvas = await generateItemImage(itemData, options);
             if (!canvas) { showToast("Failed to generate image", true); return; }
             
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -514,7 +892,13 @@
                 await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
                 showToast("Job Card Copied! Opening WhatsApp...");
                 const phone = itemData.customerPhone ? itemData.customerPhone.replace(/\D/g, '') : '';
-                const message = `*Design Space - Job update*\n📦 *Item:* ${itemData.item.name}\n🔢 *Qty:* ${itemData.item.qty || 1}\n⚙️ *Status:* ${itemData.item.status || 'Pending'}`;
+                
+                // Construct a text summary
+                let message = `*Design Space - Job update*\n📦 *Item:* ${itemData.item.name}\n🔢 *Qty:* ${itemData.item.qty || 1}\n⚙️ *Status:* ${itemData.item.status || 'Pending'}`;
+                if (options.includeDates && itemData.dueDate) {
+                    message += `\n📅 *Target Due Date:* ${new Date(itemData.dueDate).toLocaleDateString('en-IN')}`;
+                }
+                
                 if (phone) {
                     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
                 } else {
@@ -525,10 +909,413 @@
                 const dataUrl = canvas.toDataURL();
                 const newTab = window.open();
                 newTab.document.write(`
-                    <html><head><title>Job Image Card</title><style>body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0b1329;margin:0;padding:20px;} img{max-width:100%;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);}</style></head>
-                    <body><img src="${dataUrl}"><p style="color:#fff; font-family:sans-serif; position:absolute; bottom:20px; font-size:14px; opacity:0.7;">Right-click or Long-press image to Copy/Save</p></body></html>
+                    <html><head><title>Job Image Card</title><style>body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0b1329;margin:0;padding:20px;flex-direction:column;font-family:sans-serif;} img{max-width:100%;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);} p{color:#fff; margin-top:15px; font-size:14px; opacity:0.7;}</style></head>
+                    <body><img src="${dataUrl}"><p>Right-click or Long-press image to Copy/Save</p></body></html>
                 `);
             }
+        }
+
+        // Populates Customer and Print Engine Select drop-downs based on live Firebase data
+        function populateReportFilters() {
+            if (!repClient || !repPrintType) return;
+
+            const currentSelectedClient = repClient.value || 'all';
+            const currentSelectedPrintType = repPrintType.value || 'all';
+
+            // Build unique customer options (trimmed and sorted safely)
+            const uniqueClients = [...new Set(flatItems.map(f => f.customerName?.trim()))].filter(Boolean).sort();
+            repClient.innerHTML = '<option value="all">All Clients</option>' + 
+                uniqueClients.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+            // Build unique print styles options (trimmed and sorted safely)
+            const uniquePrintTypes = [...new Set(flatItems.map(f => f.item.printType?.trim()))].filter(Boolean).sort();
+            repPrintType.innerHTML = '<option value="all">All Print Engines</option>' + 
+                uniquePrintTypes.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
+
+            // Restore previously selected choices safely if they still exist in the updated data
+            if (uniqueClients.includes(currentSelectedClient)) {
+                repClient.value = currentSelectedClient;
+            } else {
+                repClient.value = 'all';
+            }
+
+            if (uniquePrintTypes.includes(currentSelectedPrintType)) {
+                repPrintType.value = currentSelectedPrintType;
+            } else {
+                repPrintType.value = 'all';
+            }
+        }
+
+        // Processes real-time filtered database metrics matching parameters chosen
+        function generateFilteredReportData() {
+            const startVal = repFromDate.value;
+            const endVal = repToDate.value;
+            const basis = repDateBasis.value;
+            const clientVal = repClient.value;
+            const printVal = repPrintType.value;
+            const searchVal = repProductSearch.value.trim().toLowerCase();
+
+            const startDate = startVal ? new Date(startVal + 'T00:00:00') : null;
+            const endDate = endVal ? new Date(endVal + 'T23:59:59') : null;
+
+            return flatItems.filter(fi => {
+                // Determine target comparison date
+                let targetDate = null;
+                if (basis === 'order') {
+                    targetDate = fi.orderDate ? new Date(fi.orderDate) : null;
+                } else {
+                    targetDate = fi.dueDate ? new Date(fi.dueDate) : null;
+                }
+
+                // Date evaluation guard
+                if (startDate && targetDate && targetDate < startDate) return false;
+                if (endDate && targetDate && targetDate > endDate) return false;
+
+                // Client name guard
+                if (clientVal !== 'all' && fi.customerName?.trim() !== clientVal) return false;
+
+                // Printing specifications guard
+                if (printVal !== 'all' && fi.item.printType?.trim() !== printVal) return false;
+
+                // Keyword search guard
+                if (searchVal && !fi.item.name?.toLowerCase().includes(searchVal)) return false;
+
+                return true;
+            });
+        }
+
+        // Renders calculated totals and analytical lists dynamically inside the panel
+        function updateReportUI() {
+            const matched = generateFilteredReportData();
+            
+            // Calculate Stats metrics
+            const totalJobs = matched.length;
+            const totalQty = matched.reduce((sum, f) => sum + (parseInt(f.item.qty) || 1), 0);
+            const totalRevenue = matched.reduce((sum, f) => sum + (parseFloat(f.item.amount) || 0), 0);
+            const avgAOV = totalJobs > 0 ? (totalRevenue / totalJobs) : 0;
+
+            repStatTotalJobs.innerText = totalJobs;
+            repStatTotalQty.innerText = totalQty;
+            repStatEstRevenue.innerText = `₹${totalRevenue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            repStatAvgAOV.innerText = `₹${avgAOV.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            // Read column select states
+            const showPhotos = repOptPhoto.checked;
+            const showDates = repOptDates.checked;
+            const showSpecs = repOptSpecs.checked;
+
+            // Generate Headers dynamically
+            let headersHtml = '<tr>';
+            headersHtml += '<th>Ref</th>';
+            if (showPhotos) headersHtml += '<th>Photo</th>';
+            headersHtml += '<th>Client Name</th>';
+            headersHtml += '<th>Product Item</th>';
+            if (showDates) {
+                headersHtml += '<th>Order Date</th>';
+                headersHtml += '<th>Due Date</th>';
+            }
+            headersHtml += '<th>Qty</th>';
+            headersHtml += '<th>Amount</th>';
+            headersHtml += '<th>Status</th>';
+            headersHtml += '</tr>';
+            reportTableHead.innerHTML = headersHtml;
+
+            // Render Preview Table content
+            if (matched.length === 0) {
+                const totalCols = 5 + (showPhotos ? 1 : 0) + (showDates ? 2 : 0);
+                reportTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="${totalCols}" style="text-align: center; color: var(--text-secondary); padding: 30px;">
+                            No orders found matching the filter parameters.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            reportTableBody.innerHTML = matched.map(f => {
+                let rowHtml = '<tr>';
+                
+                // Ref Cell
+                rowHtml += `<td><strong style="color: var(--accent);">#${escapeHtml(f.orderId)}</strong></td>`;
+                
+                // Optional Photo Thumbnail Cell
+                if (showPhotos) {
+                    const imgUrl = f.item.image && f.item.image.trim() !== '' ? f.item.image : null;
+                    if (imgUrl) {
+                        rowHtml += `<td>
+                            <img src="${imgUrl}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 6px; background: rgba(0,0,0,0.25); cursor: pointer; border: 1px solid var(--border-color);" onclick="window.openLightbox('${imgUrl.replace(/'/g, "\\'")}')" loading="lazy">
+                        </td>`;
+                    } else {
+                        rowHtml += `<td>
+                            <div style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border: 1px dashed var(--border-color); border-radius: 6px; color: var(--text-secondary); font-size: 0.65rem;">
+                                <i class="fas fa-image" style="opacity: 0.5;"></i>
+                            </div>
+                        </td>`;
+                    }
+                }
+
+                // Client Name Cell
+                rowHtml += `<td>${escapeHtml(f.customerName)}</td>`;
+
+                // Product Item Cell (with conditional details)
+                let itemSpecDetails = `<div><strong>${escapeHtml(f.item.name)}</strong></div>`;
+                if (showSpecs) {
+                    let specBadges = [];
+                    if (f.item.printType) specBadges.push(`<span style="background: rgba(59,130,246,0.12); color: #60a5fa; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 600;"><i class="fas fa-print" style="font-size: 8px; margin-right: 2px;"></i>${escapeHtml(f.item.printType)}</span>`);
+                    if (f.item.material) specBadges.push(`<span style="background: rgba(255,255,255,0.05); color: var(--text-secondary); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 500;"><i class="fas fa-layer-group" style="font-size: 8px; margin-right: 2px;"></i>${escapeHtml(f.item.material)}</span>`);
+                    if (f.item.finishing) specBadges.push(`<span style="background: rgba(167,139,250,0.12); color: #c084fc; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 500;"><i class="fas fa-wand-magic-sparkles" style="font-size: 8px; margin-right: 2px;"></i>${escapeHtml(f.item.finishing)}</span>`);
+                    
+                    if (specBadges.length > 0) {
+                        itemSpecDetails += `<div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">${specBadges.join('')}</div>`;
+                    }
+                    if (f.item.description) {
+                        itemSpecDetails += `<div style="margin-top: 4px; font-size: 0.68rem; color: var(--text-secondary); font-style: italic;">📝 ${escapeHtml(f.item.description)}</div>`;
+                    }
+                }
+                rowHtml += `<td>${itemSpecDetails}</td>`;
+
+                // Optional Timestamps Dates Cells
+                if (showDates) {
+                    const ordD = f.orderDate ? new Date(f.orderDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '—';
+                    const dueD = f.dueDate ? new Date(f.dueDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '—';
+                    rowHtml += `<td>${ordD}</td>`;
+                    rowHtml += `<td>${dueD}</td>`;
+                }
+
+                // Volume and Pricing metrics
+                rowHtml += `<td>${f.item.qty || 1}</td>`;
+                rowHtml += `<td style="font-weight: 600;">₹${parseFloat(f.item.amount || 0).toFixed(2)}</td>`;
+                
+                // Status Pill Cell
+                rowHtml += `<td>
+                    <span style="font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; background: rgba(255,255,255,0.05);">
+                        ${escapeHtml(f.item.status || 'Pending')}
+                    </span>
+                </td>`;
+
+                rowHtml += '</tr>';
+                return rowHtml;
+            }).join('');
+        }
+
+        // Export data directly as physical CSV spreadsheet file
+        function exportReportToCSV() {
+            const matched = generateFilteredReportData();
+            if (matched.length === 0) { showToast("No records to export", true); return; }
+
+            let csvContent = "Order ID,Order Date,Due Date,Customer,Product Item,Print Engine,Material,Quantity,Amount,Status\n";
+            matched.forEach(f => {
+                const row = [
+                    `"${f.orderId || ''}"`,
+                    `"${f.orderDate ? new Date(f.orderDate).toLocaleDateString() : '—'}"`,
+                    `"${f.dueDate ? new Date(f.dueDate).toLocaleDateString() : '—'}"`,
+                    `"${f.customerName.replace(/"/g, '""')}"`,
+                    `"${f.item.name.replace(/"/g, '""')}"`,
+                    `"${(f.item.printType || '').replace(/"/g, '""')}"`,
+                    `"${(f.item.material || '').replace(/"/g, '""')}"`,
+                    `${f.item.qty || 1}`,
+                    `${f.item.amount || 0}`,
+                    `"${f.item.status || 'Pending'}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Design_Space_JobReport_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("CSV Download initiated!");
+        }
+
+        // Generates print engine wrapper to launch high-end, visual paper sheets
+        function triggerPrintReportSheet() {
+            const matched = generateFilteredReportData();
+            if (matched.length === 0) { showToast("No records to print", true); return; }
+
+            const optPhoto = repOptPhoto.checked;
+            const optDates = repOptDates.checked;
+            const optSpecs = repOptSpecs.checked;
+
+            const totalQty = matched.reduce((sum, f) => sum + (parseInt(f.item.qty) || 1), 0);
+            const totalRevenue = matched.reduce((sum, f) => sum + (parseFloat(f.item.amount) || 0), 0);
+
+            const printWindow = window.open('', '_blank');
+
+            // Dynamic printed table header setup
+            let headersHtml = `
+                <th style="width: 4%;">#</th>
+                <th style="width: 10%;">Order ID</th>
+            `;
+            if (optPhoto) headersHtml += `<th style="width: 8%;">Photo</th>`;
+            headersHtml += `<th style="width: 18%;">Customer</th>`;
+            headersHtml += `<th style="width: 25%;">Product Name</th>`;
+            if (optDates) {
+                headersHtml += `
+                    <th style="width: 10%;">Order Date</th>
+                    <th style="width: 10%;">Due Date</th>
+                `;
+            }
+            headersHtml += `
+                <th style="width: 5%; text-align: center;">Qty</th>
+                <th style="width: 12%; text-align: right;">Amount</th>
+                <th style="width: 12%; text-align: center;">Status</th>
+            `;
+
+            // Dynamic printed rows setup
+            const rowsHtml = matched.map((f, i) => {
+                let row = '<tr>';
+                row += `<td>${i + 1}</td>`;
+                row += `<td>#${f.orderId}</td>`;
+                
+                if (optPhoto) {
+                    const imgUrl = f.item.image && f.item.image.trim() !== '' ? f.item.image : '';
+                    if (imgUrl) {
+                        row += `<td><img src="${imgUrl}" class="print-img"></td>`;
+                    } else {
+                        row += `<td><span style="font-size: 8px; color: #94a3b8; font-weight: 500;">No Photo</span></td>`;
+                    }
+                }
+
+                row += `<td>${escapeHtml(f.customerName)}</td>`;
+
+                // Product Specifications configuration
+                let productCell = `<strong>${escapeHtml(f.item.name)}</strong>`;
+                if (optSpecs) {
+                    let specBadges = [];
+                    if (f.item.printType) specBadges.push(`<span>Engine: ${escapeHtml(f.item.printType)}</span>`);
+                    if (f.item.material) specBadges.push(`<span>Media: ${escapeHtml(f.item.material)}</span>`);
+                    if (f.item.finishing) specBadges.push(`<span>Finishing: ${escapeHtml(f.item.finishing)}</span>`);
+                    
+                    if (specBadges.length > 0 || f.item.description) {
+                        productCell += `<div class="print-specs">`;
+                        if (specBadges.length > 0) {
+                            productCell += `<div>${specBadges.join('')}</div>`;
+                        }
+                        if (f.item.description) {
+                            productCell += `<div style="margin-top: 3px; font-style: italic; color: #64748b;">Note: ${escapeHtml(f.item.description)}</div>`;
+                        }
+                        productCell += `</div>`;
+                    }
+                }
+                row += `<td>${productCell}</td>`;
+
+                if (optDates) {
+                    const ordD = f.orderDate ? new Date(f.orderDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—';
+                    const dueD = f.dueDate ? new Date(f.dueDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—';
+                    row += `<td>${ordD}</td>`;
+                    row += `<td>${dueD}</td>`;
+                }
+
+                row += `<td style="text-align: center;">${f.item.qty || 1}</td>`;
+                row += `<td style="text-align: right; font-weight: 600;">₹${parseFloat(f.item.amount || 0).toFixed(2)}</td>`;
+                row += `<td style="text-align: center;"><span class="badge status-${(f.item.status || 'Pending').toLowerCase().replace(/\s+/g, '-')}">${f.item.status}</span></td>`;
+                row += '</tr>';
+                return row;
+            }).join('');
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Design Space - Job Report Summary</title>
+                    <style>
+                        body { font-family: 'Inter', -apple-system, sans-serif; padding: 40px; color: #1e293b; background: #ffffff; margin: 0; }
+                        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
+                        .logo-section { display: flex; align-items: center; gap: 12px; }
+                        .logo-img { height: 42px; width: auto; }
+                        .brand-title { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; color: #0f172a; }
+                        .report-title { font-size: 13px; color: #64748b; margin: 4px 0 0 0; font-weight: 500; }
+                        .meta-info { text-align: right; font-size: 11px; color: #64748b; line-height: 1.5; }
+                        .meta-info strong { color: #0f172a; }
+                        
+                        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+                        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; }
+                        .stat-val { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+                        .stat-lbl { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+                        
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 11px; }
+                        th { background: #f1f5f9; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; padding: 12px 10px; text-align: left; border-bottom: 2px solid #cbd5e1; }
+                        td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; color: #334155; vertical-align: middle; }
+                        tr:nth-child(even) td { background: #f8fafc; }
+                        
+                        .print-img { max-width: 50px; max-height: 50px; object-fit: contain; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; display: block; }
+                        .print-specs { font-size: 9px; color: #64748b; margin-top: 4px; line-height: 1.3; }
+                        .print-specs span { background: #f1f5f9; color: #475569; padding: 1px 4px; border-radius: 3px; font-size: 8px; margin-right: 4px; display: inline-block; font-weight: 600; }
+
+                        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+                        .status-pending { background: #fef3c7; color: #d97706; }
+                        .status-in-progress { background: #dbeafe; color: #2563eb; }
+                        .status-completed { background: #d1fae5; color: #059669; }
+                        .status-delivered { background: #f3e8ff; color: #7c3aed; }
+                        .status-billed { background: #f1f5f9; color: #475569; }
+                        .status-paid { background: #d1fae5; color: #047857; }
+                        .status-cancelled { background: #fee2e2; color: #dc2626; }
+
+                        .footer { text-align: center; margin-top: 50px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                        @media print {
+                            body { padding: 0; }
+                            @page { margin: 1.5cm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="logo-section">
+                            <img src="ds icon.png" class="logo-img" onerror="this.style.display='none'">
+                            <div>
+                                <h1 class="brand-title">Design Space</h1>
+                                <p class="report-title">Production &amp; Volume Statement</p>
+                            </div>
+                        </div>
+                        <div class="meta-info">
+                            <div>Generated: <strong>${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})}</strong></div>
+                            <div>Matched Jobs: <strong>${matched.length}</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-val">${matched.length}</div>
+                            <div class="stat-lbl">Matched Tasks</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val">${totalQty}</div>
+                            <div class="stat-lbl">Total Volume (Qty)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-val">₹${totalRevenue.toFixed(2)}</div>
+                            <div class="stat-lbl">Combined Value</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                ${headersHtml}
+                            </tr>
+                        </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+
+                <div class="footer">
+                    Design Space ItemFlow &bull; Operational Statement Sheet
+                </div>
+                
+                <script>
+                    window.onload = function() {
+                        setTimeout(() => { window.print(); }, 500);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
         }
 
         function rebuildFlatItems() {
@@ -551,6 +1338,14 @@
                 });
             }
             flatItems = items;
+
+            // Automatically populate and refresh the unique filters when database snapshot loads!
+            populateReportFilters();
+            
+            // If the report modal is active/open, dynamically refresh the values
+            if (analyticsModal.style.display === 'flex') {
+                updateReportUI();
+            }
         }
 
         function filterAndSortItems() {
@@ -644,7 +1439,7 @@
             document.querySelectorAll('.whatsapp-share-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const itemData = JSON.parse(btn.dataset.item);
-                    shareOnWhatsApp(itemData);
+                    openShareSettings(itemData);
                 });
             });
         }
@@ -659,11 +1454,15 @@
                 allCustomers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 rebuildFlatItems();
                 renderItems();
+            }, err => {
+                console.error("Customers Firebase snapshot failed:", err);
             });
             onSnapshot(query(collection(db, 'users', uid, 'orders')), snap => {
                 allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 rebuildFlatItems();
                 renderItems();
+            }, err => {
+                console.error("Orders Firebase snapshot failed:", err);
             });
         }
 
@@ -702,6 +1501,46 @@
         sortSelect.onchange = () => renderItems();
         searchInput.oninput = (e) => { searchTerm = e.target.value; renderItems(); };
 
+        // Bind interactive events for report modal
+        analyticsReportsBtn.onclick = () => {
+            analyticsModal.style.display = 'flex';
+            
+            // Set default date range filters to current calendar month
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            const lastDay = today.toISOString().split('T')[0];
+            repFromDate.value = firstDay;
+            repToDate.value = lastDay;
+
+            populateReportFilters();
+            updateReportUI();
+        };
+
+        closeReportsBtn.onclick = () => { analyticsModal.style.display = 'none'; };
+
+        // Real-time update report panel UI upon change in inputs
+        const repInputs = [repFromDate, repToDate, repDateBasis, repClient, repPrintType, repOptPhoto, repOptDates, repOptSpecs];
+        repInputs.forEach(input => input.onchange = () => updateReportUI());
+        repProductSearch.oninput = () => updateReportUI();
+
+        // Export/Print listeners
+        repBtnExportCSV.onclick = () => exportReportToCSV();
+        repBtnPrint.onclick = () => triggerPrintReportSheet();
+
+        // Bind interactive elements for share settings dialog
+        closeShareModalBtn.onclick = () => { shareSettingsModal.style.display = 'none'; };
+        confirmShareBtn.onclick = async () => {
+            if (!pendingShareItemData) return;
+            const options = {
+                includePhoto: shareOptPhoto.checked,
+                includeDates: shareOptDates.checked,
+                includeAmount: shareOptAmount.checked,
+                includeInstructions: shareOptInstructions.checked
+            };
+            shareSettingsModal.style.display = 'none';
+            await executeWhatsAppShare(pendingShareItemData, options);
+        };
+
         onAuthStateChanged(auth, (user) => {
             if (user && !user.isAnonymous) {
                 loginPanel.style.display = 'none';
@@ -729,6 +1568,8 @@
                 emailInput.value = '';
                 pwdInput.value = '';
                 loginError.style.display = 'none';
+                analyticsModal.style.display = 'none';
+                shareSettingsModal.style.display = 'none';
             }
         });
     </script>
