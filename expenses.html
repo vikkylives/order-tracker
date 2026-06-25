@@ -4,221 +4,411 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>DesignSpace Khata | Smart Ledger</title>
+    <!-- Chart.js & Firebase SDKs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        /* ===== THEME VARIABLES ===== */
+        :root {
+            --bg: #F0F2F8;
+            --bg-card: #FFFFFF;
+            --bg-secondary: #F7F8FC;
+            --text-primary: #1A1D26;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+            --border-color: #E5E7EB;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.10);
+            --primary: #6C5CE7;
+            --primary-light: #A29BFE;
+            --primary-gradient: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
+            --success: #00B894;
+            --success-light: #55EFC4;
+            --error: #FF6B6B;
+            --error-light: #FF9F9F;
+            --accent: #FDCB6E;
+            --accent-light: #FFEAA7;
+            --input-bg: #F7F8FC;
+            --input-border: #E5E7EB;
+            --radius: 24px;
+            --radius-sm: 16px;
+            --radius-xs: 12px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0F0F1A;
+            --bg-card: #1A1D2E;
+            --bg-secondary: #141625;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0B8;
+            --text-muted: #6B6B85;
+            --border-color: #2D2D45;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4);
+            --input-bg: #141625;
+            --input-border: #2D2D45;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background: #0B0E14; color: #FFFFFF; }
-        
-        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0B0E14; z-index: 3000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #2A2D3E; border-top-color: #6C4DFF; border-radius: 50%; animation: spin 1s linear infinite; }
+        body { background: var(--bg); color: var(--text-primary); overflow-x: hidden; min-height: 100vh; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+        /* ===== LOADING SCREEN ===== */
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; transition: opacity 0.4s ease; }
+        .spinner { width: 48px; height: 48px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0B0E14; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .login-card { background: #13141E; border-radius: 48px; padding: 40px 28px; max-width: 400px; width: 100%; border: 1px solid #2A2D3E; text-align: center; }
-        .login-card h2 { font-size: 28px; margin-bottom: 8px; background: linear-gradient(135deg, #FFF, #6C4DFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .login-card input { background: #0F111A; border: 1px solid #2C3142; border-radius: 60px; padding: 16px 20px; width: 100%; margin: 12px 0; color: white; font-size: 16px; outline: none; }
-        .login-card input:focus { border-color: #6C4DFF; }
-        .login-btn { background: #6C4DFF; border: none; padding: 16px; border-radius: 60px; width: 100%; font-weight: 700; font-size: 18px; color: white; cursor: pointer; margin-top: 12px; transition: 0.2s; }
-        .switch-mode { background: transparent; border: none; color: #6C4DFF; margin-top: 16px; cursor: pointer; font-size: 14px; }
-        .error-msg { color: #FF5E6E; font-size: 13px; margin-top: 12px; }
-        
+        .loading-logo { font-size: 28px; font-weight: 900; background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -1px; }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--bg-card); border-radius: 40px; padding: 48px 32px; max-width: 400px; width: 100%; border: 1px solid var(--border-color); text-align: center; box-shadow: var(--shadow); }
+        .login-card h2 { font-size: 32px; font-weight: 900; background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 4px; }
+        .login-card p { color: var(--text-secondary); font-size: 14px; margin-bottom: 28px; }
+        .login-card input { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 60px; padding: 16px 20px; width: 100%; margin: 8px 0; color: var(--text-primary); font-size: 15px; outline: none; transition: 0.2s; }
+        .login-card input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+        .login-btn { background: var(--primary-gradient); border: none; padding: 16px; border-radius: 60px; width: 100%; font-weight: 700; font-size: 16px; color: white; cursor: pointer; margin-top: 12px; transition: 0.2s; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); }
+        .switch-mode { background: transparent; border: none; color: var(--text-secondary); margin-top: 16px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .switch-mode:hover { color: var(--primary); }
+
+        /* ===== MAIN APP CONTAINER ===== */
         .app-container { max-width: 600px; margin: 0 auto; padding: 20px 16px 100px; display: none; }
-        .cred-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .logo { font-weight: 800; font-size: 24px; background: linear-gradient(135deg, #FFF, #6C4DFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .user-info { display: flex; align-items: center; gap: 12px; background: #1A1C26; padding: 8px 16px; border-radius: 60px; }
-        .logout-btn { background: none; border: none; color: #FF5E6E; font-size: 20px; cursor: pointer; }
-        .cloud-status { display: flex; align-items: center; gap: 6px; font-size: 11px; margin-top: 4px; }
+
+        /* ===== HEADER ===== */
+        .cred-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .logo { font-size: 24px; font-weight: 900; background: var(--primary-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.5px; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 10px; background: var(--bg-card); padding: 8px 16px 8px 20px; border-radius: 60px; border: 1px solid var(--border-color); }
+        .user-info span { font-weight: 600; font-size: 13px; }
+        .logout-btn { background: none; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; transition: 0.2s; padding: 4px; }
+        .logout-btn:hover { color: var(--error); transform: scale(1.1); }
+
+        .theme-toggle-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .theme-toggle-btn:hover { border-color: var(--primary); transform: translateY(-1px); }
+        .theme-toggle-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+        .cloud-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+        .sync-btn { background: var(--bg-card); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 30px; color: var(--text-secondary); cursor: pointer; font-size: 10px; transition: 0.2s; font-weight: 600; }
+        .sync-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .sync-btn.syncing { background: var(--accent); color: #1A1D26; border-color: var(--accent); }
+
+        /* ===== BALANCE CARD ===== */
+        .balance-card { background: var(--primary-gradient); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(108, 92, 231, 0.25); }
+        .balance-card::before { content: ''; position: absolute; top: -50%; right: -30%; width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+        .balance-card::after { content: ''; position: absolute; bottom: -40%; left: -20%; width: 150px; height: 150px; background: rgba(255,255,255,0.03); border-radius: 50%; }
+        .balance-label { font-size: 12px; opacity: 0.7; font-weight: 600; letter-spacing: 0.5px; position: relative; z-index: 1; }
+        .balance-amount { font-size: 38px; font-weight: 900; letter-spacing: -1px; position: relative; z-index: 1; margin: 4px 0 12px; }
+        .balance-stats { display: flex; gap: 24px; position: relative; z-index: 1; }
+        .balance-stat { display: flex; flex-direction: column; }
+        .balance-stat .stat-label { font-size: 10px; opacity: 0.6; font-weight: 600; }
+        .balance-stat .stat-value { font-size: 16px; font-weight: 700; }
+        .balance-stat .stat-value.positive { color: var(--success-light); }
+        .balance-stat .stat-value.negative { color: var(--error-light); }
+
+        /* ===== QUICK ACTION BUTTONS ===== */
+        .quick-actions { display: flex; gap: 12px; margin-bottom: 24px; }
+        .quick-btn { flex: 1; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow); }
+        .quick-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); border-color: var(--primary); }
+        .quick-btn .icon { font-size: 24px; display: block; margin-bottom: 4px; }
+        .quick-btn .label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .quick-btn .label.expense { color: var(--error); }
+        .quick-btn .label.income { color: var(--success); }
+        .quick-btn .label.transfer { color: var(--accent); }
+
+        /* ===== TRANSACTIONS LIST ===== */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .section-title { font-size: 18px; font-weight: 800; }
+        .section-action { font-size: 13px; color: var(--text-secondary); cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .section-action:hover { color: var(--primary); }
+
+        .transaction-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-bottom: 8px; }
+        .transaction-item { background: var(--bg-card); border-radius: var(--radius-sm); padding: 14px 18px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: var(--shadow); }
+        .transaction-item:hover { border-color: var(--primary); transform: translateX(4px); }
+        .transaction-left { display: flex; align-items: center; gap: 14px; flex: 1; }
         
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #13141E; padding: 6px; border-radius: 60px; overflow-x: auto; }
-        .tab { flex: 1; min-width: max-content; text-align: center; padding: 12px 16px; border-radius: 50px; cursor: pointer; font-weight: 600; color: #8B93B0; font-size: 14px; }
-        .tab.active { background: #6C4DFF; color: white; }
+        /* ===== FIXED: Transparent Icon with Outline ===== */
+        .transaction-icon { 
+            width: 44px; 
+            height: 44px; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+            flex-shrink: 0; 
+            background: transparent !important; 
+            border: 2px solid var(--border-color);
+            transition: 0.2s;
+        }
+        .transaction-icon.expense { border-color: var(--error); color: var(--error); }
+        .transaction-icon.income { border-color: var(--success); color: var(--success); }
+        .transaction-icon.transfer { border-color: var(--accent); color: var(--accent); }
+        .transaction-icon.voice { border-color: var(--primary); color: var(--primary); }
+        .transaction-item:hover .transaction-icon { border-color: var(--primary); }
         
-        .filter-bar { background: #13141E; border-radius: 28px; padding: 16px; margin-bottom: 20px; border: 1px solid #262836; }
-        .filter-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-        .filter-select { background: #0F111A; border: 1px solid #2C3142; border-radius: 40px; padding: 10px 16px; color: white; flex: 1; min-width: 100px; cursor: pointer; }
-        .search-bar { background: #0F111A; border: 1px solid #2C3142; border-radius: 40px; padding: 10px 16px; display: flex; gap: 8px; flex: 2; }
-        .search-bar input { flex: 1; background: transparent; border: none; color: white; outline: none; }
-        .search-bar button { background: #6C4DFF; border: none; padding: 4px 16px; border-radius: 30px; cursor: pointer; color: white; }
-        
-        .balance-widget { background: #0E0F17; border-radius: 28px; padding: 18px 20px; margin-bottom: 20px; border: 1px solid #252836; display: flex; justify-content: space-between; align-items: center; }
-        .balance-amount { font-size: 32px; font-weight: 800; }
-        .balance-amount.negative { color: #FF5E6E; }
-        .balance-amount.positive { color: #2ED15E; }
-        
-        .action-buttons { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; }
-        .primary-btn { background: #6C4DFF; border: none; padding: 14px; border-radius: 60px; font-weight: 700; flex: 1; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .secondary-btn { background: transparent; border: 1.5px solid #383E55; padding: 14px; border-radius: 60px; font-weight: 600; flex: 1; cursor: pointer; color: #D9E0FF; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .send-money-small-btn { background: #F59E0B; border: none; padding: 10px 16px; border-radius: 40px; font-weight: 600; cursor: pointer; color: #1A1C26; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; min-width: 100px; }
-        .send-money-small-btn.disabled { opacity: 0.5; cursor: not-allowed; background: #6B7280; }
-        
+        .transaction-info { flex: 1; min-width: 0; }
+        .transaction-title { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .transaction-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .transaction-amount { font-weight: 800; font-size: 17px; text-align: right; flex-shrink: 0; margin-left: 8px; }
+        .transaction-amount.negative { color: var(--error); }
+        .transaction-amount.positive { color: var(--success); }
+        .transaction-amount.transfer { color: var(--accent); }
+
+        .transaction-actions { display: flex; gap: 4px; margin-left: 8px; }
+        .transaction-actions button { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px 6px; transition: 0.2s; border-radius: 8px; color: var(--text-secondary); }
+        .transaction-actions .edit-btn:hover { background: rgba(108, 92, 231, 0.1); color: var(--primary); }
+        .transaction-actions .delete-btn:hover { background: rgba(255, 107, 107, 0.1); color: var(--error); }
+        .transaction-actions .delete-btn.disabled { opacity: 0.2; cursor: not-allowed; }
+
+        .badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge-transfer { background: rgba(253, 203, 110, 0.15); color: #D97706; border: 1px solid rgba(253, 203, 110, 0.3); }
+        .badge-voice { background: rgba(108, 92, 231, 0.1); color: var(--primary); border: 1px solid rgba(108, 92, 231, 0.2); }
+        .badge-admin { background: rgba(0, 184, 148, 0.1); color: var(--success); border: 1px solid rgba(0, 184, 148, 0.2); }
+
+        /* ===== FILTER BAR ===== */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow); }
+        .filter-select { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 10px 16px; color: var(--text-primary); flex: 1; min-width: 100px; cursor: pointer; outline: none; font-size: 13px; font-weight: 500; }
+        .filter-select:focus { border-color: var(--primary); }
+        .search-bar { display: flex; gap: 8px; flex: 2; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 8px 12px; }
+        .search-bar input { flex: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 13px; }
+        .search-bar button { background: var(--primary-gradient); border: none; padding: 4px 16px; border-radius: 30px; cursor: pointer; color: white; font-weight: 600; font-size: 12px; transition: 0.2s; }
+        .search-bar button:hover { opacity: 0.9; transform: scale(0.98); }
+
+        /* ===== TABS ===== */
+        .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg-card); padding: 4px; border-radius: 60px; border: 1px solid var(--border-color); }
+        .tab { flex: 1; min-width: max-content; text-align: center; padding: 10px 16px; border-radius: 50px; cursor: pointer; font-weight: 700; color: var(--text-secondary); font-size: 13px; transition: 0.2s; }
+        .tab.active { background: var(--primary-gradient); color: white; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3); }
+
+        /* ===== ADMIN / STATS ===== */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        .stat-card { background: #13141E; border-radius: 20px; padding: 14px; border: 1px solid #262836; text-align: center; }
-        .stat-label { font-size: 12px; color: #8B93B0; margin-bottom: 6px; }
-        .stat-value { font-size: 20px; font-weight: 700; }
-        
-        .transfer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .transfer-modal-container { background: #171A24; border-radius: 40px; width: 100%; max-width: 400px; padding: 28px; border: 1px solid #F59E0B; }
-        .transfer-modal-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #F59E0B; display: flex; align-items: center; gap: 10px; }
-        .transfer-modal-row { margin-bottom: 20px; }
-        .transfer-modal-row label { display: block; margin-bottom: 8px; color: #8B93B0; font-size: 13px; }
-        .transfer-modal-row select, .transfer-modal-row input { width: 100%; background: #0F111A; border: 1px solid #2C3142; border-radius: 28px; padding: 14px 18px; color: white; font-size: 15px; outline: none; }
-        .transfer-modal-row select:focus, .transfer-modal-row input:focus { border-color: #F59E0B; }
-        .transfer-modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
-        .transfer-modal-buttons button { flex: 1; padding: 14px; border-radius: 60px; font-weight: 700; cursor: pointer; }
-        .transfer-submit { background: #F59E0B; border: none; color: #1A1C26; }
-        .transfer-cancel { background: transparent; border: 1px solid #383E55; color: #D9E0FF; }
-        
-        .expense-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-bottom: 20px; }
-        .expense-card { background: #13141E; border-radius: 24px; padding: 14px; border: 1px solid #282D3A; transition: 0.2s; }
-        .expense-card:hover { border-color: #6C4DFF; }
-        .expense-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
-        .expense-info { flex: 1; }
-        .expense-user { display: inline-block; background: #6C4DFF20; color: #6C4DFF; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
-        .expense-category { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-        .expense-meta { font-size: 11px; color: #8B93B0; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-        .expense-amount { font-weight: 800; font-size: 18px; }
-        .photo-thumb { width: 40px; height: 40px; background: #262B3C; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
-        .action-buttons-card { display: flex; gap: 8px; align-items: center; }
-        .edit-btn { background: none; border: none; color: #F59E0B; font-size: 18px; cursor: pointer; padding: 0 8px; }
-        .delete-btn { background: none; border: none; color: #6B7280; font-size: 18px; cursor: pointer; padding: 0 8px; }
-        .delete-btn.disabled { opacity: 0.3; cursor: not-allowed; }
-        
-        .settings-panel { background: #13141E; border-radius: 28px; padding: 20px; margin-bottom: 24px; border: 1px solid #2A2D3E; }
-        .category-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-        .category-tag { background: #2A2D3E; padding: 8px 16px; border-radius: 40px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-        .category-tag button { background: none; border: none; color: #FF5E6E; cursor: pointer; font-size: 16px; }
-        .add-cat-row { display: flex; gap: 10px; margin-top: 16px; }
-        .add-cat-row input { flex: 1; background: #0F111A; border: 1px solid #2C3142; border-radius: 40px; padding: 12px; color: white; outline: none; }
-        .add-cat-row button { background: #6C4DFF; border: none; padding: 12px 20px; border-radius: 40px; color: white; cursor: pointer; }
-        
-        .admin-section { border-top: 1px solid #2A2D3E; margin-top: 20px; padding-top: 20px; }
-        .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #262836; }
-        .delete-user-btn { background: #FF5E6E; border: none; padding: 4px 12px; border-radius: 20px; color: white; cursor: pointer; font-size: 12px; }
+        .stat-card { background: var(--bg-card); border-radius: var(--radius-sm); padding: 16px; border: 1px solid var(--border-color); text-align: center; box-shadow: var(--shadow); }
+        .stat-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+        .stat-value { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-top: 4px; }
+        .stat-value.expense { color: var(--error); }
+        .stat-value.income { color: var(--success); }
+        .stat-value.net { color: var(--primary); }
+
+        /* ===== SETTINGS PANELS ===== */
+        .settings-panel { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow); }
+        .settings-panel h4 { font-size: 16px; font-weight: 800; margin-bottom: 14px; }
+        .category-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .category-tag { background: var(--input-bg); padding: 6px 14px; border-radius: 40px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; border: 1px solid var(--input-border); }
+        .category-tag button { background: none; border: none; color: var(--error); cursor: pointer; font-size: 14px; font-weight: 700; }
+
         .toggle-switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #2A2D3E; transition: .3s; border-radius: 34px; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--input-border); transition: .3s; border-radius: 34px; }
         .toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .toggle-slider { background-color: #F59E0B; }
+        input:checked + .toggle-slider { background-color: var(--primary); }
         input:checked + .toggle-slider:before { transform: translateX(22px); }
-        .user-send-permission { display: flex; align-items: center; gap: 12px; }
-        
-        .chart-container { background: #13141E; border-radius: 24px; padding: 16px; border: 1px solid #262836; margin-bottom: 20px; height: 300px; width: 100%; }
-        
-        .floating-mic { position: fixed; bottom: 30px; right: 20px; background: #6C4DFF; width: 60px; height: 60px; border-radius: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(108,77,255,0.4); cursor: pointer; z-index: 200; font-size: 28px; border: none; color: white; transition: 0.2s; }
-        .floating-mic.listening { background: #FF5E6E; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        
-        .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .modal-container { background: #171A24; border-radius: 40px; width: 100%; max-width: 400px; padding: 24px; border: 1px solid #323A4E; max-height: 90vh; overflow-y: auto; }
-        .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
-        .input-field, .select-field, .date-field { background: #0F111A; border: 1px solid #2C3142; border-radius: 28px; padding: 14px 18px; width: 100%; margin-bottom: 14px; color: white; font-size: 15px; outline: none; }
-        .photo-preview { background: #0E0F17; border-radius: 28px; padding: 12px; text-align: center; margin: 12px 0; border: 1px dashed #4B4F6E; cursor: pointer; }
+
+        .input-field, .select-field, .date-field { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 28px; padding: 14px 18px; width: 100%; margin-bottom: 14px; color: var(--text-primary); font-size: 15px; outline: none; transition: 0.2s; }
+        .input-field:focus, .select-field:focus, .date-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+        .photo-preview { background: var(--input-bg); border-radius: 28px; padding: 12px; text-align: center; margin: 12px 0; border: 1px dashed var(--input-border); cursor: pointer; transition: 0.2s; }
+        .photo-preview:hover { border-color: var(--primary); }
         .flex-btns { display: flex; gap: 12px; margin-top: 16px; }
-        .voice-icon { background: #2D3042; border-radius: 60px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; }
-        
-        .voice-confirm-modal { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: #1E1F2A; padding: 16px 24px; border-radius: 60px; z-index: 4000; border: 2px solid #6C4DFF; animation: slideUp 0.3s ease; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .voice-confirm-modal button { background: #6C4DFF; border: none; padding: 8px 20px; border-radius: 40px; color: white; cursor: pointer; font-weight: 600; }
-        .voice-confirm-modal .cancel { background: #2A2D3E; }
+        .primary-btn { background: var(--primary-gradient); border: none; padding: 14px; border-radius: 60px; font-weight: 700; flex: 1; cursor: pointer; color: white; transition: 0.2s; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.25); }
+        .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108, 92, 231, 0.35); }
+        .secondary-btn { background: transparent; border: 1.5px solid var(--border-color); padding: 14px; border-radius: 60px; font-weight: 600; flex: 1; cursor: pointer; color: var(--text-primary); transition: 0.2s; }
+        .secondary-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .voice-icon { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 60px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .voice-icon:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* ===== MODALS ===== */
+        .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .modal-container { background: var(--bg-card); border-radius: 32px; width: 100%; max-width: 420px; padding: 28px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
+        .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; }
+
+        .transfer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .transfer-modal-container { background: var(--bg-card); border-radius: 32px; width: 100%; max-width: 400px; padding: 28px; border: 1px solid var(--border-color); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
+        .transfer-modal-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        .transfer-modal-row { margin-bottom: 16px; }
+        .transfer-modal-row label { display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 13px; font-weight: 600; }
+        .transfer-modal-row select, .transfer-modal-row input { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 28px; padding: 14px 18px; color: var(--text-primary); font-size: 15px; outline: none; transition: 0.2s; }
+        .transfer-modal-row select:focus, .transfer-modal-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(253, 203, 110, 0.15); }
+        .transfer-modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        .transfer-modal-buttons button { flex: 1; padding: 14px; border-radius: 60px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .transfer-submit { background: var(--accent); border: none; color: #1A1D26; }
+        .transfer-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3); }
+        .transfer-cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+        .transfer-cancel:hover { border-color: var(--error); color: var(--error); }
+
+        /* ===== AUTOCOMPLETE FIXED ===== */
+        .autocomplete-container { position: relative; width: 100%; }
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-height: 160px; overflow-y: auto; z-index: 100; margin-top: 4px; box-shadow: var(--shadow-hover); }
+        .autocomplete-item { padding: 12px 18px; cursor: pointer; transition: 0.1s; color: var(--text-primary); font-size: 14px; font-weight: 500; }
+        .autocomplete-item:hover { background: var(--input-bg); }
+        .autocomplete-item.selected { background: var(--primary); color: white; }
+
+        /* ===== VOICE CONFIRM ===== */
+        .voice-confirm-modal { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 16px 24px; border-radius: 60px; z-index: 4000; border: 2px solid var(--primary); animation: slideUp 0.3s ease; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); }
+        .voice-confirm-modal button { background: var(--primary-gradient); border: none; padding: 8px 20px; border-radius: 40px; color: white; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .voice-confirm-modal .cancel { background: var(--input-bg); color: var(--text-secondary); border: 1px solid var(--border-color); }
         @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #1E1F2A; padding: 10px 20px; border-radius: 60px; z-index: 4000; border: 1px solid #6C4DFF; animation: fadeUp 0.3s ease; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        
-        .demo-creds { background: #1A1C26; border-radius: 16px; padding: 16px; margin-top: 20px; font-size: 13px; text-align: left; border: 1px solid #2C3142; }
+
+        /* ===== TOAST ===== */
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 12px 24px; border-radius: 60px; z-index: 4000; border: 1px solid var(--primary); animation: toastFade 0.3s ease; box-shadow: var(--shadow-hover); font-weight: 600; font-size: 14px; }
+        @keyframes toastFade { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        /* ===== FLOATING MIC ===== */
+        .floating-mic { position: fixed; bottom: 30px; right: 20px; background: var(--primary-gradient); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); cursor: pointer; z-index: 200; font-size: 24px; border: none; color: white; transition: 0.3s; }
+        .floating-mic:hover { transform: scale(1.08); box-shadow: 0 8px 35px rgba(108, 92, 231, 0.5); }
+        .floating-mic.listening { background: var(--error); animation: pulseGlow 1.2s infinite; }
+        @keyframes pulseGlow { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+        /* ===== SHORTCUTS HINT ===== */
+        .shortcuts-hint { position: fixed; bottom: 100px; left: 20px; background: var(--bg-card); padding: 6px 12px; border-radius: 20px; font-size: 10px; color: var(--text-secondary); border: 1px solid var(--border-color); z-index: 150; display: none; box-shadow: var(--shadow); }
+        @media (min-width: 768px) { .shortcuts-hint { display: block; } }
+
+        .error-msg { color: var(--error); font-size: 13px; margin-top: 8px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .balance-amount { font-size: 28px; }
+            .balance-stats { gap: 16px; }
+            .transaction-item { padding: 12px 14px; }
+            .transaction-title { font-size: 13px; }
+            .quick-btn { padding: 12px; }
+            .quick-btn .icon { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
 
+<!-- Loading Screen -->
 <div id="loadingScreen" class="loading-screen">
     <div class="spinner"></div>
-    <div style="color: #8B93B0;">Connecting to Secure Cloud...</div>
-    <div id="loadingStatus" style="color: #6C4DFF; font-size: 12px;">Initializing Authentication...</div>
+    <div class="loading-logo">DesignSpace Khata</div>
+    <div style="color: var(--text-secondary); font-weight: 500; font-size: 14px;">Connecting to Secure Cloud...</div>
+    <div id="loadingStatus" style="color: var(--primary); font-size: 12px; font-weight: 600;">Initializing...</div>
 </div>
 
+<!-- Login Screen -->
 <div id="loginScreen" class="login-screen" style="display:none;">
     <div class="login-card">
         <h2>DesignSpace Khata</h2>
-        <p style="color:#8B93B0; margin-bottom: 24px;">Secure Email/Password Login</p>
-        
+        <p>Smart Multi-User Ledger</p>
         <div id="loginMode">
-            <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
-            <input type="password" id="loginPassword" placeholder="Password">
-            <button class="login-btn" id="loginBtn">Login</button>
-            <button class="switch-mode" id="showSignupBtn">Don't have an account? Sign Up</button>
+            <input type="email" id="loginEmail" placeholder="Email Address" autocomplete="email">
+            <input type="password" id="loginPassword" placeholder="Secure Password">
+            <button class="login-btn" id="loginBtn">Sign In</button>
+            <button class="switch-mode" id="showSignupBtn">Create Admin / Staff Account</button>
         </div>
-        
         <div id="signupMode" style="display:none;">
             <input type="text" id="signupName" placeholder="Full Name">
-            <input type="email" id="signupEmail" placeholder="Email">
-            <input type="password" id="signupPassword" placeholder="Password">
+            <input type="email" id="signupEmail" placeholder="Email Address">
+            <input type="password" id="signupPassword" placeholder="Choose Password">
             <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
-            <button class="login-btn" id="signupBtn">Sign Up</button>
-            <button class="switch-mode" id="showLoginBtn">Already have an account? Login</button>
+            <button class="login-btn" id="signupBtn">Register Account</button>
+            <button class="switch-mode" id="showLoginBtn">Back to Sign In</button>
         </div>
-        
         <div id="loginError" class="error-msg"></div>
     </div>
 </div>
 
+<!-- Main App -->
 <div id="appContainer" class="app-container">
+    <!-- Header -->
     <div class="cred-header">
         <div>
             <div class="logo">DesignSpace Khata</div>
             <div class="cloud-status">
-                <span id="cloudIcon">🔒</span> <span id="cloudText">Secure Connection</span>
+                <span id="cloudIcon">🔒</span> <span id="cloudText">Connected</span>
+                <button class="sync-btn" id="syncBtn">🔄 Sync</button>
             </div>
         </div>
-        <div class="user-info">
-            <span id="currentUserName">User</span>
-            <button id="logoutBtn" class="logout-btn">🚪</button>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" id="themeToggleBtn" title="Switch Theme">
+                <svg id="themeIcon" viewBox="0 0 24 24"><path d="M12.3 22c5.523 0 10-4.477 10-10 0-3.327-1.63-6.273-4.14-8.082-.36-.26-.856-.107-.993.303-.544 1.636-1.574 3.018-2.923 3.962-1.42.996-3.15 1.554-4.993 1.554-1.748 0-3.39-.5-4.767-1.393-.348-.225-.82-.095-.972.278A9.957 9.957 0 002 12c0 5.523 4.477 10 10 10z"/></svg>
+            </button>
+            <div class="user-info">
+                <span id="currentUserName">User</span>
+                <button id="logoutBtn" class="logout-btn">🚪</button>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Tabs -->
     <div class="tabs">
-        <div class="tab active" data-tab="activity">📋 Activity</div>
+        <div class="tab active" data-tab="activity">📋 Ledgers</div>
         <div class="tab" data-tab="analytics" id="analyticsTabBtn" style="display: none;">📊 Analytics</div>
         <div class="tab" data-tab="admin" id="adminTabBtn" style="display: none;">👑 Admin</div>
         <div class="tab" data-tab="settings" id="settingsTabBtn" style="display: none;">⚙️ Settings</div>
     </div>
-    
+
+    <!-- Activity Tab -->
     <div id="activityTab">
-        <div class="filter-bar">
-            <div class="filter-row">
-                <select id="filterType" class="filter-select">
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month" selected>This Month</option>
-                </select>
-                <select id="filterCategory" class="filter-select">
-                    <option value="all">All Categories</option>
-                </select>
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-label">TOTAL BALANCE</div>
+            <div class="balance-amount" id="balanceAmount">₹0</div>
+            <div class="balance-stats">
+                <div class="balance-stat">
+                    <span class="stat-label">Income</span>
+                    <span class="stat-value positive" id="totalIncomeUser">₹0</span>
+                </div>
+                <div class="balance-stat">
+                    <span class="stat-label">Expenses</span>
+                    <span class="stat-value negative" id="totalExpenseUser">₹0</span>
+                </div>
             </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="quick-btn" id="addExpenseBtn">
+                <span class="icon">📤</span>
+                <span class="label expense">Expense</span>
+            </div>
+            <div class="quick-btn" id="addIncomeBtn">
+                <span class="icon">💰</span>
+                <span class="label income">Income</span>
+            </div>
+            <div class="quick-btn" id="sendMoneySmallBtn">
+                <span class="icon">🔄</span>
+                <span class="label transfer">Transfer</span>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="filter-bar">
+            <select id="filterType" class="filter-select">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month" selected>This Month</option>
+            </select>
+            <select id="filterCategory" class="filter-select">
+                <option value="all">All Categories</option>
+            </select>
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Search notes...">
+                <input type="text" id="searchInput" placeholder="🔍 Search...">
                 <button id="searchBtn">Search</button>
             </div>
         </div>
-        
-        <div class="balance-widget">
-            <div>💰 YOUR BALANCE</div>
-            <div class="balance-amount" id="balanceAmount">₹0</div>
+
+        <!-- Transactions List -->
+        <div class="section-header">
+            <span class="section-title">Recent Transactions</span>
+            <span class="section-action" id="viewAllBtn">View All</span>
         </div>
-        
-        <div class="action-buttons">
-            <button id="addExpenseBtn" class="primary-btn">➕ Expense</button>
-            <button id="sendMoneySmallBtn" class="send-money-small-btn">🔄 Send</button>
-            <button id="addIncomeBtn" class="secondary-btn">💰 Income</button>
+        <div id="expensesList" class="transaction-list">
+            <div style="text-align:center; padding: 32px; color: var(--text-secondary);">✨ No transactions yet</div>
         </div>
-        
-        <div id="expensesList" class="expense-list"><div style="text-align:center; padding: 32px;">✨ Loading...</div></div>
     </div>
 
+    <!-- Analytics Tab -->
     <div id="analyticsTab" style="display: none;">
-        <h3 style="margin-bottom: 16px;">Expense Breakdown</h3>
+        <h3 style="margin-bottom: 16px; font-weight: 800; font-size: 18px;">Spending Breakdown</h3>
         <div class="filter-bar">
             <select id="analyticsFilterType" class="filter-select">
                 <option value="all">All Time</option>
@@ -226,96 +416,122 @@
                 <option value="year">This Year</option>
             </select>
         </div>
-        <div class="chart-container">
+        <div style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border: 1px solid var(--border-color); height: 300px; position: relative;">
             <canvas id="expenseChart"></canvas>
         </div>
     </div>
-    
+
+    <!-- Admin Tab -->
     <div id="adminTab" style="display: none;">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value" id="totalExpenses">₹0</div></div>
-            <div class="stat-card"><div class="stat-label">Total Income</div><div class="stat-value" id="totalIncome">₹0</div></div>
-            <div class="stat-card"><div class="stat-label">Net Flow</div><div class="stat-value" id="netFlow">₹0</div></div>
-            <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="totalUsers">0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value expense" id="totalExpenses">₹0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Income</div><div class="stat-value income" id="totalIncome">₹0</div></div>
+            <div class="stat-card"><div class="stat-label">Net Flow</div><div class="stat-value net" id="netFlow">₹0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value net" id="totalUsers">0</div></div>
         </div>
-        
+
         <div class="filter-bar">
-            <div class="filter-row">
-                <select id="adminFilterUser" class="filter-select">
-                    <option value="all">All Users</option>
-                </select>
-                <select id="adminFilterCategory" class="filter-select">
-                    <option value="all">All Categories</option>
-                </select>
-            </div>
+            <select id="adminFilterUser" class="filter-select"><option value="all">All Users</option></select>
+            <select id="adminFilterCategory" class="filter-select"><option value="all">All Categories</option></select>
             <div class="search-bar">
-                <input type="text" id="adminSearchInput" placeholder="🔍 Search across all entries...">
+                <input type="text" id="adminSearchInput" placeholder="🔍 Search...">
                 <button id="adminSearchBtn">Search</button>
             </div>
         </div>
-        
-        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 600;">📋 All Transactions</span>
-            <button id="downloadFullReportBtn" class="secondary-btn" style="padding: 6px 12px; font-size: 12px;">📥 CSV</button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-weight: 700; font-size: 15px;">📋 All Transactions</span>
+            <button id="downloadFullReportBtn" class="secondary-btn" style="padding: 6px 14px; font-size: 12px; border-radius: 40px; width: auto; flex: none;">📥 CSV</button>
         </div>
-        <div id="adminExpensesList" class="expense-list"><div style="text-align:center; padding: 32px;">Loading...</div></div>
+        <div id="adminExpensesList" class="transaction-list"><div style="text-align:center; padding: 32px; color: var(--text-secondary);">Loading...</div></div>
     </div>
-    
+
+    <!-- Settings Tab -->
     <div id="settingsTab" style="display: none;">
         <div class="settings-panel">
-            <div>
-                <h4>📂 Expense Categories</h4>
-                <div id="expenseCatList" class="category-list"></div>
-                <div class="add-cat-row">
-                    <input type="text" id="newExpenseCat" placeholder="New expense category">
-                    <button id="addExpenseCatBtn">Add</button>
-                </div>
-                <div class="add-cat-row" style="margin-top: 8px;">
-                    <select id="defaultExpenseCat" class="filter-select">
-                        <option value="">Set Default Category (for unrecognized)</option>
-                    </select>
-                    <button id="setDefaultCatBtn">Set Default</button>
-                </div>
+            <h4>⌨️ Keyboard Shortcuts</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:13px; color:var(--text-secondary);">Enable Global Shortcuts</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggleShortcutsCheckbox" checked>
+                    <span class="toggle-slider"></span>
+                </label>
             </div>
-            <div style="margin-top: 24px;">
-                <h4>💰 Income Categories</h4>
-                <div id="incomeCatList" class="category-list"></div>
-                <div class="add-cat-row">
-                    <input type="text" id="newIncomeCat" placeholder="New income category">
-                    <button id="addIncomeCatBtn">Add</button>
-                </div>
+            <div style="background: var(--input-bg); border-radius: 16px; padding: 12px 16px; border: 1px solid var(--input-border);">
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--text-secondary);"><span>Add Expense</span><span style="color:var(--primary); font-weight:700;">Shift + +</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--text-secondary);"><span>Add Income</span><span style="color:var(--primary); font-weight:700;">i</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--text-secondary);"><span>Send Transfer</span><span style="color:var(--primary); font-weight:700;">t</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--text-secondary);"><span>Save Modal</span><span style="color:var(--primary); font-weight:700;">Ctrl + Enter</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary);"><span>Close Modal</span><span style="color:var(--primary); font-weight:700;">Esc</span></div>
+            </div>
+        </div>
+
+        <div class="settings-panel">
+            <h4>📂 Expense Categories</h4>
+            <div id="expenseCatList" class="category-list"></div>
+            <div style="display:flex; gap:10px; margin-top:14px;">
+                <input type="text" id="newExpenseCat" placeholder="New expense category" class="input-field" style="margin-bottom:0; flex:1;">
+                <button id="addExpenseCatBtn" class="primary-btn" style="flex:0 0 100px; padding: 12px; border-radius:28px;">Add</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <select id="defaultExpenseCat" class="filter-select" style="flex:1;"><option value="">Default category</option></select>
+                <button id="setDefaultCatBtn" class="secondary-btn" style="flex:0 0 140px; padding:12px; font-size:12px; border-radius:28px;">Set Default</button>
+            </div>
+        </div>
+
+        <div class="settings-panel">
+            <h4>💰 Income Categories</h4>
+            <div id="incomeCatList" class="category-list"></div>
+            <div style="display:flex; gap:10px; margin-top:14px;">
+                <input type="text" id="newIncomeCat" placeholder="New income category" class="input-field" style="margin-bottom:0; flex:1;">
+                <button id="addIncomeCatBtn" class="primary-btn" style="flex:0 0 100px; padding:12px; border-radius:28px;">Add</button>
             </div>
         </div>
 
         <div class="settings-panel admin-section">
-            <h4>👑 User Management & Permissions</h4>
+            <h4>👑 User Management</h4>
             <div><input type="text" id="newUserName" placeholder="New user name" class="input-field"></div>
             <div><input type="email" id="newUserEmail" placeholder="Email" class="input-field"></div>
             <div><input type="password" id="newUserPass" placeholder="Temporary Password" class="input-field"></div>
             <button id="addUserAdminBtn" class="secondary-btn" style="width:100%; margin-bottom: 16px;">➕ Add User</button>
             
-            <h5 style="margin-top: 16px; margin-bottom: 8px;">Send Money Permissions</h5>
-            <p style="font-size: 12px; color: #8B93B0; margin-bottom: 12px;">Toggle which users can send money to others</p>
-            <div id="sendPermissionList" class="user-list" style="margin-bottom: 20px;"></div>
+            <h4 style="margin-top:16px;">Send Money Permissions</h4>
+            <div id="sendPermissionList"></div>
             
-            <h5>User Balances</h5>
+            <h4 style="margin-top:16px;">User Balances</h4>
             <div id="adminUserList"></div>
             
-            <div style="margin-top: 24px;">
-                <h5>Add Funds to User</h5>
+            <div style="margin-top:16px;">
+                <h4>Add Funds</h4>
                 <select id="fundUserId" class="select-field"></select>
                 <input type="number" id="fundAmount" placeholder="Amount (₹)" class="input-field">
-                <button id="addFundsBtn" class="secondary-btn" style="width:100%">Add Funds</button>
+                <button id="addFundsBtn" class="primary-btn" style="width:100%; background: var(--success);">Add Funds</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Confirm Modal -->
+<div id="confirmModal" class="modal-mask" style="display:none; z-index:5000;">
+    <div class="modal-container" style="max-width:380px; text-align:center;">
+        <h4 id="confirmTitle" style="font-size:20px; font-weight:800; margin-bottom:12px; color:var(--error);">Confirm</h4>
+        <p id="confirmMessage" style="color:var(--text-secondary); font-size:14px; margin-bottom:24px; line-height:1.5;"></p>
+        <div style="display:flex; gap:12px;">
+            <button id="confirmYesBtn" class="primary-btn" style="background:var(--error); box-shadow:none;">Yes, Proceed</button>
+            <button id="confirmNoBtn" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Mic -->
 <button id="floatingMicBtn" class="floating-mic">🎙️</button>
+<div class="shortcuts-hint" id="shortcutsHint">⌨️ Shift++: Expense | i: Income | t: Transfer | Ctrl+Enter: Save</div>
 
 <script>
-    // Firebase Configuration
-    const firebaseConfig = {
+    // ===================================================================
+    // FIREBASE CONFIGURATION
+    // ===================================================================
+    const defaultFirebaseConfig = {
         apiKey: "AIzaSyC88dB1KRlDgDkarv6HdatWm9QJNJI-MeI",
         authDomain: "designspace-khata.firebaseapp.com",
         projectId: "designspace-khata",
@@ -323,13 +539,17 @@
         messagingSenderId: "1020419487942",
         appId: "1:1020419487942:web:3ceea105f3ebf06dd6ffc7"
     };
-    
-    // Initialize Firebase
+
+    let activeConfig = localStorage.getItem('khata_custom_firebase_config');
+    let firebaseConfig = activeConfig ? JSON.parse(activeConfig) : defaultFirebaseConfig;
+
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    
-    // App State
+    let auth = firebase.auth();
+    let db = firebase.firestore();
+
+    // ===================================================================
+    // APP STATE
+    // ===================================================================
     let currentUser = null;
     let userProfile = null;
     let expenses = [];
@@ -341,9 +561,18 @@
     let filterState = { type: "month", category: "all", search: "" };
     let adminFilterState = { user: "all", category: "all", search: "" };
     let chartInstance = null;
-    let sendPermissions = {}; // userId -> boolean
-    
-    // Helper Functions
+    let sendPermissions = {};
+    let shortcutsEnabled = true;
+    let unsubscribeExpenses = null;
+    let unsubscribeUsers = null;
+    let isSyncing = false;
+    let isAddingTransaction = false;
+    let currentTheme = localStorage.getItem('khata_app_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    // ===================================================================
+    // HELPER FUNCTIONS
+    // ===================================================================
     function showToast(msg) {
         const t = document.createElement("div");
         t.className = "toast";
@@ -351,41 +580,49 @@
         document.body.appendChild(t);
         setTimeout(() => t.remove(), 2500);
     }
-    
+
     function getUserName(userId) {
         const user = allUsers.find(u => u.id === userId);
         return user ? user.name : "Unknown";
     }
-    
+
     function canSendMoney(userId) {
-        // Admin can always send money
         if (userProfile?.isAdmin) return true;
-        // Check permission for the user
         return sendPermissions[userId] === true;
     }
-    
-    function calculateBalance(userId) {
-        let balance = 0;
-        expenses.forEach(exp => {
-            if (exp.userId === userId && exp.type === "EXPENSE") {
-                balance -= exp.amount;
-            }
-            if (exp.userId === userId && exp.type === "INCOME") {
-                balance += exp.amount;
-            }
-            if (exp.mentionedUserId === userId && exp.type === "EXPENSE") {
-                balance += exp.amount;
-            }
-        });
-        return balance;
-    }
-    
+
     function canDeleteTransaction(transaction) {
         if (userProfile?.isAdmin) return true;
-        if (transaction.userId === currentUser.uid) return true;
-        return false;
+        if (transaction.category === "Money Transfer") {
+            if (transaction.type === "EXPENSE" && transaction.userId === currentUser.uid) return true;
+            return false;
+        }
+        return transaction.userId === currentUser.uid;
     }
-    
+
+    function requestConfirmation(title, message, onConfirm) {
+        const modal = document.getElementById('confirmModal');
+        document.getElementById('confirmTitle').innerText = title;
+        document.getElementById('confirmMessage').innerText = message;
+        modal.style.display = 'flex';
+        document.getElementById('confirmYesBtn').onclick = () => { modal.style.display = 'none'; onConfirm(); };
+        document.getElementById('confirmNoBtn').onclick = () => { modal.style.display = 'none'; };
+    }
+
+    function getCollections() {
+        return { expenses: db.collection('expenses'), users: db.collection('users'), metadata: db.collection('metadata') };
+    }
+
+    function getDateRange(type) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (type === "today") return { start: today.getTime(), end: today.getTime() + 86400000 };
+        if (type === "week") return { start: today.getTime() - 7 * 86400000, end: today.getTime() + 86400000 };
+        if (type === "month") return { start: new Date(now.getFullYear(), now.getMonth(), 1).getTime(), end: new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() };
+        if (type === "year") return { start: new Date(now.getFullYear(), 0, 1).getTime(), end: new Date(now.getFullYear() + 1, 0, 1).getTime() };
+        return null;
+    }
+
     function compressImage(file, maxWidth = 400, quality = 0.6) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -405,260 +642,47 @@
             reader.readAsDataURL(file);
         });
     }
-    
-    function getDateRange(type) {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        if (type === "today") return { start: today.getTime(), end: today.getTime() + 86400000 };
-        if (type === "week") return { start: today.getTime() - 7 * 86400000, end: today.getTime() + 86400000 };
-        if (type === "month") return { start: new Date(now.getFullYear(), now.getMonth(), 1).getTime(), end: new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() };
-        if (type === "year") return { start: new Date(now.getFullYear(), 0, 1).getTime(), end: new Date(now.getFullYear() + 1, 0, 1).getTime() };
-        return null;
-    }
-    
-    // Send Money Function
-    async function sendMoney(senderId, receiverId, amount, note = "") {
-        if (senderId === receiverId) {
-            showToast("Cannot send money to yourself");
-            return false;
-        }
-        if (amount <= 0) {
-            showToast("Please enter a valid amount");
-            return false;
-        }
-        
-        const sender = allUsers.find(u => u.id === senderId);
-        const receiver = allUsers.find(u => u.id === receiverId);
-        
-        if (!sender || !receiver) {
-            showToast("Invalid user selected");
-            return false;
-        }
-        
-        // Check if sender has permission (if not admin)
-        if (!canSendMoney(senderId) && !userProfile?.isAdmin) {
-            showToast("You don't have permission to send money");
-            return false;
-        }
-        
-        const senderBalance = calculateBalance(senderId);
-        if (senderBalance < amount) {
-            if (!confirm(`Warning: ${sender.name} has balance ₹${senderBalance.toFixed(2)}. Sending ₹${amount} will make it negative. Continue?`)) {
-                return false;
+
+    // ===================================================================
+    // BALANCE CALCULATION
+    // ===================================================================
+    function calculateBalance(userId) {
+        let balance = 0;
+        expenses.forEach(exp => {
+            const amt = Number(exp.amount) || 0;
+            if (exp.userId === userId && exp.type === "EXPENSE") {
+                balance -= amt;
             }
-        }
-        
-        const timestamp = Date.now();
-        const date = new Date().toISOString().split('T')[0];
-        
-        const transaction = {
-            userId: senderId,
-            mentionedUserId: receiverId,
-            type: "EXPENSE",
-            category: "Money Transfer",
-            amount: amount,
-            description: note ? `Transfer to ${receiver.name}: ${note}` : `Money transfer to ${receiver.name}`,
-            date: date,
-            timestamp: timestamp,
-            photoURL: null,
-            createdAt: new Date()
-        };
-        
-        try {
-            const docRef = await db.collection("expenses").add(transaction);
-            const savedEntry = { id: docRef.id, ...transaction };
-            expenses.push(savedEntry);
-            await loadUserData();
-            renderAll();
-            showToast(`✅ ₹${amount} sent from ${sender.name} to ${receiver.name}`);
-            return true;
-        } catch (e) {
-            console.error("Send money error:", e);
-            showToast("Error sending money");
-            return false;
-        }
-    }
-    
-    // Open Send Money Modal (Default sender is current user)
-    function openSendMoneyModal() {
-        // Check if current user has permission to send money
-        if (!canSendMoney(currentUser.uid) && !userProfile?.isAdmin) {
-            showToast("You don't have permission to send money. Contact admin.");
-            return;
-        }
-        
-        const modal = document.createElement('div');
-        modal.className = 'transfer-modal';
-        
-        // Get other users (exclude current user from receiver list? No, allow sending to anyone including self? Self blocked later)
-        const otherUsers = allUsers.filter(u => u.id !== currentUser.uid);
-        
-        modal.innerHTML = `
-            <div class="transfer-modal-container">
-                <div class="transfer-modal-title">
-                    <span>🔄</span> Send Money
-                </div>
-                <div class="transfer-modal-row">
-                    <label>Sender (You)</label>
-                    <input type="text" value="${userProfile?.name || 'You'} (₹${calculateBalance(currentUser.uid).toFixed(2)})" disabled style="background: #0F111A; border: 1px solid #2C3142; border-radius: 28px; padding: 14px 18px; color: #8B93B0;">
-                </div>
-                <div class="transfer-modal-row">
-                    <label>Select Receiver</label>
-                    <select id="modalReceiverUser">
-                        <option value="">Select Receiver</option>
-                        ${otherUsers.map(u => `<option value="${u.id}">${u.name} (₹${calculateBalance(u.id).toFixed(2)})</option>`).join('')}
-                    </select>
-                </div>
-                <div class="transfer-modal-row">
-                    <label>Amount (₹)</label>
-                    <input type="number" id="modalAmount" placeholder="Enter amount" step="1">
-                </div>
-                <div class="transfer-modal-row">
-                    <label>Note (Optional)</label>
-                    <input type="text" id="modalNote" placeholder="Reason for transfer">
-                </div>
-                <div class="transfer-modal-buttons">
-                    <button class="transfer-submit" id="modalSendBtn">Send Money</button>
-                    <button class="transfer-cancel" id="modalCancelBtn">Cancel</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        modal.querySelector('#modalSendBtn').onclick = async () => {
-            const receiverId = modal.querySelector('#modalReceiverUser').value;
-            const amount = parseFloat(modal.querySelector('#modalAmount').value);
-            const note = modal.querySelector('#modalNote').value;
-            
-            if (!receiverId) {
-                showToast("Please select a receiver");
-                return;
+            if (exp.userId === userId && exp.type === "INCOME") {
+                balance += amt;
             }
-            if (isNaN(amount) || amount <= 0) {
-                showToast("Please enter a valid amount");
-                return;
+            if (exp.mentionedUserId === userId && exp.type === "EXPENSE") {
+                balance += amt;
             }
-            
-            await sendMoney(currentUser.uid, receiverId, amount, note);
-            modal.remove();
-        };
-        
-        modal.querySelector('#modalCancelBtn').onclick = () => modal.remove();
+        });
+        return balance;
     }
-    
-    // Voice Confirmation Popup
-    function showVoiceConfirmPopup(details, onConfirm) {
-        const existingPopup = document.querySelector('.voice-confirm-modal');
-        if (existingPopup) existingPopup.remove();
-        
-        const popup = document.createElement('div');
-        popup.className = 'voice-confirm-modal';
-        popup.innerHTML = `
-            <span>🎤 Voice detected:</span>
-            <span style="font-weight: 600;">${details.category} ₹${details.amount}</span>
-            <span style="font-size: 12px; color: #8B93B0;">${details.description || ""}</span>
-            ${details.mention ? `<span style="background: #2A2D3E; padding: 2px 8px; border-radius: 20px;">→ ${details.mention}</span>` : ''}
-            <button id="voiceConfirmYes">✓ Add</button>
-            <button id="voiceConfirmNo" class="cancel">✗ Cancel</button>
-        `;
-        document.body.appendChild(popup);
-        
-        document.getElementById('voiceConfirmYes').onclick = () => {
-            popup.remove();
-            onConfirm(true);
-        };
-        document.getElementById('voiceConfirmNo').onclick = () => {
-            popup.remove();
-            onConfirm(false);
-            showToast("Voice command cancelled");
-        };
-        
-        setTimeout(() => {
-            if (document.body.contains(popup)) popup.remove();
-        }, 15000);
-    }
-    
-    // Firestore Operations
-    async function loadUserData() {
-        if (!currentUser) return;
-        
-        try {
-            const userDoc = await db.collection("users").doc(currentUser.uid).get();
-            if (userDoc.exists) {
-                userProfile = userDoc.data();
-                userProfile.id = currentUser.uid;
-            } else {
-                userProfile = {
-                    name: currentUser.email.split('@')[0],
-                    email: currentUser.email,
-                    isAdmin: false,
-                    canSendMoney: false,
-                    createdAt: new Date()
-                };
-                await db.collection("users").doc(currentUser.uid).set(userProfile);
-            }
-            
-            const usersSnapshot = await db.collection("users").get();
-            allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // Load send permissions
-            const permissionsDoc = await db.collection("metadata").doc("sendPermissions").get();
-            if (permissionsDoc.exists) {
-                sendPermissions = permissionsDoc.data();
-            } else {
-                // Initialize - only admin can send by default
-                sendPermissions = {};
-                allUsers.forEach(user => {
-                    sendPermissions[user.id] = user.isAdmin || false;
-                });
-                await db.collection("metadata").doc("sendPermissions").set(sendPermissions);
-            }
-            
-            const expensesSnapshot = await db.collection("expenses").get();
-            expenses = expensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            expenses.sort((a, b) => b.timestamp - a.timestamp);
-            
-            const metaDoc = await db.collection("metadata").doc("settings").get();
-            if (metaDoc.exists) {
-                const data = metaDoc.data();
-                if (data.expenseCategories) expenseCategories = data.expenseCategories;
-                if (data.incomeCategories) incomeCategories = data.incomeCategories;
-                if (data.defaultExpenseCategory) defaultExpenseCategory = data.defaultExpenseCategory;
-            }
-            
-            document.getElementById('cloudIcon').innerHTML = '🔒';
-            document.getElementById('cloudText').innerHTML = 'Secure Connection';
-            document.getElementById('cloudText').style.color = '#2ED15E';
-            
-            renderAll();
-        } catch (e) {
-            console.error("Load error:", e);
-            showToast("Error loading data");
-        }
-    }
-    
-    async function updateSendPermission(userId, canSend) {
-        sendPermissions[userId] = canSend;
-        await db.collection("metadata").doc("sendPermissions").set(sendPermissions);
-        renderAll();
-        showToast(`Send money permission updated for ${getUserName(userId)}`);
-    }
-    
-    async function addTransaction(type, category, amount, description, mentionedUserId = null, photoFile = null, customDate = null) {
+
+    // ===================================================================
+    // TRANSACTION FUNCTIONS
+    // ===================================================================
+    async function addTransaction(type, category, amount, description, mentionedUserId = null, photoFile = null, customDate = null, isVoice = false) {
+        if (isAddingTransaction) return false;
         if (amount <= 0) { showToast("Invalid amount"); return false; }
-        
+        isAddingTransaction = true;
+
         const allValidCats = [...expenseCategories, ...incomeCategories];
         let finalCategory = category;
         if (!allValidCats.includes(category)) {
             finalCategory = defaultExpenseCategory;
-            showToast(`Category "${category}" not found, using "${defaultExpenseCategory}"`);
+            showToast(`Using default category: "${defaultExpenseCategory}"`);
         }
-        
+
         let photoURL = null;
         if (photoFile) photoURL = await compressImage(photoFile);
-        
+
         const entryDate = customDate || new Date().toISOString().split('T')[0];
-        
+
         const newEntry = {
             userId: currentUser.uid,
             type: type,
@@ -669,35 +693,82 @@
             timestamp: customDate ? new Date(customDate).getTime() : Date.now(),
             photoURL: photoURL,
             mentionedUserId: mentionedUserId,
-            createdAt: new Date()
+            createdAt: new Date(),
+            isVoice: isVoice
         };
-        
+
         try {
-            const docRef = await db.collection("expenses").add(newEntry);
+            const docRef = await db.collection('expenses').add(newEntry);
             const savedEntry = { id: docRef.id, ...newEntry };
             expenses.push(savedEntry);
             renderAll();
-            
-            if (mentionedUserId) {
-                showToast(`${type === "EXPENSE" ? "Expense" : "Transfer"} added: ₹${amount} from ${getUserName(currentUser.uid)} → ${getUserName(mentionedUserId)}`);
-            } else {
-                showToast(`${type === "EXPENSE" ? "Expense" : "Income"} added: ₹${amount}`);
-            }
+            showToast(`Added: ₹${amount}`);
             return true;
         } catch (e) {
-            console.error("Add error:", e);
+            console.error("Add transaction error:", e);
             showToast("Error adding transaction");
             return false;
+        } finally {
+            isAddingTransaction = false;
         }
     }
-    
+
+    async function sendMoney(senderId, receiverId, amount, note = "") {
+        if (senderId === receiverId) { showToast("Cannot transfer to yourself"); return false; }
+        if (amount <= 0) { showToast("Please enter a valid amount"); return false; }
+
+        const sender = allUsers.find(u => u.id === senderId);
+        const receiver = allUsers.find(u => u.id === receiverId);
+        if (!sender || !receiver) { showToast("User not found"); return false; }
+
+        if (!canSendMoney(senderId) && !userProfile?.isAdmin) {
+            showToast("Transfer capability restricted by admin");
+            return false;
+        }
+
+        const senderBalance = calculateBalance(senderId);
+        const performTransfer = async () => {
+            const timestamp = Date.now();
+            const date = new Date().toISOString().split('T')[0];
+            const transaction = {
+                userId: senderId,
+                mentionedUserId: receiverId,
+                type: "EXPENSE",
+                category: "Money Transfer",
+                amount: amount,
+                description: note ? `Transfer to ${receiver.name}: ${note}` : `Money transfer to ${receiver.name}`,
+                date: date,
+                timestamp: timestamp,
+                photoURL: null,
+                createdAt: new Date(),
+                isVoice: false
+            };
+            try {
+                const docRef = await db.collection('expenses').add(transaction);
+                expenses.push({ id: docRef.id, ...transaction });
+                await loadUserData();
+                renderAll();
+                showToast(`✅ ₹${amount} sent to ${receiver.name}`);
+                return true;
+            } catch (e) {
+                console.error("Transfer failed:", e);
+                showToast("Error processing transfer");
+                return false;
+            }
+        };
+
+        if (senderBalance < amount) {
+            requestConfirmation("Insufficient Funds", `This transfer of ₹${amount} will make ${sender.name}'s balance negative. Proceed?`, performTransfer);
+            return false;
+        }
+        await performTransfer();
+    }
+
     async function updateTransaction(id, updatedData) {
         try {
-            await db.collection("expenses").doc(id).update(updatedData);
+            await db.collection('expenses').doc(id).update(updatedData);
             const index = expenses.findIndex(e => e.id === id);
-            if (index !== -1) {
-                expenses[index] = { ...expenses[index], ...updatedData };
-            }
+            if (index !== -1) expenses[index] = { ...expenses[index], ...updatedData };
             renderAll();
             showToast("Transaction updated");
             return true;
@@ -707,63 +778,856 @@
             return false;
         }
     }
-    
+
     async function deleteTransaction(id) {
         const transaction = expenses.find(e => e.id === id);
         if (!transaction) return;
-        
         if (!canDeleteTransaction(transaction)) {
             showToast("Only the sender can delete this transaction");
             return;
         }
-        
-        if (!confirm("Delete this entry? This will affect both sender and receiver balances.")) return;
-        
+        requestConfirmation("Delete Transaction", "Are you sure you want to delete this entry? Balances will be recalculated.", async () => {
+            try {
+                await db.collection('expenses').doc(id).delete();
+                expenses = expenses.filter(e => e.id !== id);
+                renderAll();
+                showToast("Entry Deleted");
+            } catch (e) {
+                console.error("Delete error:", e);
+                showToast("Error deleting transaction");
+            }
+        });
+    }
+
+    // ===================================================================
+    // AUTH FUNCTIONS
+    // ===================================================================
+    async function login(email, password) {
         try {
-            await db.collection("expenses").doc(id).delete();
-            expenses = expenses.filter(e => e.id !== id);
-            renderAll();
-            showToast("Deleted");
+            await auth.signInWithEmailAndPassword(email, password);
+            showToast("Authenticated successfully");
+            document.getElementById('loginError').innerText = "";
         } catch (e) {
-            console.error("Delete error:", e);
-            showToast("Error deleting");
+            if (e.code === "auth/invalid-credential" || e.code === "auth/wrong-password" || e.code === "auth/user-not-found") {
+                document.getElementById('loginError').innerText = "Invalid credentials";
+            } else {
+                document.getElementById('loginError').innerText = e.message;
+            }
         }
     }
-    
-    // Edit Modal
+
+    async function signup(name, email, password, confirmPassword) {
+        if (password !== confirmPassword) {
+            document.getElementById('loginError').innerText = "Passwords do not match";
+            return;
+        }
+        try {
+            const userCred = await auth.createUserWithEmailAndPassword(email, password);
+            const usersSnapshot = await db.collection('users').get();
+            const isFirstUser = usersSnapshot.empty;
+            const profile = { name, email, isAdmin: isFirstUser, canSendMoney: isFirstUser, createdAt: new Date() };
+            await db.collection('users').doc(userCred.user.uid).set(profile);
+            sendPermissions[userCred.user.uid] = isFirstUser;
+            await db.collection('metadata').doc('sendPermissions').set(sendPermissions, { merge: true });
+            showToast("Account registered successfully!");
+            toggleMode();
+        } catch (e) {
+            document.getElementById('loginError').innerText = e.message;
+        }
+    }
+
+    async function loadUserData(force = false) {
+        if (!currentUser) return;
+        try {
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            if (userDoc.exists) {
+                userProfile = userDoc.data();
+                userProfile.id = currentUser.uid;
+            } else {
+                const usersSnapshot = await db.collection('users').get();
+                const isFirstUser = usersSnapshot.empty;
+                userProfile = { name: currentUser.email.split('@')[0], email: currentUser.email, isAdmin: isFirstUser, canSendMoney: isFirstUser, createdAt: new Date() };
+                await db.collection('users').doc(currentUser.uid).set(userProfile);
+            }
+
+            const usersSnapshot = await db.collection('users').get();
+            allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const permissionsDoc = await db.collection('metadata').doc('sendPermissions').get();
+            sendPermissions = permissionsDoc.exists ? permissionsDoc.data() : {};
+
+            const metaDoc = await db.collection('metadata').doc('settings').get();
+            if (metaDoc.exists) {
+                const data = metaDoc.data();
+                if (data.expenseCategories) expenseCategories = data.expenseCategories;
+                if (data.incomeCategories) incomeCategories = data.incomeCategories;
+                if (data.defaultExpenseCategory) defaultExpenseCategory = data.defaultExpenseCategory;
+            }
+
+            if (!force) {
+                listenToExpenses();
+                listenToUsers();
+            } else {
+                const expensesSnapshot = await db.collection('expenses').get();
+                expenses = expensesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                expenses.sort((a, b) => b.timestamp - a.timestamp);
+                renderAll();
+            }
+
+            document.getElementById('cloudIcon').innerHTML = '☁️';
+            document.getElementById('cloudText').innerHTML = 'Connected';
+            renderAll();
+        } catch (e) {
+            console.error("Load user data failed:", e);
+            showToast("Database load error");
+        }
+    }
+
+    function logout() {
+        auth.signOut();
+        currentUser = null;
+        userProfile = null;
+        expenses = [];
+        allUsers = [];
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('loginMode').style.display = 'block';
+        document.getElementById('signupMode').style.display = 'none';
+        if (unsubscribeExpenses) { unsubscribeExpenses(); unsubscribeExpenses = null; }
+        if (unsubscribeUsers) { unsubscribeUsers(); unsubscribeUsers = null; }
+    }
+
+    function toggleMode() {
+        const loginMode = document.getElementById('loginMode');
+        const signupMode = document.getElementById('signupMode');
+        if (loginMode.style.display === 'none') {
+            loginMode.style.display = 'block';
+            signupMode.style.display = 'none';
+        } else {
+            loginMode.style.display = 'none';
+            signupMode.style.display = 'block';
+        }
+        document.getElementById('loginError').innerText = "";
+    }
+
+    // ===================================================================
+    // REAL-TIME LISTENERS
+    // ===================================================================
+    function listenToExpenses() {
+        if (unsubscribeExpenses) unsubscribeExpenses();
+        unsubscribeExpenses = db.collection('expenses').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+            expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderAll();
+        }, (error) => { console.error("Expenses listen failed:", error); });
+    }
+
+    function listenToUsers() {
+        if (unsubscribeUsers) unsubscribeUsers();
+        unsubscribeUsers = db.collection('users').onSnapshot((snapshot) => {
+            allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (currentUser) {
+                const updated = allUsers.find(u => u.id === currentUser.uid);
+                if (updated) { userProfile = updated; userProfile.id = currentUser.uid; }
+            }
+            renderAll();
+        }, (error) => { console.error("Users listen failed:", error); });
+    }
+
+    // ===================================================================
+    // RENDER FUNCTIONS
+    // ===================================================================
+    function getTransactionDisplay(exp, isAdminView = false) {
+        const isExpense = exp.type === "EXPENSE";
+        const isTransfer = exp.category === "Money Transfer" && exp.mentionedUserId;
+        const isIncoming = (exp.mentionedUserId === currentUser?.uid && isExpense);
+        const isOutgoing = (exp.userId === currentUser?.uid && isExpense);
+        const isIncome = (exp.type === "INCOME" && exp.userId === currentUser?.uid);
+
+        let sign = "+", color = "var(--success)", prefix = "", icon = "💰", iconClass = "income", tags = "";
+
+        if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
+        if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
+
+        if (isTransfer) {
+            if (isOutgoing) {
+                sign = "-"; color = "var(--accent)"; prefix = "Sent to"; icon = "📤"; iconClass = "transfer";
+                tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
+            } else if (isIncoming) {
+                sign = "+"; color = "var(--accent)"; prefix = "Received from"; icon = "📥"; iconClass = "transfer";
+                tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
+            }
+        } else if (isExpense) {
+            sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense";
+        } else if (isIncome) {
+            sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income";
+        }
+
+        let title = "";
+        if (exp.mentionedUserId && isExpense) {
+            if (isOutgoing) title = `${prefix} ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+            else if (isIncoming) title = `${prefix} ${getUserName(exp.userId)} for ${exp.category}`;
+            else title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+        } else {
+            title = `${prefix} ${exp.category}`;
+        }
+
+        let isDeleteDisabled = true;
+        if (userProfile?.isAdmin) isDeleteDisabled = false;
+        else if (isTransfer) isDeleteDisabled = !isOutgoing;
+        else isDeleteDisabled = (exp.userId !== currentUser?.uid);
+
+        return { title, sign, color, icon, iconClass, isDeleteDisabled, tags };
+    }
+
+    function renderActivity() {
+        const balance = calculateBalance(currentUser.uid);
+        document.getElementById('balanceAmount').innerText = `₹${balance.toFixed(2)}`;
+
+        let totalInc = 0, totalExp = 0;
+        expenses.forEach(e => {
+            if (e.userId === currentUser.uid || e.mentionedUserId === currentUser.uid) {
+                if (e.type === "INCOME") totalInc += e.amount;
+                if (e.type === "EXPENSE") totalExp += e.amount;
+            }
+        });
+        document.getElementById('totalIncomeUser').innerText = `₹${totalInc.toFixed(2)}`;
+        document.getElementById('totalExpenseUser').innerText = `₹${totalExp.toFixed(2)}`;
+
+        const sendBtn = document.getElementById('sendMoneySmallBtn');
+        if (sendBtn) {
+            if (canSendMoney(currentUser.uid) || userProfile?.isAdmin) {
+                sendBtn.style.opacity = '1';
+                sendBtn.style.pointerEvents = 'auto';
+            } else {
+                sendBtn.style.opacity = '0.4';
+                sendBtn.style.pointerEvents = 'none';
+            }
+        }
+
+        let filtered = expenses.filter(e => e.userId === currentUser.uid || e.mentionedUserId === currentUser.uid);
+        const range = getDateRange(filterState.type);
+        if (range) filtered = filtered.filter(e => e.timestamp >= range.start && e.timestamp < range.end);
+        if (filterState.category !== 'all') filtered = filtered.filter(e => e.category === filterState.category);
+        if (filterState.search) {
+            const q = filterState.search.toLowerCase();
+            filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q));
+        }
+
+        const container = document.getElementById('expensesList');
+        if (!filtered.length) {
+            container.innerHTML = `<div style="text-align:center; padding: 32px; color: var(--text-secondary);">✨ No transactions found</div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(exp => {
+            const { title, sign, color, icon, iconClass, isDeleteDisabled, tags } = getTransactionDisplay(exp, false);
+            const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')">📷</div>` : '';
+            return `
+                <div class="transaction-item">
+                    <div class="transaction-left">
+                        <div class="transaction-icon ${iconClass}">${icon}</div>
+                        <div class="transaction-info">
+                            <div class="transaction-title">${title} ${tags}</div>
+                            <div class="transaction-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
+                        <div class="transaction-actions">
+                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
+                            ${!isDeleteDisabled ? `<button class="delete-btn" data-id="${exp.id}">🗑️</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = () => deleteTransaction(btn.getAttribute('data-id')));
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const transaction = expenses.find(e => e.id === id);
+                if (transaction) openEditModal(transaction);
+            };
+        });
+    }
+
+    function renderAdmin() {
+        if (!userProfile?.isAdmin) return;
+
+        let filtered = [...expenses];
+        if (adminFilterState.user !== 'all') filtered = filtered.filter(e => e.userId === adminFilterState.user || e.mentionedUserId === adminFilterState.user);
+        if (adminFilterState.category !== 'all') filtered = filtered.filter(e => e.category === adminFilterState.category);
+        if (adminFilterState.search) {
+            const q = adminFilterState.search.toLowerCase();
+            filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || getUserName(e.userId).toLowerCase().includes(q));
+        }
+
+        const realExpenses = filtered.filter(e => e.type === "EXPENSE" && e.category !== "Money Transfer" && !e.mentionedUserId);
+        const realIncomes = filtered.filter(e => e.type === "INCOME" && e.category !== "Money Transfer" && e.category !== "Admin Fund");
+
+        const totalExp = realExpenses.reduce((s, e) => s + e.amount, 0);
+        const totalInc = realIncomes.reduce((s, e) => s + e.amount, 0);
+
+        document.getElementById("totalExpenses").innerHTML = `₹${totalExp.toFixed(2)}`;
+        document.getElementById("totalIncome").innerHTML = `₹${totalInc.toFixed(2)}`;
+        document.getElementById("netFlow").innerHTML = `₹${(totalInc - totalExp).toFixed(2)}`;
+        document.getElementById("totalUsers").innerHTML = allUsers.length;
+
+        const container = document.getElementById('adminExpensesList');
+        if (!filtered.length) {
+            container.innerHTML = `<div style="text-align:center; padding: 32px; color: var(--text-secondary);">✨ No transactions</div>`;
+            return;
+        }
+
+        filtered.sort((a, b) => b.timestamp - a.timestamp);
+        container.innerHTML = filtered.map(exp => {
+            const isExpense = exp.type === "EXPENSE";
+            const isTransfer = exp.category === "Money Transfer";
+            const isIncome = exp.type === "INCOME";
+
+            let sign = "+", color = "var(--success)", icon = "💰", iconClass = "income", prefix = "", tags = "";
+
+            if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
+            if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
+
+            if (isTransfer) {
+                if (isExpense) {
+                    sign = "-"; color = "var(--accent)"; prefix = "Sent"; icon = "📤"; iconClass = "transfer";
+                    tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
+                } else {
+                    sign = "+"; color = "var(--accent)"; prefix = "Received"; icon = "📥"; iconClass = "transfer";
+                    tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
+                }
+            } else if (isExpense) {
+                sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense";
+            } else if (isIncome) {
+                sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income";
+            }
+
+            let title = "";
+            if (exp.mentionedUserId && !isTransfer) {
+                title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+            } else if (isTransfer) {
+                title = `${prefix} ${getUserName(exp.userId)}`;
+            } else {
+                title = `${prefix} ${exp.category}`;
+            }
+
+            const userTag = `<span style="display:inline-block; background:var(--badge-bg); color:var(--primary); padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; margin-bottom:4px;">👤 ${getUserName(exp.userId)}</span>`;
+
+            return `
+                <div class="transaction-item">
+                    <div class="transaction-left">
+                        <div class="transaction-icon ${iconClass}">${icon}</div>
+                        <div class="transaction-info">
+                            ${userTag}
+                            <div class="transaction-title">${title} ${tags}</div>
+                            <div class="transaction-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
+                        <div class="transaction-actions">
+                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
+                            <button class="delete-btn" data-id="${exp.id}">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = () => deleteTransaction(btn.getAttribute('data-id')));
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.getAttribute('data-id');
+                const transaction = expenses.find(e => e.id === id);
+                if (transaction) openEditModal(transaction);
+            };
+        });
+    }
+
+    function renderSettings() {
+        if (!userProfile?.isAdmin) return;
+
+        document.getElementById('expenseCatList').innerHTML = expenseCategories.map(cat => `
+            <div class="category-tag">${cat} <button class="remove-expense" data-cat="${cat}">✕</button></div>
+        `).join('');
+
+        document.getElementById('incomeCatList').innerHTML = incomeCategories.map(cat => `
+            <div class="category-tag">${cat} <button class="remove-income" data-cat="${cat}">✕</button></div>
+        `).join('');
+
+        document.getElementById('adminUserList').innerHTML = allUsers.map(user => `
+            <div class="user-list-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-color);">
+                <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}<br><small style="font-size:10px; color:var(--text-secondary);">${user.email}</small></span>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="color:${calculateBalance(user.id) < 0 ? 'var(--error)' : 'var(--success)'}; font-weight:700;">₹${calculateBalance(user.id).toFixed(2)}</span>
+                    ${!user.isAdmin && user.id !== currentUser.uid ? `<button class="delete-user" data-id="${user.id}" style="color:var(--error); background:none; border:none; cursor:pointer;">Delete</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        renderSendPermissions();
+
+        document.querySelectorAll('.remove-expense').forEach(btn => {
+            btn.onclick = async () => {
+                const cat = btn.getAttribute('data-cat');
+                if (expenseCategories.length > 1) {
+                    expenseCategories = expenseCategories.filter(c => c !== cat);
+                    if (defaultExpenseCategory === cat) defaultExpenseCategory = expenseCategories[0];
+                    await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
+                    renderAll();
+                } else showToast("Need at least one category");
+            };
+        });
+
+        document.querySelectorAll('.remove-income').forEach(btn => {
+            btn.onclick = async () => {
+                const cat = btn.getAttribute('data-cat');
+                if (incomeCategories.length > 1) {
+                    incomeCategories = incomeCategories.filter(c => c !== cat);
+                    await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
+                    renderAll();
+                } else showToast("Need at least one category");
+            };
+        });
+
+        document.querySelectorAll('.delete-user').forEach(btn => {
+            btn.onclick = async () => {
+                const userId = btn.getAttribute('data-id');
+                const user = allUsers.find(u => u.id === userId);
+                if (user && !user.isAdmin) {
+                    requestConfirmation("Delete User", `Delete ${user.name}? All their data will be removed.`, async () => {
+                        const userExpenses = expenses.filter(e => e.userId === userId || e.mentionedUserId === userId);
+                        for (const exp of userExpenses) await db.collection('expenses').doc(exp.id).delete();
+                        await db.collection('users').doc(userId).delete();
+                        delete sendPermissions[userId];
+                        await db.collection('metadata').doc('sendPermissions').set(sendPermissions);
+                        await loadUserData();
+                        renderAll();
+                        showToast(`User ${user.name} deleted`);
+                    });
+                }
+            };
+        });
+    }
+
+    function renderSendPermissions() {
+        if (!userProfile?.isAdmin) return;
+        const container = document.getElementById('sendPermissionList');
+        if (!container) return;
+        container.innerHTML = '';
+        allUsers.forEach(user => {
+            const hasPermission = sendPermissions[user.id] === true;
+            const div = document.createElement('div');
+            div.className = 'user-list-item';
+            div.innerHTML = `
+                <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="send-permission-toggle" data-id="${user.id}" ${hasPermission ? 'checked' : ''} ${user.isAdmin ? 'disabled' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:12px; color:var(--text-secondary);">${hasPermission ? '✅ Can Send' : '❌ Disabled'}</span>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.send-permission-toggle').forEach(toggle => {
+            toggle.onchange = async (e) => {
+                const userId = toggle.getAttribute('data-id');
+                const canSend = toggle.checked;
+                sendPermissions[userId] = canSend;
+                await db.collection('metadata').doc('sendPermissions').set(sendPermissions);
+                renderAll();
+                showToast(`Permission updated for ${getUserName(userId)}`);
+            };
+        });
+    }
+
+    function renderAnalytics() {
+        const filterType = document.getElementById('analyticsFilterType').value;
+        const range = getDateRange(filterType);
+        let filtered = expenses.filter(e => e.type === "EXPENSE" && e.category !== "Money Transfer");
+        if (range) filtered = filtered.filter(e => e.timestamp >= range.start && e.timestamp < range.end);
+
+        const totals = {};
+        filtered.forEach(e => { totals[e.category] = (totals[e.category] || 0) + e.amount; });
+
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        if (Object.keys(totals).length === 0) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = "var(--text-secondary)";
+            ctx.font = "14px Inter";
+            ctx.textAlign = "center";
+            ctx.fillText("No expense data", ctx.canvas.width / 2, ctx.canvas.height / 2);
+            return;
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(totals),
+                datasets: [{ data: Object.values(totals), backgroundColor: ['#6C5CE7', '#FF6B6B', '#00B894', '#FDCB6E', '#0984E3', '#E17055', '#00CEC9', '#6C5CE7'], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: 'var(--text-primary)' } } }, cutout: '65%' }
+        });
+    }
+
+    function updateDropdowns() {
+        const allCats = [...new Set([...expenseCategories, ...incomeCategories])];
+        ['filterCategory', 'adminFilterCategory'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const current = el.value;
+            el.innerHTML = '<option value="all">All Categories</option>';
+            allCats.forEach(cat => { const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; el.appendChild(opt); });
+            if (allCats.includes(current)) el.value = current;
+        });
+
+        const adminUser = document.getElementById('adminFilterUser');
+        if (adminUser && userProfile?.isAdmin) {
+            const current = adminUser.value;
+            adminUser.innerHTML = '<option value="all">All Users</option>';
+            allUsers.forEach(u => { const opt = document.createElement('option'); opt.value = u.id; opt.textContent = u.name; adminUser.appendChild(opt); });
+            if (allUsers.some(u => u.id === current)) adminUser.value = current;
+        }
+
+        const fundSelect = document.getElementById('fundUserId');
+        if (fundSelect && userProfile?.isAdmin) {
+            fundSelect.innerHTML = '';
+            allUsers.forEach(u => { const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.name} (₹${calculateBalance(u.id).toFixed(2)})`; fundSelect.appendChild(opt); });
+        }
+
+        const defaultCat = document.getElementById('defaultExpenseCat');
+        if (defaultCat && userProfile?.isAdmin) {
+            defaultCat.innerHTML = '<option value="">Default category</option>';
+            expenseCategories.forEach(cat => { const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; if (cat === defaultExpenseCategory) opt.selected = true; defaultCat.appendChild(opt); });
+        }
+    }
+
+    function renderAll() {
+        if (!userProfile) return;
+        document.getElementById('currentUserName').innerHTML = userProfile.name + (userProfile.isAdmin ? " 👑" : "");
+
+        const showAdmin = userProfile.isAdmin;
+        document.getElementById('adminTabBtn').style.display = showAdmin ? 'block' : 'none';
+        document.getElementById('settingsTabBtn').style.display = showAdmin ? 'block' : 'none';
+        document.getElementById('analyticsTabBtn').style.display = showAdmin ? 'block' : 'none';
+
+        updateDropdowns();
+
+        document.getElementById('activityTab').style.display = currentTab === 'activity' ? 'block' : 'none';
+        document.getElementById('analyticsTab').style.display = currentTab === 'analytics' && showAdmin ? 'block' : 'none';
+        document.getElementById('adminTab').style.display = currentTab === 'admin' && showAdmin ? 'block' : 'none';
+        document.getElementById('settingsTab').style.display = currentTab === 'settings' && showAdmin ? 'block' : 'none';
+
+        if (currentTab === 'activity') renderActivity();
+        else if (currentTab === 'admin' && showAdmin) renderAdmin();
+        else if (currentTab === 'settings' && showAdmin) renderSettings();
+        else if (currentTab === 'analytics' && showAdmin) renderAnalytics();
+    }
+
+    // ===================================================================
+    // FIXED: AUTOCOMPLETE WITH PROPER KEYBOARD NAVIGATION
+    // ===================================================================
+    function initAutocomplete(inputId, suggestions, listId) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        if (!input || !list) return;
+        let selectedIndex = -1;
+
+        function render(filtered) {
+            list.innerHTML = '';
+            if (filtered.length === 0) { 
+                list.style.display = 'none'; 
+                return; 
+            }
+            list.style.display = 'block';
+            filtered.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item' + (i === selectedIndex ? ' selected' : '');
+                div.textContent = item;
+                div.onmousedown = (e) => {
+                    e.preventDefault();
+                    input.value = item;
+                    list.style.display = 'none';
+                    selectedIndex = -1;
+                    // Move to next field
+                    const next = document.getElementById('transAmt') || document.getElementById('editAmt');
+                    if (next) setTimeout(() => next.focus(), 50);
+                };
+                div.onmouseenter = () => {
+                    selectedIndex = i;
+                    render(filtered);
+                };
+                list.appendChild(div);
+            });
+            // Scroll selected into view
+            if (selectedIndex >= 0 && selectedIndex < filtered.length) {
+                const sel = list.children[selectedIndex];
+                if (sel) sel.scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        input.addEventListener('focus', () => {
+            const val = input.value.trim().toLowerCase();
+            const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
+            selectedIndex = -1;
+            render(filtered);
+        });
+
+        input.addEventListener('input', () => {
+            selectedIndex = -1;
+            const val = input.value.trim().toLowerCase();
+            const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
+            render(filtered);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            const val = input.value.trim().toLowerCase();
+            const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
+            
+            // If dropdown is hidden and ArrowDown is pressed, show it
+            if (list.style.display === 'none' || list.style.display === '') {
+                if (e.key === 'ArrowDown') { 
+                    e.preventDefault();
+                    selectedIndex = -1;
+                    render(filtered); 
+                    return;
+                }
+                return;
+            }
+
+            // Arrow Down navigation
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (filtered.length === 0) return;
+                selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1);
+                render(filtered);
+            } 
+            // Arrow Up navigation
+            else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (filtered.length === 0) return;
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                render(filtered);
+            } 
+            // Enter selects the highlighted item and moves to next field
+            else if (e.key === 'Enter') {
+                if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    input.value = filtered[selectedIndex];
+                    list.style.display = 'none';
+                    selectedIndex = -1;
+                    // Move to next field
+                    const next = document.getElementById('transAmt') || document.getElementById('editAmt');
+                    if (next) setTimeout(() => next.focus(), 50);
+                }
+            } 
+            // Tab selects and moves forward
+            else if (e.key === 'Tab') {
+                if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
+                    input.value = filtered[selectedIndex];
+                    list.style.display = 'none';
+                    selectedIndex = -1;
+                }
+                // Let Tab continue naturally
+                return;
+            }
+            // Escape closes the dropdown
+            else if (e.key === 'Escape') {
+                list.style.display = 'none';
+                selectedIndex = -1;
+                e.stopPropagation();
+                input.blur();
+            }
+        });
+
+        input.addEventListener('blur', () => { 
+            setTimeout(() => { 
+                list.style.display = 'none'; 
+                selectedIndex = -1;
+            }, 150); 
+        });
+    }
+
+    // ===================================================================
+    // MODAL FUNCTIONS
+    // ===================================================================
+    function setupModalTabNavigation(modal) {
+        const fields = Array.from(modal.querySelectorAll('.modal-focus-field, input, select, button'));
+        fields.forEach((field, index) => {
+            field.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    const tag = field.tagName.toLowerCase();
+                    if (tag === 'button') return;
+                    e.preventDefault();
+                    const next = fields[index + 1];
+                    if (next) { next.focus(); if (next.tagName.toLowerCase() === 'input') next.select(); }
+                }
+            };
+        });
+    }
+
+    function openModal(type) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-mask';
+        const categories = type === 'EXPENSE' ? expenseCategories : incomeCategories;
+        const today = new Date().toISOString().split('T')[0];
+
+        modal.innerHTML = `
+            <div class="modal-container">
+                <div class="modal-title">${type === "EXPENSE" ? "➕ Add Expense" : "💰 Add Income"}</div>
+                <div class="voice-icon" id="voiceBtn">🎙️ Voice Command</div>
+                <input type="date" id="transDate" class="date-field modal-focus-field" value="${today}" tabindex="1">
+                <div class="autocomplete-container">
+                    <input type="text" id="transCat" class="input-field modal-focus-field" placeholder="Category" autocomplete="off" tabindex="2">
+                    <div id="transCatList" class="autocomplete-list" style="display:none;"></div>
+                </div>
+                <input type="number" id="transAmt" placeholder="Amount (₹)" class="input-field modal-focus-field" tabindex="3">
+                <input type="text" id="transDesc" placeholder="Description" class="input-field modal-focus-field" tabindex="4">
+                ${type === 'EXPENSE' ? `
+                <select id="transMention" class="select-field modal-focus-field" tabindex="5">
+                    <option value="">Send money to (Optional)</option>
+                    ${allUsers.filter(u => u.id !== currentUser.uid).map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+                </select>
+                <small style="color: var(--text-secondary); display: block; margin-bottom: 14px;">Select a user to create a money transfer</small>
+                ` : ''}
+                <div id="photoArea" class="photo-preview" tabindex="${type === 'EXPENSE' ? '6' : '5'}">📸 Attach Photo (Optional)</div>
+                <input type="file" id="photoInput" accept="image/*" style="display:none">
+                <div class="flex-btns">
+                    <button id="confirmBtn" class="primary-btn" tabindex="${type === 'EXPENSE' ? '7' : '6'}">Save</button>
+                    <button id="cancelBtn" class="secondary-btn" tabindex="${type === 'EXPENSE' ? '8' : '7'}">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Initialize autocomplete with keyboard navigation
+        initAutocomplete('transCat', categories, 'transCatList');
+        setupModalTabNavigation(modal);
+
+        setTimeout(() => {
+            const dateField = modal.querySelector('#transDate');
+            if (dateField) dateField.focus();
+        }, 100);
+
+        let selectedPhoto = null;
+        const photoArea = modal.querySelector('#photoArea');
+        const photoInput = modal.querySelector('#photoInput');
+        photoArea.onclick = () => photoInput.click();
+        photoInput.onchange = async (e) => {
+            if (e.target.files[0]) {
+                photoArea.innerHTML = '⏳ Compressing...';
+                selectedPhoto = e.target.files[0];
+                const compressed = await compressImage(selectedPhoto);
+                selectedPhoto = compressed;
+                photoArea.innerHTML = '✅ Photo attached';
+                photoArea.style.borderColor = 'var(--success)';
+            }
+        };
+
+        modal.querySelector('#voiceBtn').onclick = () => {
+            if (!('webkitSpeechRecognition' in window)) return showToast("Voice not supported");
+            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            rec.lang = 'en-IN';
+            rec.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
+                const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
+                let category = null;
+                categories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
+                let mentionedUser = null;
+                if (type === 'EXPENSE') {
+                    const found = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
+                    if (found) mentionedUser = found.id;
+                }
+
+                if (amount) {
+                    showVoiceConfirmPopup({
+                        category: category || defaultExpenseCategory,
+                        amount: amount,
+                        description: text,
+                        mention: mentionedUser ? getUserName(mentionedUser) : null
+                    }, async (confirmed) => {
+                        if (confirmed) {
+                            if (category) modal.querySelector('#transCat').value = category;
+                            modal.querySelector('#transAmt').value = amount;
+                            modal.querySelector('#transDesc').value = text;
+                            if (mentionedUser && type === 'EXPENSE') modal.querySelector('#transMention').value = mentionedUser;
+                            modal.querySelector('#voiceBtn').innerHTML = '✅ Voice captured';
+                            showToast("Voice captured, click Save to confirm");
+                        }
+                    });
+                } else {
+                    showToast("Could not detect amount. Try again.");
+                }
+            };
+            rec.start();
+            modal.querySelector('#voiceBtn').innerHTML = '🎙️ Listening...';
+        };
+
+        modal.querySelector('#confirmBtn').onclick = async () => {
+            const cat = modal.querySelector('#transCat').value;
+            const amt = parseFloat(modal.querySelector('#transAmt').value);
+            const desc = modal.querySelector('#transDesc').value;
+            const mention = type === 'EXPENSE' ? modal.querySelector('#transMention').value || null : null;
+            const date = modal.querySelector('#transDate').value;
+            if (!amt || amt <= 0) return showToast("Valid amount required");
+            if (!cat || cat === "") return showToast("Select a category");
+            const success = await addTransaction(type, cat, amt, desc, mention, selectedPhoto, date);
+            if (success) modal.remove();
+        };
+        modal.querySelector('#cancelBtn').onclick = () => modal.remove();
+    }
+
     function openEditModal(transaction) {
         if (!userProfile?.isAdmin && transaction.userId !== currentUser.uid) {
             showToast("Only the sender can edit this transaction");
             return;
         }
-        
+
         const modal = document.createElement('div');
         modal.className = 'modal-mask';
         const categories = transaction.type === 'EXPENSE' ? expenseCategories : incomeCategories;
-        
+
         modal.innerHTML = `
             <div class="modal-container">
                 <div class="modal-title">✏️ Edit ${transaction.type === "EXPENSE" ? "Expense" : "Income"}</div>
-                <input type="date" id="editDate" class="date-field" value="${transaction.date}">
-                <select id="editCat" class="select-field">
-                    ${categories.map(c => `<option value="${c}" ${c === transaction.category ? 'selected' : ''}>${c}</option>`).join('')}
-                </select>
-                <input type="number" id="editAmt" placeholder="Amount (₹)" class="input-field" value="${transaction.amount}">
-                <input type="text" id="editDesc" placeholder="Description" class="input-field" value="${transaction.description || ''}">
+                <input type="date" id="editDate" class="date-field modal-focus-field" value="${transaction.date}" tabindex="1">
+                <div class="autocomplete-container">
+                    <input type="text" id="editCat" class="input-field modal-focus-field" placeholder="Category" value="${transaction.category}" autocomplete="off" tabindex="2">
+                    <div id="editCatList" class="autocomplete-list" style="display:none;"></div>
+                </div>
+                <input type="number" id="editAmt" placeholder="Amount (₹)" class="input-field modal-focus-field" value="${transaction.amount}" tabindex="3">
+                <input type="text" id="editDesc" placeholder="Description" class="input-field modal-focus-field" value="${transaction.description || ''}" tabindex="4">
                 ${transaction.type === 'EXPENSE' ? `
-                <select id="editMention" class="select-field">
-                    <option value="">Send money to (Optional - select user)</option>
+                <select id="editMention" class="select-field modal-focus-field" tabindex="5">
+                    <option value="">Send money to (Optional)</option>
                     ${allUsers.filter(u => u.id !== transaction.userId).map(u => `<option value="${u.id}" ${transaction.mentionedUserId === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
                 </select>
                 ` : ''}
                 <div class="flex-btns">
-                    <button id="saveEditBtn" class="primary-btn">Save Changes</button>
-                    <button id="cancelEditBtn" class="secondary-btn">Cancel</button>
+                    <button id="saveEditBtn" class="primary-btn" tabindex="6">Save Changes</button>
+                    <button id="cancelEditBtn" class="secondary-btn" tabindex="7">Cancel</button>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
-        
+
+        initAutocomplete('editCat', categories, 'editCatList');
+        setupModalTabNavigation(modal);
+
+        setTimeout(() => {
+            const dateField = modal.querySelector('#editDate');
+            if (dateField) dateField.focus();
+        }, 100);
+
         modal.querySelector('#saveEditBtn').onclick = async () => {
             const updated = {
                 date: modal.querySelector('#editDate').value,
@@ -783,787 +1647,392 @@
         };
         modal.querySelector('#cancelEditBtn').onclick = () => modal.remove();
     }
-    
-    // Render Functions
-    function updateDropdowns() {
-        const allCats = [...new Set([...expenseCategories, ...incomeCategories])];
-        
-        const filterCat = document.getElementById('filterCategory');
-        if (filterCat) {
-            const current = filterCat.value;
-            filterCat.innerHTML = '<option value="all">All Categories</option>';
-            allCats.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                filterCat.appendChild(opt);
-            });
-            if (allCats.includes(current)) filterCat.value = current;
-        }
-        
-        const adminFilterCat = document.getElementById('adminFilterCategory');
-        if (adminFilterCat && userProfile?.isAdmin) {
-            const current = adminFilterCat.value;
-            adminFilterCat.innerHTML = '<option value="all">All Categories</option>';
-            allCats.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                adminFilterCat.appendChild(opt);
-            });
-            if (allCats.includes(current)) adminFilterCat.value = current;
-        }
-        
-        const adminFilterUser = document.getElementById('adminFilterUser');
-        if (adminFilterUser && userProfile?.isAdmin) {
-            const current = adminFilterUser.value;
-            adminFilterUser.innerHTML = '<option value="all">All Users</option>';
-            allUsers.forEach(user => {
-                const opt = document.createElement('option');
-                opt.value = user.id;
-                opt.textContent = user.name;
-                adminFilterUser.appendChild(opt);
-            });
-            if (allUsers.some(u => u.id === current)) adminFilterUser.value = current;
-        }
-        
-        const fundSelect = document.getElementById('fundUserId');
-        if (fundSelect && userProfile?.isAdmin) {
-            fundSelect.innerHTML = '<option value="">Select User</option>';
-            allUsers.forEach(user => {
-                const opt = document.createElement('option');
-                opt.value = user.id;
-                opt.textContent = `${user.name} (₹${calculateBalance(user.id).toFixed(2)})`;
-                fundSelect.appendChild(opt);
-            });
-        }
-        
-        const defaultCatSelect = document.getElementById('defaultExpenseCat');
-        if (defaultCatSelect && userProfile?.isAdmin) {
-            defaultCatSelect.innerHTML = '<option value="">Select default category</option>';
-            expenseCategories.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                if (cat === defaultExpenseCategory) opt.selected = true;
-                defaultCatSelect.appendChild(opt);
-            });
-        }
-    }
-    
-    function renderSendPermissions() {
-        if (!userProfile?.isAdmin) return;
-        
-        const container = document.getElementById('sendPermissionList');
-        if (!container) return;
-        
-        container.innerHTML = '<div style="margin-bottom: 12px;"></div>';
-        allUsers.forEach(user => {
-            const hasPermission = sendPermissions[user.id] === true;
-            const div = document.createElement('div');
-            div.className = 'user-list-item';
-            div.innerHTML = `
-                <div class="user-send-permission">
-                    <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" class="send-permission-toggle" data-id="${user.id}" ${hasPermission ? 'checked' : ''} ${user.isAdmin ? 'disabled' : ''}>
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <span style="font-size: 12px; color: #8B93B0;">${hasPermission ? 'Can send' : 'Cannot send'}</span>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-        
-        document.querySelectorAll('.send-permission-toggle').forEach(toggle => {
-            toggle.onchange = async (e) => {
-                const userId = toggle.getAttribute('data-id');
-                const canSend = toggle.checked;
-                await updateSendPermission(userId, canSend);
-                // Update send button visibility on main page
-                const sendBtn = document.getElementById('sendMoneySmallBtn');
-                if (sendBtn) {
-                    if (canSendMoney(currentUser.uid) || userProfile?.isAdmin) {
-                        sendBtn.classList.remove('disabled');
-                        sendBtn.disabled = false;
-                    } else {
-                        sendBtn.classList.add('disabled');
-                        sendBtn.disabled = true;
-                    }
-                }
-            };
-        });
-    }
-    
-    function getTransactionDisplay(exp, isAdminView = false, forCurrentUser = null) {
-        const isExpense = exp.type === "EXPENSE";
-        const isTransfer = exp.category === "Money Transfer" && exp.mentionedUserId;
-        const isIncoming = (exp.mentionedUserId === (forCurrentUser || currentUser?.uid) && isExpense);
-        const isOutgoing = (exp.userId === (forCurrentUser || currentUser?.uid) && isExpense);
-        const isIncome = (exp.type === "INCOME" && exp.userId === (forCurrentUser || currentUser?.uid));
-        
-        let sign = "+";
-        let color = "#2ED15E";
-        let prefix = "";
-        
-        if (isOutgoing && isTransfer) {
-            sign = "-";
-            color = "#F59E0B";
-            prefix = "Sent to";
-        } else if (isIncoming && isTransfer) {
-            sign = "+";
-            color = "#F59E0B";
-            prefix = "Received from";
-        } else if (isOutgoing) {
-            sign = "-";
-            color = "#FF5E6E";
-            prefix = "Paid";
-        } else if (isIncoming) {
-            sign = "+";
-            color = "#2ED15E";
-            prefix = "Received from";
-        } else if (isIncome) {
-            sign = "+";
-            color = "#2ED15E";
-            prefix = "Income";
-        }
-        
-        let title = "";
-        if (exp.mentionedUserId && isExpense) {
-            if (exp.userId === (forCurrentUser || currentUser?.uid)) {
-                title = `${prefix} ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
-            } else if (exp.mentionedUserId === (forCurrentUser || currentUser?.uid)) {
-                title = `${prefix} ${getUserName(exp.userId)} for ${exp.category}`;
-            } else {
-                title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
-            }
-        } else if (isExpense) {
-            title = `${prefix} ${exp.category}`;
-        } else {
-            title = `${prefix} ${exp.category}`;
-        }
-        
-        const userTag = isAdminView ? `<span class="expense-user">👤 ${getUserName(exp.userId)}</span>` : '';
-        const isDeleteDisabled = !isAdminView && !canDeleteTransaction(exp);
-        
-        return { title, sign, color, userTag, isDeleteDisabled };
-    }
-    
-    function renderActivity() {
-        const balance = calculateBalance(currentUser.uid);
-        const balEl = document.getElementById("balanceAmount");
-        balEl.innerText = `₹${balance.toFixed(2)}`;
-        balEl.className = `balance-amount ${balance < 0 ? 'negative' : 'positive'}`;
-        
-        // Update send button visibility based on permission
-        const sendBtn = document.getElementById('sendMoneySmallBtn');
-        if (sendBtn) {
-            if (canSendMoney(currentUser.uid) || userProfile?.isAdmin) {
-                sendBtn.classList.remove('disabled');
-                sendBtn.disabled = false;
-            } else {
-                sendBtn.classList.add('disabled');
-                sendBtn.disabled = true;
-            }
-        }
-        
-        let filtered = expenses.filter(e => e.userId === currentUser.uid || e.mentionedUserId === currentUser.uid);
-        const range = getDateRange(filterState.type);
-        if (range) filtered = filtered.filter(e => e.timestamp >= range.start && e.timestamp < range.end);
-        if (filterState.category !== 'all') filtered = filtered.filter(e => e.category === filterState.category);
-        if (filterState.search) {
-            const q = filterState.search.toLowerCase();
-            filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q));
-        }
-        filtered.sort((a, b) => b.timestamp - a.timestamp);
-        
-        const container = document.getElementById('expensesList');
-        if (!filtered.length) {
-            container.innerHTML = `<div style="text-align:center; padding: 32px;">✨ No entries found</div>`;
+
+    function openSendMoneyModal() {
+        if (!canSendMoney(currentUser.uid) && !userProfile?.isAdmin) {
+            showToast("Transfer capability restricted by admin");
             return;
         }
-        
-        container.innerHTML = filtered.map(exp => {
-            const { title, sign, color, isDeleteDisabled } = getTransactionDisplay(exp, false, currentUser.uid);
-            const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')"><img src="${exp.photoURL}" style="width:100%;height:100%;object-fit:cover;"></div>` : `<div class="photo-thumb">📷</div>`;
-            const deleteClass = isDeleteDisabled ? 'delete-btn disabled' : 'delete-btn';
-            const deleteDisabledAttr = isDeleteDisabled ? 'disabled' : '';
-            return `
-                <div class="expense-card">
-                    <div class="expense-row">
-                        <div class="expense-info">
-                            <div class="expense-category">${title}</div>
-                            <div class="expense-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
-                        </div>
-                        <div class="action-buttons-card">
-                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
-                            <button class="${deleteClass}" data-id="${exp.id}" ${deleteDisabledAttr}>🗑️</button>
-                            <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:flex-end; margin-top:8px;">${photoHtml}</div>
-                </div>
-            `;
-        }).join('');
-        
-        document.querySelectorAll('.delete-btn:not(.disabled)').forEach(btn => {
-            btn.onclick = () => deleteTransaction(btn.getAttribute('data-id'));
-        });
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.onclick = () => {
-                const id = btn.getAttribute('data-id');
-                const transaction = expenses.find(e => e.id === id);
-                if (transaction) openEditModal(transaction);
-            };
-        });
-    }
-    
-    function renderAdmin() {
-        if (!userProfile?.isAdmin) return;
-        
-        let filtered = [...expenses];
-        if (adminFilterState.user !== 'all') filtered = filtered.filter(e => e.userId === adminFilterState.user || e.mentionedUserId === adminFilterState.user);
-        if (adminFilterState.category !== 'all') filtered = filtered.filter(e => e.category === adminFilterState.category);
-        if (adminFilterState.search) {
-            const q = adminFilterState.search.toLowerCase();
-            filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || getUserName(e.userId).toLowerCase().includes(q));
-        }
-        
-        const totalExp = filtered.filter(e => e.type === "EXPENSE").reduce((s, e) => s + e.amount, 0);
-        const totalInc = filtered.filter(e => e.type === "INCOME").reduce((s, e) => s + e.amount, 0);
-        document.getElementById("totalExpenses").innerHTML = `₹${totalExp.toFixed(2)}`;
-        document.getElementById("totalIncome").innerHTML = `₹${totalInc.toFixed(2)}`;
-        document.getElementById("netFlow").innerHTML = `₹${(totalInc - totalExp).toFixed(2)}`;
-        document.getElementById("totalUsers").innerHTML = allUsers.length;
-        
-        const container = document.getElementById('adminExpensesList');
-        if (!filtered.length) {
-            container.innerHTML = `<div style="text-align:center; padding: 32px;">✨ No transactions</div>`;
-            return;
-        }
-        
-        filtered.sort((a, b) => b.timestamp - a.timestamp);
-        container.innerHTML = filtered.map(exp => {
-            const { title, sign, color, userTag } = getTransactionDisplay(exp, true);
-            const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')"><img src="${exp.photoURL}" style="width:100%;height:100%;object-fit:cover;"></div>` : `<div class="photo-thumb">📷</div>`;
-            return `
-                <div class="expense-card">
-                    <div class="expense-row">
-                        <div class="expense-info">
-                            ${userTag}
-                            <div class="expense-category">${title}</div>
-                            <div class="expense-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
-                        </div>
-                        <div class="action-buttons-card">
-                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
-                            <button class="delete-btn" data-id="${exp.id}">🗑️</button>
-                            <div class="expense-amount" style="color:${color}">${sign}₹${exp.amount.toFixed(2)}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:flex-end; margin-top:8px;">${photoHtml}</div>
-                </div>
-            `;
-        }).join('');
-        
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.onclick = () => deleteTransaction(btn.getAttribute('data-id'));
-        });
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.onclick = () => {
-                const id = btn.getAttribute('data-id');
-                const transaction = expenses.find(e => e.id === id);
-                if (transaction) openEditModal(transaction);
-            };
-        });
-    }
-    
-    function renderSettings() {
-        if (!userProfile?.isAdmin) return;
-        
-        document.getElementById('expenseCatList').innerHTML = expenseCategories.map(cat => `
-            <div class="category-tag">${cat} <button class="remove-expense" data-cat="${cat}">✕</button></div>
-        `).join('');
-        
-        document.getElementById('incomeCatList').innerHTML = incomeCategories.map(cat => `
-            <div class="category-tag">${cat} <button class="remove-income" data-cat="${cat}">✕</button></div>
-        `).join('');
-        
-        document.getElementById('adminUserList').innerHTML = allUsers.map(user => `
-            <div class="user-list-item">
-                <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}<br><small style="font-size:10px;">${user.email}</small></span>
-                <span style="color:${calculateBalance(user.id) < 0 ? '#FF5E6E' : '#2ED15E'}">₹${calculateBalance(user.id).toFixed(2)}</span>
-                ${!user.isAdmin && user.id !== currentUser.uid ? `<button class="delete-user" data-id="${user.id}">Delete</button>` : ''}
-            </div>
-        `).join('');
-        
-        renderSendPermissions();
-        
-        document.querySelectorAll('.remove-expense').forEach(btn => {
-            btn.onclick = async () => {
-                const cat = btn.getAttribute('data-cat');
-                if (expenseCategories.length > 1) {
-                    expenseCategories = expenseCategories.filter(c => c !== cat);
-                    if (defaultExpenseCategory === cat) defaultExpenseCategory = expenseCategories[0];
-                    await db.collection("metadata").doc("settings").set({
-                        expenseCategories: expenseCategories,
-                        incomeCategories: incomeCategories,
-                        defaultExpenseCategory: defaultExpenseCategory
-                    }, { merge: true });
-                    renderAll();
-                } else showToast("Need at least one category");
-            };
-        });
-        
-        document.querySelectorAll('.remove-income').forEach(btn => {
-            btn.onclick = async () => {
-                const cat = btn.getAttribute('data-cat');
-                if (incomeCategories.length > 1) {
-                    incomeCategories = incomeCategories.filter(c => c !== cat);
-                    await db.collection("metadata").doc("settings").set({
-                        expenseCategories: expenseCategories,
-                        incomeCategories: incomeCategories,
-                        defaultExpenseCategory: defaultExpenseCategory
-                    }, { merge: true });
-                    renderAll();
-                } else showToast("Need at least one category");
-            };
-        });
-        
-        document.querySelectorAll('.delete-user').forEach(btn => {
-            btn.onclick = async () => {
-                const userId = btn.getAttribute('data-id');
-                const user = allUsers.find(u => u.id === userId);
-                if (user && !user.isAdmin && confirm(`Delete ${user.name}? All their transactions will be deleted.`)) {
-                    const userExpenses = expenses.filter(e => e.userId === userId || e.mentionedUserId === userId);
-                    for (const exp of userExpenses) {
-                        await db.collection("expenses").doc(exp.id).delete();
-                    }
-                    await db.collection("users").doc(userId).delete();
-                    // Also remove from send permissions
-                    delete sendPermissions[userId];
-                    await db.collection("metadata").doc("sendPermissions").set(sendPermissions);
-                    await loadUserData();
-                    renderAll();
-                    showToast(`User ${user.name} deleted`);
-                }
-            };
-        });
-    }
-    
-    function renderAnalytics() {
-        const filterType = document.getElementById('analyticsFilterType').value;
-        const range = getDateRange(filterType);
-        let filtered = expenses.filter(e => e.type === "EXPENSE" && e.category !== "Money Transfer");
-        if (range) filtered = filtered.filter(e => e.timestamp >= range.start && e.timestamp < range.end);
-        
-        const totals = {};
-        filtered.forEach(e => { totals[e.category] = (totals[e.category] || 0) + e.amount; });
-        
-        const ctx = document.getElementById('expenseChart').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
-        
-        if (Object.keys(totals).length === 0) {
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            ctx.fillStyle = "#8B93B0";
-            ctx.font = "14px Inter";
-            ctx.textAlign = "center";
-            ctx.fillText("No expense data", ctx.canvas.width / 2, ctx.canvas.height / 2);
-            return;
-        }
-        
-        chartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(totals),
-                datasets: [{ data: Object.values(totals), backgroundColor: ['#6C4DFF', '#FF5E6E', '#2ED15E', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'], borderWidth: 0 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#D9E0FF' } } }, cutout: '65%' }
-        });
-    }
-    
-    function renderAll() {
-        if (!userProfile) return;
-        
-        document.getElementById('currentUserName').innerHTML = userProfile.name + (userProfile.isAdmin ? " 👑" : "");
-        
-        const showAdmin = userProfile.isAdmin;
-        document.getElementById('adminTabBtn').style.display = showAdmin ? 'block' : 'none';
-        document.getElementById('settingsTabBtn').style.display = showAdmin ? 'block' : 'none';
-        document.getElementById('analyticsTabBtn').style.display = showAdmin ? 'block' : 'none';
-        
-        updateDropdowns();
-        
-        document.getElementById('activityTab').style.display = currentTab === 'activity' ? 'block' : 'none';
-        document.getElementById('analyticsTab').style.display = currentTab === 'analytics' && showAdmin ? 'block' : 'none';
-        document.getElementById('adminTab').style.display = currentTab === 'admin' && showAdmin ? 'block' : 'none';
-        document.getElementById('settingsTab').style.display = currentTab === 'settings' && showAdmin ? 'block' : 'none';
-        
-        if (currentTab === 'activity') renderActivity();
-        else if (currentTab === 'admin' && showAdmin) renderAdmin();
-        else if (currentTab === 'settings' && showAdmin) renderSettings();
-        else if (currentTab === 'analytics' && showAdmin) renderAnalytics();
-    }
-    
-    // Modal for adding transaction
-    function openModal(type) {
+
         const modal = document.createElement('div');
-        modal.className = 'modal-mask';
-        const categories = type === 'EXPENSE' ? expenseCategories : incomeCategories;
-        const today = new Date().toISOString().split('T')[0];
-        
+        modal.className = 'transfer-modal';
+        const otherUsers = allUsers.filter(u => u.id !== currentUser.uid);
+
         modal.innerHTML = `
-            <div class="modal-container">
-                <div class="modal-title">${type === "EXPENSE" ? "➕ Add Expense" : "💰 Add Income"}</div>
-                <div class="voice-icon" id="voiceBtn">🎙️ Voice Command</div>
-                <input type="date" id="transDate" class="date-field" value="${today}">
-                <select id="transCat" class="select-field">
-                    <option value="" disabled selected>Select Category</option>
-                    ${categories.map(c => `<option value="${c}">${c}</option>`).join('')}
-                </select>
-                <input type="number" id="transAmt" placeholder="Amount (₹)" class="input-field">
-                <input type="text" id="transDesc" placeholder="Description" class="input-field">
-                ${type === 'EXPENSE' ? `
-                <select id="transMention" class="select-field">
-                    <option value="">Send money to (Optional - select user)</option>
-                    ${allUsers.filter(u => u.id !== currentUser.uid).map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
-                </select>
-                <small style="color: #8B93B0; margin-top: -10px; display: block;">If you select a user, this amount will be deducted from you and added to them</small>
-                ` : ''}
-                <div id="photoArea" class="photo-preview">📸 Attach Photo (Optional)</div>
-                <input type="file" id="photoInput" accept="image/*" style="display:none">
-                <div class="flex-btns">
-                    <button id="confirmBtn" class="primary-btn">Save</button>
-                    <button id="cancelBtn" class="secondary-btn">Cancel</button>
+            <div class="transfer-modal-container">
+                <div class="transfer-modal-title">
+                    <span>🔄</span> Send Money
+                </div>
+                <div class="transfer-modal-row">
+                    <label>Sender</label>
+                    <input type="text" value="${userProfile?.name || 'You'} (₹${calculateBalance(currentUser.uid).toFixed(2)})" disabled style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:28px; padding:14px 18px; color:var(--text-secondary);">
+                </div>
+                <div class="transfer-modal-row">
+                    <label>Receiver</label>
+                    <select id="modalReceiverUser" class="modal-focus-field">
+                        <option value="">Select Receiver</option>
+                        ${otherUsers.map(u => `<option value="${u.id}">${u.name} (₹${calculateBalance(u.id).toFixed(2)})</option>`).join('')}
+                    </select>
+                </div>
+                <div class="transfer-modal-row">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="modalAmount" class="modal-focus-field" placeholder="Enter amount" step="1">
+                </div>
+                <div class="transfer-modal-row">
+                    <label>Note (Optional)</label>
+                    <input type="text" id="modalNote" class="modal-focus-field" placeholder="Reason for transfer">
+                </div>
+                <div class="transfer-modal-buttons">
+                    <button class="transfer-submit" id="modalSendBtn">Send Money</button>
+                    <button class="transfer-cancel" id="modalCancelBtn">Cancel</button>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
-        
-        let selectedPhoto = null;
-        const photoArea = modal.querySelector('#photoArea');
-        const photoInput = modal.querySelector('#photoInput');
-        photoArea.onclick = () => photoInput.click();
-        photoInput.onchange = async (e) => {
-            if (e.target.files[0]) {
-                photoArea.innerHTML = '⏳ Compressing...';
-                selectedPhoto = e.target.files[0];
-                const compressed = await compressImage(selectedPhoto);
-                selectedPhoto = compressed;
-                photoArea.innerHTML = '✅ Photo attached';
-                photoArea.style.borderColor = '#2ED15E';
-            }
-        };
-        
-        modal.querySelector('#voiceBtn').onclick = () => {
-            if (!('webkitSpeechRecognition' in window)) return showToast("Voice not supported");
-            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.lang = 'en-IN';
-            rec.onresult = (e) => {
-                const text = e.results[0][0].transcript;
-                const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
-                const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
-                let category = null;
-                categories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
-                let mentionedUser = null;
-                if (type === 'EXPENSE') {
-                    const foundUser = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
-                    if (foundUser) mentionedUser = foundUser.id;
-                }
-                
-                if (amount) {
-                    showVoiceConfirmPopup({
-                        category: category || defaultExpenseCategory,
-                        amount: amount,
-                        description: text,
-                        mention: mentionedUser ? getUserName(mentionedUser) : null
-                    }, async (confirmed) => {
-                        if (confirmed) {
-                            if (category) modal.querySelector('#transCat').value = category;
-                            modal.querySelector('#transAmt').value = amount;
-                            modal.querySelector('#transDesc').value = text;
-                            if (mentionedUser && type === 'EXPENSE') {
-                                modal.querySelector('#transMention').value = mentionedUser;
-                            }
-                            modal.querySelector('#voiceBtn').innerHTML = '✅ Voice captured';
-                            showToast("Voice captured, click Save to confirm");
-                        }
-                    });
-                } else {
-                    showToast("Could not detect amount. Try again.");
-                }
-            };
-            rec.start();
-            modal.querySelector('#voiceBtn').innerHTML = '🎙️ Listening...';
-        };
-        
-        modal.querySelector('#confirmBtn').onclick = async () => {
-            const cat = modal.querySelector('#transCat').value;
-            const amt = parseFloat(modal.querySelector('#transAmt').value);
-            const desc = modal.querySelector('#transDesc').value;
-            const mention = type === 'EXPENSE' ? modal.querySelector('#transMention').value || null : null;
-            const date = modal.querySelector('#transDate').value;
-            if (!amt || amt <= 0) return showToast("Valid amount required");
-            if (!cat || cat === "Select Category") return showToast("Select a category");
-            await addTransaction(type, cat, amt, desc, mention, selectedPhoto, date);
+        setupModalTabNavigation(modal);
+
+        setTimeout(() => {
+            const first = modal.querySelector('#modalReceiverUser');
+            if (first) first.focus();
+        }, 100);
+
+        modal.querySelector('#modalSendBtn').onclick = async () => {
+            const receiverId = modal.querySelector('#modalReceiverUser').value;
+            const amount = parseFloat(modal.querySelector('#modalAmount').value);
+            const note = modal.querySelector('#modalNote').value;
+            if (!receiverId) { showToast("Please select a receiver"); return; }
+            if (isNaN(amount) || amount <= 0) { showToast("Enter a valid amount"); return; }
+            await sendMoney(currentUser.uid, receiverId, amount, note);
             modal.remove();
         };
-        modal.querySelector('#cancelBtn').onclick = () => modal.remove();
+        modal.querySelector('#modalCancelBtn').onclick = () => modal.remove();
     }
-    
-    // Quick Voice Command from Floating Mic
+
+    function showVoiceConfirmPopup(details, onConfirm) {
+        const existing = document.querySelector('.voice-confirm-modal');
+        if (existing) existing.remove();
+        const popup = document.createElement('div');
+        popup.className = 'voice-confirm-modal';
+        popup.innerHTML = `
+            <span>🎤 Voice detected:</span>
+            <span style="font-weight:600;">${details.category} ₹${details.amount}</span>
+            <span style="font-size:12px; color:var(--text-secondary);">${details.description || ""}</span>
+            ${details.mention ? `<span style="background:var(--badge-bg); padding:2px 8px; border-radius:20px;">→ ${details.mention}</span>` : ''}
+            <button id="voiceConfirmYes">✓ Add</button>
+            <button class="cancel" id="voiceConfirmNo">✗ Cancel</button>
+        `;
+        document.body.appendChild(popup);
+        document.getElementById('voiceConfirmYes').onclick = () => { popup.remove(); onConfirm(true); };
+        document.getElementById('voiceConfirmNo').onclick = () => { popup.remove(); onConfirm(false); showToast("Cancelled"); };
+        setTimeout(() => { if (document.body.contains(popup)) popup.remove(); }, 15000);
+    }
+
     function startQuickVoice() {
         if (!('webkitSpeechRecognition' in window)) return showToast("Voice not supported");
         const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         rec.lang = 'en-IN';
         const micBtn = document.getElementById('floatingMicBtn');
         micBtn.classList.add('listening');
-        
+
         rec.onresult = (e) => {
-            const text = e.results[0][0].transcript;
+            const raw = e.results[0][0].transcript;
             micBtn.classList.remove('listening');
-            const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
-            const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
-            if (!amount) {
-                showToast("No amount detected. Say like 'Cutting 150'");
-                return;
+            const words = raw.replace(/[₹$,]/g, '').trim().split(/\s+/);
+            let amount = null, category = null, type = "EXPENSE";
+
+            for (let w of words) {
+                const num = parseFloat(w);
+                if (!isNaN(num) && amount === null) { amount = num; continue; }
+                const expMatch = expenseCategories.find(c => c.toLowerCase() === w.toLowerCase());
+                if (expMatch) { category = expMatch; type = "EXPENSE"; continue; }
+                const incMatch = incomeCategories.find(c => c.toLowerCase() === w.toLowerCase());
+                if (incMatch) { category = incMatch; type = "INCOME"; }
             }
-            let category = null;
-            expenseCategories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
-            let mentionedUser = null;
-            const foundUser = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
-            if (foundUser) mentionedUser = foundUser.id;
-            
+
+            if (amount === null) { showToast("No amount detected. Say 'cutting 150'"); return; }
+            if (!category) { category = defaultExpenseCategory; showToast(`Using default: "${defaultExpenseCategory}"`); }
+
+            let desc = words.length >= 3 ? words.slice(2).join(" ") : raw;
+            let mentioned = null;
+            const found = allUsers.find(u => u.id !== currentUser.uid && raw.toLowerCase().includes(u.name.toLowerCase()));
+            if (found) mentioned = found.id;
+
             showVoiceConfirmPopup({
-                category: category || defaultExpenseCategory,
+                category: category,
                 amount: amount,
-                description: text,
-                mention: mentionedUser ? getUserName(mentionedUser) : null
+                description: desc,
+                mention: mentioned ? getUserName(mentioned) : null
             }, async (confirmed) => {
                 if (confirmed) {
-                    await addTransaction("EXPENSE", category || defaultExpenseCategory, amount, "Voice: " + text, mentionedUser, null);
+                    if (mentioned) await sendMoney(currentUser.uid, mentioned, amount, desc);
+                    else await addTransaction(type, category, amount, desc, null, null, null, true);
                 }
             });
         };
-        rec.onerror = () => {
-            micBtn.classList.remove('listening');
-            showToast("Voice recognition failed");
-        };
+        rec.onerror = () => { micBtn.classList.remove('listening'); showToast("Voice recognition failed"); };
         rec.onend = () => micBtn.classList.remove('listening');
         rec.start();
     }
-    
-    // Auth Functions
-    async function login(email, password) {
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            showToast("Login successful!");
-            document.getElementById('loginError').innerText = "";
-        } catch (e) {
-            document.getElementById('loginError').innerText = e.message;
-        }
-    }
-    
-    async function signup(name, email, password, confirmPassword) {
-        if (password !== confirmPassword) {
-            document.getElementById('loginError').innerText = "Passwords don't match";
-            return;
-        }
-        try {
-            const userCred = await auth.createUserWithEmailAndPassword(email, password);
-            await db.collection("users").doc(userCred.user.uid).set({
-                name: name,
-                email: email,
-                isAdmin: false,
-                canSendMoney: false,
-                createdAt: new Date()
-            });
-            showToast("Account created! Please login.");
-            document.getElementById('loginError').innerText = "";
-            toggleMode();
-        } catch (e) {
-            document.getElementById('loginError').innerText = e.message;
-        }
-    }
-    
-    function logout() {
-        auth.signOut();
-        currentUser = null;
-        userProfile = null;
-        document.getElementById('appContainer').style.display = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('loginMode').style.display = 'block';
-        document.getElementById('signupMode').style.display = 'none';
-    }
-    
-    function toggleMode() {
-        const loginMode = document.getElementById('loginMode');
-        const signupMode = document.getElementById('signupMode');
-        if (loginMode.style.display === 'none') {
-            loginMode.style.display = 'block';
-            signupMode.style.display = 'none';
-        } else {
-            loginMode.style.display = 'none';
-            signupMode.style.display = 'block';
-        }
-        document.getElementById('loginError').innerText = "";
-    }
-    
-    // Event Listeners
-    document.getElementById('loginBtn').onclick = () => {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        login(email, password);
-    };
-    document.getElementById('signupBtn').onclick = () => {
-        const name = document.getElementById('signupName').value;
-        const email = document.getElementById('signupEmail').value;
-        const password = document.getElementById('signupPassword').value;
-        const confirm = document.getElementById('signupConfirmPassword').value;
-        signup(name, email, password, confirm);
-    };
-    document.getElementById('showSignupBtn').onclick = toggleMode;
-    document.getElementById('showLoginBtn').onclick = toggleMode;
-    document.getElementById('logoutBtn').onclick = logout;
-    document.getElementById('addExpenseBtn').onclick = () => openModal('EXPENSE');
-    document.getElementById('addIncomeBtn').onclick = () => openModal('INCOME');
-    document.getElementById('sendMoneySmallBtn').onclick = openSendMoneyModal;
-    document.getElementById('floatingMicBtn').onclick = startQuickVoice;
-    
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.onclick = () => {
-            currentTab = tab.getAttribute('data-tab');
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            renderAll();
-        };
-    });
-    
-    document.getElementById('filterType').onchange = (e) => { filterState.type = e.target.value; renderActivity(); };
-    document.getElementById('filterCategory').onchange = (e) => { filterState.category = e.target.value; renderActivity(); };
-    document.getElementById('searchBtn').onclick = () => { filterState.search = document.getElementById('searchInput').value.toLowerCase(); renderActivity(); };
-    document.getElementById('adminFilterUser').onchange = (e) => { adminFilterState.user = e.target.value; renderAdmin(); };
-    document.getElementById('adminFilterCategory').onchange = (e) => { adminFilterState.category = e.target.value; renderAdmin(); };
-    document.getElementById('adminSearchBtn').onclick = () => { adminFilterState.search = document.getElementById('adminSearchInput').value.toLowerCase(); renderAdmin(); };
-    document.getElementById('analyticsFilterType').onchange = renderAnalytics;
-    
-    document.getElementById('addExpenseCatBtn').onclick = async () => {
-        const cat = document.getElementById('newExpenseCat').value.trim();
-        if (cat && !expenseCategories.includes(cat)) {
-            expenseCategories.push(cat);
-            await db.collection("metadata").doc("settings").set({
-                expenseCategories: expenseCategories,
-                incomeCategories: incomeCategories,
-                defaultExpenseCategory: defaultExpenseCategory
-            }, { merge: true });
-            renderAll();
-            document.getElementById('newExpenseCat').value = '';
-            showToast("Added");
-        } else showToast("Category exists or empty");
-    };
-    document.getElementById('addIncomeCatBtn').onclick = async () => {
-        const cat = document.getElementById('newIncomeCat').value.trim();
-        if (cat && !incomeCategories.includes(cat)) {
-            incomeCategories.push(cat);
-            await db.collection("metadata").doc("settings").set({
-                expenseCategories: expenseCategories,
-                incomeCategories: incomeCategories,
-                defaultExpenseCategory: defaultExpenseCategory
-            }, { merge: true });
-            renderAll();
-            document.getElementById('newIncomeCat').value = '';
-            showToast("Added");
-        } else showToast("Category exists or empty");
-    };
-    document.getElementById('setDefaultCatBtn').onclick = async () => {
-        const newDefault = document.getElementById('defaultExpenseCat').value;
-        if (newDefault) {
-            defaultExpenseCategory = newDefault;
-            await db.collection("metadata").doc("settings").set({
-                expenseCategories: expenseCategories,
-                incomeCategories: incomeCategories,
-                defaultExpenseCategory: defaultExpenseCategory
-            }, { merge: true });
-            showToast(`Default category set to: ${defaultExpenseCategory}`);
-        }
-    };
-    document.getElementById('addUserAdminBtn').onclick = () => {
-        const name = document.getElementById('newUserName').value.trim();
-        const email = document.getElementById('newUserEmail').value.trim();
-        const pass = document.getElementById('newUserPass').value;
-        if (name && email && pass) {
-            addUser(name, email, pass);
-            document.getElementById('newUserName').value = '';
-            document.getElementById('newUserEmail').value = '';
-            document.getElementById('newUserPass').value = '';
-        } else showToast("All fields required");
-    };
-    document.getElementById('addFundsBtn').onclick = () => {
-        const userId = document.getElementById('fundUserId').value;
-        const amount = parseFloat(document.getElementById('fundAmount').value);
-        if (userId && amount && amount > 0) {
-            addFundsToUser(userId, amount);
-            document.getElementById('fundAmount').value = '';
-        } else showToast("Select user and valid amount");
-    };
-    document.getElementById('downloadFullReportBtn').onclick = () => {
-        let csv = "Date,Type,Category,Amount,Description,From User,To User\n";
-        expenses.forEach(e => {
-            const fromUser = getUserName(e.userId);
-            const toUser = e.mentionedUserId ? getUserName(e.mentionedUserId) : "";
-            csv += `"${e.date}","${e.type}","${e.category}",${e.amount},"${e.description || ""}","${fromUser}","${toUser}"\n`;
-        });
-        const blob = new Blob([csv], { type: "text/csv" });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `khata_report_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        showToast("Report downloaded");
-    };
-    
+
+    // ===================================================================
+    // ADDITIONAL ADMIN FUNCTIONS
+    // ===================================================================
     async function addUser(name, email, password) {
         try {
-            const userCred = await auth.createUserWithEmailAndPassword(email, password);
-            await db.collection("users").doc(userCred.user.uid).set({
-                name: name,
-                email: email,
-                isAdmin: false,
-                canSendMoney: false,
-                createdAt: new Date()
-            });
-            // Initialize send permission for new user
+            const tempApp = firebase.initializeApp(firebaseConfig, 'temp_' + Date.now());
+            const tempAuth = tempApp.auth();
+            const userCred = await tempAuth.createUserWithEmailAndPassword(email, password);
+            await db.collection('users').doc(userCred.user.uid).set({ name, email, isAdmin: false, canSendMoney: false, createdAt: new Date() });
             sendPermissions[userCred.user.uid] = false;
-            await db.collection("metadata").doc("sendPermissions").set(sendPermissions);
+            await db.collection('metadata').doc('sendPermissions').set(sendPermissions, { merge: true });
+            await tempAuth.signOut();
+            await tempApp.delete();
             await loadUserData();
+            renderAll();
             showToast(`User ${name} created`);
-        } catch (e) {
-            showToast(e.message);
-        }
+        } catch (e) { showToast(e.message); }
     }
-    
+
     async function addFundsToUser(userId, amount) {
-        await addTransaction("INCOME", "Admin Fund", amount, "Funds added by admin", null, null);
-    }
-    
-    // Auth State Listener
-    auth.onAuthStateChanged(async (user) => {
-        document.getElementById('loadingScreen').style.opacity = '0';
-        setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 300);
-        
-        if (user) {
-            currentUser = user;
+        const newEntry = {
+            userId: userId,
+            type: "INCOME",
+            category: "Admin Fund",
+            amount: amount,
+            description: "Capital allocated by administrator",
+            date: new Date().toISOString().split('T')[0],
+            timestamp: Date.now(),
+            photoURL: null,
+            mentionedUserId: null,
+            createdAt: new Date()
+        };
+        try {
+            await db.collection('expenses').add(newEntry);
             await loadUserData();
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
-            showToast(`Welcome, ${userProfile?.name || user.email}!`);
-        } else {
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('loginMode').style.display = 'block';
-            document.getElementById('signupMode').style.display = 'none';
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-        }
-    });
+            renderAll();
+            showToast(`₹${amount} added to ${getUserName(userId)}`);
+        } catch (e) { showToast("Failed to add funds"); }
+    }
+
+    // ===================================================================
+    // THEME, SYNC, CSV
+    // ===================================================================
+    function setupThemeToggle() {
+        const btn = document.getElementById('themeToggleBtn');
+        if (!btn) return;
+        btn.onclick = () => {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('khata_app_theme', currentTheme);
+            applyIconState();
+        };
+        applyIconState();
+    }
+
+    function applyIconState() {
+        const moon = "M12.3 22c5.523 0 10-4.477 10-10 0-3.327-1.63-6.273-4.14-8.082-.36-.26-.856-.107-.993.303-.544 1.636-1.574 3.018-2.923 3.962-1.42.996-3.15 1.554-4.993 1.554-1.748 0-3.39-.5-4.767-1.393-.348-.225-.82-.095-.972.278A9.957 9.957 0 002 12c0 5.523 4.477 10 10 10z";
+        const sun = "M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 4a1 1 0 011 1v1a1 1 0 11-2 0V7a1 1 0 011-1zm0 11a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm5.657-9.243a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zm-11.314 8.486a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM18 12a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM4 12a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm11.657 5.657a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zm-11.314-8.486a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0z";
+        const svg = document.getElementById('themeIcon');
+        if (svg) svg.querySelector('path').setAttribute('d', currentTheme === 'dark' ? moon : sun);
+    }
+
+    function setupSync() {
+        document.getElementById('syncBtn').onclick = () => {
+            if (isSyncing) return;
+            isSyncing = true;
+            const btn = document.getElementById('syncBtn');
+            btn.classList.add('syncing');
+            btn.textContent = '⏳ Syncing...';
+            setTimeout(async () => {
+                await loadUserData(true);
+                isSyncing = false;
+                btn.classList.remove('syncing');
+                btn.textContent = '🔄 Sync';
+                showToast('✅ Data synced');
+            }, 800);
+        };
+    }
+
+    function setupCSVExport() {
+        document.getElementById('downloadFullReportBtn').onclick = () => {
+            let csv = "Date,Type,Category,Amount,Description,From User,To User\n";
+            expenses.forEach(e => {
+                const from = getUserName(e.userId);
+                const to = e.mentionedUserId ? getUserName(e.mentionedUserId) : "";
+                const amt = e.type === "EXPENSE" ? `-${e.amount.toFixed(2)}` : `+${e.amount.toFixed(2)}`;
+                const dateParts = e.date.split('-');
+                const d = dateParts.length === 3 ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` : e.date;
+                csv += `"${d}","${e.type}","${e.category}",${amt},"${e.description || ""}","${from}","${to}"\n`;
+            });
+            const blob = new Blob([csv], { type: "text/csv" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `khata_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showToast("CSV exported");
+        };
+    }
+
+    // ===================================================================
+    // KEYBOARD SHORTCUTS
+    // ===================================================================
+    function setupShortcuts() {
+        document.onkeydown = (e) => {
+            if (!shortcutsEnabled) return;
+            const isTyping = ['input', 'textarea', 'select'].includes(document.activeElement?.tagName?.toLowerCase());
+
+            if (e.ctrlKey && e.key === 'Enter') {
+                const save = document.getElementById('confirmBtn') || document.getElementById('saveEditBtn') || document.getElementById('modalSendBtn');
+                if (save) { e.preventDefault(); save.click(); }
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                const cancel = document.getElementById('cancelBtn') || document.getElementById('cancelEditBtn') || document.getElementById('modalCancelBtn');
+                if (cancel) { e.preventDefault(); cancel.click(); }
+                return;
+            }
+
+            if (isTyping) return;
+
+            if (e.shiftKey && e.key === '+') { e.preventDefault(); openModal('EXPENSE'); return; }
+            if (e.key === 'i' || e.key === 'I') { e.preventDefault(); openModal('INCOME'); return; }
+            if (e.key === 't' || e.key === 'T') { e.preventDefault(); openSendMoneyModal(); return; }
+            if (e.ctrlKey && (e.key === 'f' || e.key === 'F')) {
+                const search = document.getElementById('searchInput') || document.getElementById('adminSearchInput');
+                if (search) { e.preventDefault(); search.focus(); search.select(); }
+            }
+        };
+    }
+
+    // ===================================================================
+    // APP INIT
+    // ===================================================================
+    function initApp() {
+        setupThemeToggle();
+        setupSync();
+        setupCSVExport();
+        setupShortcuts();
+
+        // Auth listener
+        auth.onAuthStateChanged(async (user) => {
+            document.getElementById('loadingScreen').style.opacity = '0';
+            setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 300);
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                showToast(`Welcome back!`);
+            } else {
+                document.getElementById('appContainer').style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('loginMode').style.display = 'block';
+                document.getElementById('signupMode').style.display = 'none';
+            }
+        });
+
+        // Event Listeners
+        document.getElementById('loginBtn').onclick = () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if (!email || !password) { showToast("Enter email and password"); return; }
+            login(email, password);
+        };
+
+        document.getElementById('signupBtn').onclick = () => {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirmPassword').value;
+            if (!name || !email || !password || !confirm) { showToast("Fill all fields"); return; }
+            signup(name, email, password, confirm);
+        };
+
+        document.getElementById('showSignupBtn').onclick = toggleMode;
+        document.getElementById('showLoginBtn').onclick = toggleMode;
+        document.getElementById('logoutBtn').onclick = logout;
+
+        document.getElementById('addExpenseBtn').onclick = () => openModal('EXPENSE');
+        document.getElementById('addIncomeBtn').onclick = () => openModal('INCOME');
+        document.getElementById('sendMoneySmallBtn').onclick = openSendMoneyModal;
+        document.getElementById('floatingMicBtn').onclick = startQuickVoice;
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.onclick = () => {
+                currentTab = tab.getAttribute('data-tab');
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderAll();
+            };
+        });
+
+        // Filters
+        document.getElementById('filterType').onchange = (e) => { filterState.type = e.target.value; renderActivity(); };
+        document.getElementById('filterCategory').onchange = (e) => { filterState.category = e.target.value; renderActivity(); };
+        document.getElementById('searchBtn').onclick = () => { filterState.search = document.getElementById('searchInput').value.toLowerCase(); renderActivity(); };
+        document.getElementById('adminFilterUser').onchange = (e) => { adminFilterState.user = e.target.value; renderAdmin(); };
+        document.getElementById('adminFilterCategory').onchange = (e) => { adminFilterState.category = e.target.value; renderAdmin(); };
+        document.getElementById('adminSearchBtn').onclick = () => { adminFilterState.search = document.getElementById('adminSearchInput').value.toLowerCase(); renderAdmin(); };
+        document.getElementById('analyticsFilterType').onchange = renderAnalytics;
+
+        // Settings
+        document.getElementById('addExpenseCatBtn').onclick = async () => {
+            const cat = document.getElementById('newExpenseCat').value.trim();
+            if (cat && !expenseCategories.includes(cat)) {
+                expenseCategories.push(cat);
+                await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
+                renderAll();
+                document.getElementById('newExpenseCat').value = '';
+                showToast("Category added");
+            }
+        };
+        document.getElementById('addIncomeCatBtn').onclick = async () => {
+            const cat = document.getElementById('newIncomeCat').value.trim();
+            if (cat && !incomeCategories.includes(cat)) {
+                incomeCategories.push(cat);
+                await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
+                renderAll();
+                document.getElementById('newIncomeCat').value = '';
+                showToast("Category added");
+            }
+        };
+        document.getElementById('setDefaultCatBtn').onclick = async () => {
+            const val = document.getElementById('defaultExpenseCat').value;
+            if (val) {
+                defaultExpenseCategory = val;
+                await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
+                showToast(`Default: ${defaultExpenseCategory}`);
+            }
+        };
+        document.getElementById('addUserAdminBtn').onclick = () => {
+            const name = document.getElementById('newUserName').value.trim();
+            const email = document.getElementById('newUserEmail').value.trim();
+            const pass = document.getElementById('newUserPass').value;
+            if (name && email && pass) {
+                addUser(name, email, pass);
+                document.getElementById('newUserName').value = '';
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPass').value = '';
+            }
+        };
+        document.getElementById('addFundsBtn').onclick = () => {
+            const userId = document.getElementById('fundUserId').value;
+            const amount = parseFloat(document.getElementById('fundAmount').value);
+            if (userId && amount && amount > 0) {
+                addFundsToUser(userId, amount);
+                document.getElementById('fundAmount').value = '';
+            }
+        };
+
+        document.getElementById('toggleShortcutsCheckbox').onchange = (e) => {
+            shortcutsEnabled = e.target.checked;
+            showToast(shortcutsEnabled ? "Shortcuts enabled" : "Shortcuts disabled");
+        };
+    }
+
+    // Start
+    window.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
 </html>
