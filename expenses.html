@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>DesignSpace Khata | Smart Ledger</title>
-    <!-- Chart.js & Firebase SDKs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -28,10 +27,13 @@
             --primary-light: #A29BFE;
             --primary-gradient: linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%);
             --success: #00B894;
+            --success-bg: #E6F9F5;
             --success-light: #55EFC4;
             --error: #FF6B6B;
+            --error-bg: #FFE8E8;
             --error-light: #FF9F9F;
             --accent: #FDCB6E;
+            --accent-bg: #FFF8E1;
             --accent-light: #FFEAA7;
             --input-bg: #F7F8FC;
             --input-border: #E5E7EB;
@@ -52,6 +54,9 @@
             --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4);
             --input-bg: #141625;
             --input-border: #2D2D45;
+            --success-bg: #0A2E28;
+            --error-bg: #3D1A1A;
+            --accent-bg: #3D2E0A;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -123,64 +128,116 @@
         .quick-btn .label.income { color: var(--success); }
         .quick-btn .label.transfer { color: var(--accent); }
 
-        /* ===== TRANSACTIONS LIST ===== */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .section-title { font-size: 18px; font-weight: 800; }
-        .section-action { font-size: 13px; color: var(--text-secondary); cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .section-action:hover { color: var(--primary); }
-
-        .transaction-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-bottom: 8px; }
-        .transaction-item { background: var(--bg-card); border-radius: var(--radius-sm); padding: 14px 18px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: var(--shadow); }
-        .transaction-item:hover { border-color: var(--primary); transform: translateX(4px); }
-        .transaction-left { display: flex; align-items: center; gap: 14px; flex: 1; }
+        /* ===== TRANSACTIONS LIST WITH DATE GROUPING ===== */
+        .transaction-list { display: flex; flex-direction: column; gap: 4px; max-height: 520px; overflow-y: auto; padding-bottom: 8px; }
         
-        /* ===== FIXED: Transparent Icon with Outline ===== */
-        .transaction-icon { 
+        .date-group { margin-bottom: 12px; }
+        .date-group:last-child { margin-bottom: 0; }
+        
+        .date-group-header { 
+            font-size: 13px; 
+            font-weight: 700; 
+            color: var(--text-secondary); 
+            padding: 8px 4px 8px 0; 
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .date-group-header .day-name { font-weight: 600; color: var(--text-primary); }
+        .date-group-header .total-amount { font-size: 12px; font-weight: 600; }
+        
+        .category-group { margin-bottom: 8px; }
+        .category-group:last-child { margin-bottom: 0; }
+        
+        .category-group-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 4px 4px 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .category-group-header.expense-cat { color: var(--error); background: var(--error-bg); }
+        .category-group-header.income-cat { color: var(--success); background: var(--success-bg); }
+        .category-group-header.transfer-cat { color: #D97706; background: var(--accent-bg); }
+        
+        .transaction-item { 
+            background: var(--bg-card); 
+            border-radius: var(--radius-xs); 
+            padding: 10px 14px; 
+            border: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: 0.2s; 
+            margin-left: 8px;
+            box-shadow: var(--shadow);
+        }
+        .transaction-item:hover { border-color: var(--primary); transform: translateX(4px); }
+        .transaction-left { display: flex; align-items: center; gap: 12px; flex: 1; }
+        
+        .date-box { 
             width: 44px; 
             height: 44px; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             display: flex; 
+            flex-direction: column;
             align-items: center; 
             justify-content: center; 
-            font-size: 20px; 
-            flex-shrink: 0; 
-            background: transparent !important; 
-            border: 2px solid var(--border-color);
+            flex-shrink: 0;
+            font-weight: 800;
+            line-height: 1.2;
             transition: 0.2s;
         }
-        .transaction-icon.expense { border-color: var(--error); color: var(--error); }
-        .transaction-icon.income { border-color: var(--success); color: var(--success); }
-        .transaction-icon.transfer { border-color: var(--accent); color: var(--accent); }
-        .transaction-icon.voice { border-color: var(--primary); color: var(--primary); }
-        .transaction-item:hover .transaction-icon { border-color: var(--primary); }
+        .date-box .day { font-size: 16px; font-weight: 900; }
+        .date-box .month { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; opacity: 0.8; }
+        
+        .date-box.expense { background: var(--error-bg); color: var(--error); border: 2px solid var(--error); }
+        .date-box.income { background: var(--success-bg); color: var(--success); border: 2px solid var(--success); }
+        .date-box.transfer { background: var(--accent-bg); color: #D97706; border: 2px solid var(--accent); }
+        .date-box.voice { background: rgba(108, 92, 231, 0.12); color: var(--primary); border: 2px solid var(--primary); }
         
         .transaction-info { flex: 1; min-width: 0; }
-        .transaction-title { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .transaction-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
-        .transaction-amount { font-weight: 800; font-size: 17px; text-align: right; flex-shrink: 0; margin-left: 8px; }
+        .transaction-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+        .transaction-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .transaction-amount { font-weight: 800; font-size: 15px; text-align: right; flex-shrink: 0; margin-left: 6px; }
         .transaction-amount.negative { color: var(--error); }
         .transaction-amount.positive { color: var(--success); }
         .transaction-amount.transfer { color: var(--accent); }
 
-        .transaction-actions { display: flex; gap: 4px; margin-left: 8px; }
-        .transaction-actions button { background: none; border: none; font-size: 16px; cursor: pointer; padding: 4px 6px; transition: 0.2s; border-radius: 8px; color: var(--text-secondary); }
+        .transaction-actions { display: flex; gap: 2px; margin-left: 6px; }
+        .transaction-actions button { background: none; border: none; font-size: 14px; cursor: pointer; padding: 4px; transition: 0.2s; border-radius: 6px; color: var(--text-secondary); }
         .transaction-actions .edit-btn:hover { background: rgba(108, 92, 231, 0.1); color: var(--primary); }
         .transaction-actions .delete-btn:hover { background: rgba(255, 107, 107, 0.1); color: var(--error); }
         .transaction-actions .delete-btn.disabled { opacity: 0.2; cursor: not-allowed; }
 
-        .badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge { font-size: 8px; font-weight: 700; padding: 1px 6px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
         .badge-transfer { background: rgba(253, 203, 110, 0.15); color: #D97706; border: 1px solid rgba(253, 203, 110, 0.3); }
         .badge-voice { background: rgba(108, 92, 231, 0.1); color: var(--primary); border: 1px solid rgba(108, 92, 231, 0.2); }
         .badge-admin { background: rgba(0, 184, 148, 0.1); color: var(--success); border: 1px solid rgba(0, 184, 148, 0.2); }
 
         /* ===== FILTER BAR ===== */
         .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; background: var(--bg-card); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow); }
-        .filter-select { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 10px 16px; color: var(--text-primary); flex: 1; min-width: 100px; cursor: pointer; outline: none; font-size: 13px; font-weight: 500; }
+        .filter-row { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; }
+        .filter-select { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 10px 16px; color: var(--text-primary); flex: 1; min-width: 80px; cursor: pointer; outline: none; font-size: 13px; font-weight: 500; }
         .filter-select:focus { border-color: var(--primary); }
-        .search-bar { display: flex; gap: 8px; flex: 2; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 8px 12px; }
-        .search-bar input { flex: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 13px; }
+        .search-bar { display: flex; gap: 8px; flex: 2; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 6px 12px; }
+        .search-bar input { flex: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 13px; min-width: 80px; }
         .search-bar button { background: var(--primary-gradient); border: none; padding: 4px 16px; border-radius: 30px; cursor: pointer; color: white; font-weight: 600; font-size: 12px; transition: 0.2s; }
         .search-bar button:hover { opacity: 0.9; transform: scale(0.98); }
+
+        /* ===== VIEW TOGGLES ===== */
+        .view-toggles { display: flex; gap: 6px; margin-bottom: 16px; background: var(--bg-card); padding: 4px; border-radius: 60px; border: 1px solid var(--border-color); }
+        .view-toggle { padding: 6px 16px; border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 12px; color: var(--text-secondary); transition: 0.2s; border: none; background: transparent; }
+        .view-toggle.active { background: var(--primary-gradient); color: white; box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2); }
+        .view-toggle:hover { color: var(--primary); }
+        .view-toggle.active:hover { color: white; }
 
         /* ===== TABS ===== */
         .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg-card); padding: 4px; border-radius: 60px; border: 1px solid var(--border-color); }
@@ -242,7 +299,7 @@
         .transfer-cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
         .transfer-cancel:hover { border-color: var(--error); color: var(--error); }
 
-        /* ===== AUTOCOMPLETE FIXED ===== */
+        /* ===== AUTOCOMPLETE ===== */
         .autocomplete-container { position: relative; width: 100%; }
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-height: 160px; overflow-y: auto; z-index: 100; margin-top: 4px; box-shadow: var(--shadow-hover); }
         .autocomplete-item { padding: 12px 18px; cursor: pointer; transition: 0.1s; color: var(--text-primary); font-size: 14px; font-weight: 500; }
@@ -265,20 +322,28 @@
         .floating-mic.listening { background: var(--error); animation: pulseGlow 1.2s infinite; }
         @keyframes pulseGlow { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
-        /* ===== SHORTCUTS HINT ===== */
-        .shortcuts-hint { position: fixed; bottom: 100px; left: 20px; background: var(--bg-card); padding: 6px 12px; border-radius: 20px; font-size: 10px; color: var(--text-secondary); border: 1px solid var(--border-color); z-index: 150; display: none; box-shadow: var(--shadow); }
-        @media (min-width: 768px) { .shortcuts-hint { display: block; } }
+        /* ===== SHORTCUTS ===== */
+        .shortcuts-container { position: fixed; bottom: 100px; left: 20px; z-index: 150; }
+        .shortcuts-toggle { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; box-shadow: var(--shadow); transition: 0.2s; color: var(--text-secondary); }
+        .shortcuts-toggle:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.05); }
+        .shortcuts-content { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 18px; margin-bottom: 8px; box-shadow: var(--shadow-hover); display: none; min-width: 200px; }
+        .shortcuts-content.show { display: block; animation: slideUp 0.2s ease; }
+        .shortcuts-content .shortcut-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: var(--text-secondary); }
+        .shortcuts-content .shortcut-key { color: var(--primary); font-weight: 700; font-family: monospace; }
 
         .error-msg { color: var(--error); font-size: 13px; margin-top: 8px; }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .balance-amount { font-size: 28px; }
             .balance-stats { gap: 16px; }
-            .transaction-item { padding: 12px 14px; }
+            .transaction-item { padding: 10px 12px; }
             .transaction-title { font-size: 13px; }
             .quick-btn { padding: 12px; }
             .quick-btn .icon { font-size: 20px; }
+            .date-box { width: 38px; height: 38px; }
+            .date-box .day { font-size: 14px; }
+            .date-box .month { font-size: 7px; }
+            .view-toggle { font-size: 11px; padding: 4px 12px; }
         }
     </style>
 </head>
@@ -379,17 +444,25 @@
             </div>
         </div>
 
-        <!-- Filter -->
+        <!-- View Toggles -->
+        <div class="view-toggles">
+            <button class="view-toggle active" data-view="date">📅 By Date</button>
+            <button class="view-toggle" data-view="category">📂 By Category</button>
+        </div>
+
+        <!-- Filter Bar -->
         <div class="filter-bar">
-            <select id="filterType" class="filter-select">
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month" selected>This Month</option>
-            </select>
-            <select id="filterCategory" class="filter-select">
-                <option value="all">All Categories</option>
-            </select>
+            <div class="filter-row">
+                <select id="filterType" class="filter-select">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month" selected>This Month</option>
+                </select>
+                <select id="filterCategory" class="filter-select">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
             <div class="search-bar">
                 <input type="text" id="searchInput" placeholder="🔍 Search...">
                 <button id="searchBtn">Search</button>
@@ -433,9 +506,9 @@
         <div class="filter-bar">
             <select id="adminFilterUser" class="filter-select"><option value="all">All Users</option></select>
             <select id="adminFilterCategory" class="filter-select"><option value="all">All Categories</option></select>
-            <div class="search-bar">
+            <div class="search-bar" style="display:flex; gap:8px; flex:2; background:var(--input-bg); border:1px solid var(--input-border); border-radius:40px; padding:6px 12px;">
                 <input type="text" id="adminSearchInput" placeholder="🔍 Search...">
-                <button id="adminSearchBtn">Search</button>
+                <button id="adminSearchBtn" style="background:var(--primary-gradient); border:none; padding:4px 16px; border-radius:30px; cursor:pointer; color:white; font-weight:600; font-size:12px;">Search</button>
             </div>
         </div>
 
@@ -525,7 +598,20 @@
 
 <!-- Floating Mic -->
 <button id="floatingMicBtn" class="floating-mic">🎙️</button>
-<div class="shortcuts-hint" id="shortcutsHint">⌨️ Shift++: Expense | i: Income | t: Transfer | Ctrl+Enter: Save</div>
+
+<!-- Shortcuts -->
+<div class="shortcuts-container">
+    <div id="shortcutsContent" class="shortcuts-content">
+        <div style="font-weight:600; font-size:12px; margin-bottom:8px; color:var(--text-primary);">⌨️ Keyboard Shortcuts</div>
+        <div class="shortcut-item"><span>Add Expense</span><span class="shortcut-key">Shift + +</span></div>
+        <div class="shortcut-item"><span>Add Income</span><span class="shortcut-key">i</span></div>
+        <div class="shortcut-item"><span>Send Transfer</span><span class="shortcut-key">t</span></div>
+        <div class="shortcut-item"><span>Save Modal</span><span class="shortcut-key">Ctrl + Enter</span></div>
+        <div class="shortcut-item"><span>Close Modal</span><span class="shortcut-key">Esc</span></div>
+        <div class="shortcut-item"><span>Focus Search</span><span class="shortcut-key">Ctrl + F</span></div>
+    </div>
+    <button class="shortcuts-toggle" id="shortcutsToggle" title="Toggle Shortcuts">⌨️</button>
+</div>
 
 <script>
     // ===================================================================
@@ -558,6 +644,7 @@
     let incomeCategories = ["Salary", "Petty Cash", "Client Payment", "Reimbursement", "Advance", "Other"];
     let defaultExpenseCategory = "Other";
     let currentTab = "activity";
+    let currentView = "date";
     let filterState = { type: "month", category: "all", search: "" };
     let adminFilterState = { user: "all", category: "all", search: "" };
     let chartInstance = null;
@@ -607,10 +694,6 @@
         modal.style.display = 'flex';
         document.getElementById('confirmYesBtn').onclick = () => { modal.style.display = 'none'; onConfirm(); };
         document.getElementById('confirmNoBtn').onclick = () => { modal.style.display = 'none'; };
-    }
-
-    function getCollections() {
-        return { expenses: db.collection('expenses'), users: db.collection('users'), metadata: db.collection('metadata') };
     }
 
     function getDateRange(type) {
@@ -934,7 +1017,7 @@
     }
 
     // ===================================================================
-    // RENDER FUNCTIONS
+    // RENDER FUNCTIONS WITH DATE GROUPING & CATEGORY VIEW
     // ===================================================================
     function getTransactionDisplay(exp, isAdminView = false) {
         const isExpense = exp.type === "EXPENSE";
@@ -943,23 +1026,23 @@
         const isOutgoing = (exp.userId === currentUser?.uid && isExpense);
         const isIncome = (exp.type === "INCOME" && exp.userId === currentUser?.uid);
 
-        let sign = "+", color = "var(--success)", prefix = "", icon = "💰", iconClass = "income", tags = "";
+        let sign = "+", color = "var(--success)", prefix = "", icon = "💰", iconClass = "income", tags = "", dateBoxClass = "income";
 
         if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
         if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
 
         if (isTransfer) {
             if (isOutgoing) {
-                sign = "-"; color = "var(--accent)"; prefix = "Sent to"; icon = "📤"; iconClass = "transfer";
+                sign = "-"; color = "var(--accent)"; prefix = "Sent to"; icon = "📤"; iconClass = "transfer"; dateBoxClass = "transfer";
                 tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
             } else if (isIncoming) {
-                sign = "+"; color = "var(--accent)"; prefix = "Received from"; icon = "📥"; iconClass = "transfer";
+                sign = "+"; color = "var(--accent)"; prefix = "Received from"; icon = "📥"; iconClass = "transfer"; dateBoxClass = "transfer";
                 tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
             }
         } else if (isExpense) {
-            sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense";
+            sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense"; dateBoxClass = "expense";
         } else if (isIncome) {
-            sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income";
+            sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income"; dateBoxClass = "income";
         }
 
         let title = "";
@@ -976,7 +1059,15 @@
         else if (isTransfer) isDeleteDisabled = !isOutgoing;
         else isDeleteDisabled = (exp.userId !== currentUser?.uid);
 
-        return { title, sign, color, icon, iconClass, isDeleteDisabled, tags };
+        const dateObj = new Date(exp.date);
+        const day = dateObj.getDate().toString().padStart(2, '0');
+        const month = dateObj.toLocaleString('default', { month: 'short' });
+        const year = dateObj.getFullYear();
+        const fullDate = exp.date;
+        const category = exp.category;
+        const type = isTransfer ? 'transfer' : (isExpense ? 'expense' : 'income');
+
+        return { title, sign, color, icon, iconClass, isDeleteDisabled, tags, dateBoxClass, day, month, fullDate, category, type };
     }
 
     function renderActivity() {
@@ -1012,6 +1103,7 @@
             const q = filterState.search.toLowerCase();
             filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q));
         }
+        filtered.sort((a, b) => b.timestamp - a.timestamp);
 
         const container = document.getElementById('expensesList');
         if (!filtered.length) {
@@ -1019,28 +1111,135 @@
             return;
         }
 
-        container.innerHTML = filtered.map(exp => {
-            const { title, sign, color, icon, iconClass, isDeleteDisabled, tags } = getTransactionDisplay(exp, false);
-            const photoHtml = exp.photoURL ? `<div class="photo-thumb" onclick="window.open('${exp.photoURL}', '_blank')">📷</div>` : '';
-            return `
-                <div class="transaction-item">
-                    <div class="transaction-left">
-                        <div class="transaction-icon ${iconClass}">${icon}</div>
-                        <div class="transaction-info">
-                            <div class="transaction-title">${title} ${tags}</div>
-                            <div class="transaction-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
+        if (currentView === 'date') {
+            // Group by Date
+            const dateGroups = {};
+            filtered.forEach(exp => {
+                if (!dateGroups[exp.date]) dateGroups[exp.date] = [];
+                dateGroups[exp.date].push(exp);
+            });
+
+            let html = '';
+            Object.keys(dateGroups).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+                const dateObj = new Date(date);
+                const dayName = dateObj.toLocaleString('default', { weekday: 'long' });
+                const day = dateObj.getDate();
+                const month = dateObj.toLocaleString('default', { month: 'long' });
+                const year = dateObj.getFullYear();
+                const dateDisplay = `${dayName}, ${day} ${month} ${year}`;
+                
+                const dayTotal = dateGroups[date].reduce((sum, exp) => {
+                    const amt = Number(exp.amount) || 0;
+                    if (exp.type === "EXPENSE" && exp.userId === currentUser.uid) return sum - amt;
+                    if (exp.type === "INCOME" && exp.userId === currentUser.uid) return sum + amt;
+                    if (exp.mentionedUserId === currentUser.uid && exp.type === "EXPENSE") return sum + amt;
+                    return sum;
+                }, 0);
+
+                html += `<div class="date-group">
+                    <div class="date-group-header">
+                        <span class="day-name">${dateDisplay}</span>
+                        <span class="total-amount" style="color:${dayTotal < 0 ? 'var(--error)' : 'var(--success)'}">${dayTotal < 0 ? '' : '+'}₹${dayTotal.toFixed(2)}</span>
+                    </div>`;
+
+                dateGroups[date].forEach(exp => {
+                    const { title, sign, color, icon, iconClass, isDeleteDisabled, tags, dateBoxClass, day: d, month: m } = getTransactionDisplay(exp, false);
+                    const deleteDisplay = !isDeleteDisabled ? `<button class="delete-btn" data-id="${exp.id}">🗑️</button>` : '';
+                    html += `
+                        <div class="transaction-item">
+                            <div class="transaction-left">
+                                <div class="date-box ${dateBoxClass}">
+                                    <span class="day">${d}</span>
+                                    <span class="month">${m}</span>
+                                </div>
+                                <div class="transaction-info">
+                                    <div class="transaction-title">${title} ${tags}</div>
+                                    <div class="transaction-meta">📝 ${exp.description || "—"}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
+                                <div class="transaction-actions">
+                                    <button class="edit-btn" data-id="${exp.id}">✏️</button>
+                                    ${deleteDisplay}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
-                        <div class="transaction-actions">
-                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
-                            ${!isDeleteDisabled ? `<button class="delete-btn" data-id="${exp.id}">🗑️</button>` : ''}
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+
+        } else {
+            // Group by Category
+            const categoryGroups = {};
+            filtered.forEach(exp => {
+                const type = exp.category === "Money Transfer" ? 'transfer' : (exp.type === "EXPENSE" ? 'expense' : 'income');
+                const key = `${type}_${exp.category}`;
+                if (!categoryGroups[key]) categoryGroups[key] = { type, category: exp.category, items: [] };
+                categoryGroups[key].items.push(exp);
+            });
+
+            let html = '';
+            const order = ['expense', 'income', 'transfer'];
+            Object.keys(categoryGroups).sort((a, b) => {
+                const typeA = categoryGroups[a].type;
+                const typeB = categoryGroups[b].type;
+                return order.indexOf(typeA) - order.indexOf(typeB) || categoryGroups[a].category.localeCompare(categoryGroups[b].category);
+            }).forEach(key => {
+                const group = categoryGroups[key];
+                const typeClass = group.type === 'expense' ? 'expense-cat' : (group.type === 'income' ? 'income-cat' : 'transfer-cat');
+                const typeLabel = group.type === 'expense' ? '📤 Expense' : (group.type === 'income' ? '💰 Income' : '🔄 Transfer');
+                const typeIcon = group.type === 'expense' ? '📤' : (group.type === 'income' ? '💰' : '🔄');
+                
+                const catTotal = group.items.reduce((sum, exp) => {
+                    const amt = Number(exp.amount) || 0;
+                    if (exp.type === "EXPENSE" && exp.userId === currentUser.uid) return sum - amt;
+                    if (exp.type === "INCOME" && exp.userId === currentUser.uid) return sum + amt;
+                    if (exp.mentionedUserId === currentUser.uid && exp.type === "EXPENSE") return sum + amt;
+                    return sum;
+                }, 0);
+
+                html += `<div class="category-group">
+                    <div class="category-group-header ${typeClass}">
+                        <span>${typeIcon} ${group.category}</span>
+                        <span style="margin-left:auto; font-weight:600;">${catTotal < 0 ? '' : '+'}₹${catTotal.toFixed(2)}</span>
+                    </div>`;
+
+                group.items.forEach(exp => {
+                    const { title, sign, color, icon, iconClass, isDeleteDisabled, tags, dateBoxClass, day, month } = getTransactionDisplay(exp, false);
+                    const deleteDisplay = !isDeleteDisabled ? `<button class="delete-btn" data-id="${exp.id}">🗑️</button>` : '';
+                    html += `
+                        <div class="transaction-item">
+                            <div class="transaction-left">
+                                <div class="date-box ${dateBoxClass}">
+                                    <span class="day">${day}</span>
+                                    <span class="month">${month}</span>
+                                </div>
+                                <div class="transaction-info">
+                                    <div class="transaction-title">${title} ${tags}</div>
+                                    <div class="transaction-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
+                                <div class="transaction-actions">
+                                    <button class="edit-btn" data-id="${exp.id}">✏️</button>
+                                    ${deleteDisplay}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
 
         document.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = () => deleteTransaction(btn.getAttribute('data-id')));
         document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -1086,23 +1285,26 @@
             const isTransfer = exp.category === "Money Transfer";
             const isIncome = exp.type === "INCOME";
 
-            let sign = "+", color = "var(--success)", icon = "💰", iconClass = "income", prefix = "", tags = "";
+            let sign = "+", color = "var(--success)", icon = "💰", iconClass = "income", prefix = "", tags = "", dateBoxClass = "income";
+            const dateObj = new Date(exp.date);
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const month = dateObj.toLocaleString('default', { month: 'short' });
 
             if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
             if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
 
             if (isTransfer) {
                 if (isExpense) {
-                    sign = "-"; color = "var(--accent)"; prefix = "Sent"; icon = "📤"; iconClass = "transfer";
+                    sign = "-"; color = "var(--accent)"; prefix = "Sent"; icon = "📤"; iconClass = "transfer"; dateBoxClass = "transfer";
                     tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
                 } else {
-                    sign = "+"; color = "var(--accent)"; prefix = "Received"; icon = "📥"; iconClass = "transfer";
+                    sign = "+"; color = "var(--accent)"; prefix = "Received"; icon = "📥"; iconClass = "transfer"; dateBoxClass = "transfer";
                     tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
                 }
             } else if (isExpense) {
-                sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense";
+                sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense"; dateBoxClass = "expense";
             } else if (isIncome) {
-                sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income";
+                sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income"; dateBoxClass = "income";
             }
 
             let title = "";
@@ -1119,7 +1321,10 @@
             return `
                 <div class="transaction-item">
                     <div class="transaction-left">
-                        <div class="transaction-icon ${iconClass}">${icon}</div>
+                        <div class="date-box ${dateBoxClass}">
+                            <span class="day">${day}</span>
+                            <span class="month">${month}</span>
+                        </div>
                         <div class="transaction-info">
                             ${userTag}
                             <div class="transaction-title">${title} ${tags}</div>
@@ -1332,7 +1537,7 @@
     }
 
     // ===================================================================
-    // FIXED: AUTOCOMPLETE WITH PROPER KEYBOARD NAVIGATION
+    // AUTOCOMPLETE
     // ===================================================================
     function initAutocomplete(inputId, suggestions, listId) {
         const input = document.getElementById(inputId);
@@ -1356,7 +1561,6 @@
                     input.value = item;
                     list.style.display = 'none';
                     selectedIndex = -1;
-                    // Move to next field
                     const next = document.getElementById('transAmt') || document.getElementById('editAmt');
                     if (next) setTimeout(() => next.focus(), 50);
                 };
@@ -1366,7 +1570,6 @@
                 };
                 list.appendChild(div);
             });
-            // Scroll selected into view
             if (selectedIndex >= 0 && selectedIndex < filtered.length) {
                 const sel = list.children[selectedIndex];
                 if (sel) sel.scrollIntoView({ block: 'nearest' });
@@ -1391,7 +1594,6 @@
             const val = input.value.trim().toLowerCase();
             const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
             
-            // If dropdown is hidden and ArrowDown is pressed, show it
             if (list.style.display === 'none' || list.style.display === '') {
                 if (e.key === 'ArrowDown') { 
                     e.preventDefault();
@@ -1402,45 +1604,34 @@
                 return;
             }
 
-            // Arrow Down navigation
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 if (filtered.length === 0) return;
                 selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1);
                 render(filtered);
-            } 
-            // Arrow Up navigation
-            else if (e.key === 'ArrowUp') {
+            } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 if (filtered.length === 0) return;
                 selectedIndex = Math.max(selectedIndex - 1, -1);
                 render(filtered);
-            } 
-            // Enter selects the highlighted item and moves to next field
-            else if (e.key === 'Enter') {
+            } else if (e.key === 'Enter') {
                 if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
                     e.preventDefault();
                     e.stopPropagation();
                     input.value = filtered[selectedIndex];
                     list.style.display = 'none';
                     selectedIndex = -1;
-                    // Move to next field
                     const next = document.getElementById('transAmt') || document.getElementById('editAmt');
                     if (next) setTimeout(() => next.focus(), 50);
                 }
-            } 
-            // Tab selects and moves forward
-            else if (e.key === 'Tab') {
+            } else if (e.key === 'Tab') {
                 if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
                     input.value = filtered[selectedIndex];
                     list.style.display = 'none';
                     selectedIndex = -1;
                 }
-                // Let Tab continue naturally
                 return;
-            }
-            // Escape closes the dropdown
-            else if (e.key === 'Escape') {
+            } else if (e.key === 'Escape') {
                 list.style.display = 'none';
                 selectedIndex = -1;
                 e.stopPropagation();
@@ -1508,7 +1699,6 @@
         `;
         document.body.appendChild(modal);
 
-        // Initialize autocomplete with keyboard navigation
         initAutocomplete('transCat', categories, 'transCatList');
         setupModalTabNavigation(modal);
 
@@ -1906,6 +2096,45 @@
     }
 
     // ===================================================================
+    // SHORTCUTS TOGGLE
+    // ===================================================================
+    function setupShortcutsToggle() {
+        const toggleBtn = document.getElementById('shortcutsToggle');
+        const content = document.getElementById('shortcutsContent');
+        let isOpen = false;
+
+        toggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            isOpen = !isOpen;
+            content.classList.toggle('show', isOpen);
+            toggleBtn.textContent = isOpen ? '⌨️ ✕' : '⌨️';
+        };
+
+        document.addEventListener('click', (e) => {
+            const container = document.querySelector('.shortcuts-container');
+            if (container && !container.contains(e.target) && isOpen) {
+                isOpen = false;
+                content.classList.remove('show');
+                toggleBtn.textContent = '⌨️';
+            }
+        });
+    }
+
+    // ===================================================================
+    // VIEW TOGGLES
+    // ===================================================================
+    function setupViewToggles() {
+        document.querySelectorAll('.view-toggle').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.view-toggle').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentView = btn.getAttribute('data-view');
+                renderActivity();
+            };
+        });
+    }
+
+    // ===================================================================
     // APP INIT
     // ===================================================================
     function initApp() {
@@ -1913,6 +2142,8 @@
         setupSync();
         setupCSVExport();
         setupShortcuts();
+        setupShortcutsToggle();
+        setupViewToggles();
 
         // Auth listener
         auth.onAuthStateChanged(async (user) => {
@@ -1970,7 +2201,16 @@
         // Filters
         document.getElementById('filterType').onchange = (e) => { filterState.type = e.target.value; renderActivity(); };
         document.getElementById('filterCategory').onchange = (e) => { filterState.category = e.target.value; renderActivity(); };
-        document.getElementById('searchBtn').onclick = () => { filterState.search = document.getElementById('searchInput').value.toLowerCase(); renderActivity(); };
+        document.getElementById('searchBtn').onclick = () => { 
+            filterState.search = document.getElementById('searchInput').value.toLowerCase(); 
+            renderActivity(); 
+        };
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                filterState.search = document.getElementById('searchInput').value.toLowerCase();
+                renderActivity();
+            }
+        });
         document.getElementById('adminFilterUser').onchange = (e) => { adminFilterState.user = e.target.value; renderAdmin(); };
         document.getElementById('adminFilterCategory').onchange = (e) => { adminFilterState.category = e.target.value; renderAdmin(); };
         document.getElementById('adminSearchBtn').onclick = () => { adminFilterState.search = document.getElementById('adminSearchInput').value.toLowerCase(); renderAdmin(); };
