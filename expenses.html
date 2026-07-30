@@ -128,7 +128,7 @@
         .quick-btn .label.income { color: var(--success); }
         .quick-btn .label.transfer { color: var(--accent); }
 
-        /* ===== TRANSACTIONS LIST WITH DATE GROUPING ===== */
+        /* ===== TRANSACTIONS LIST ===== */
         .transaction-list { display: flex; flex-direction: column; gap: 4px; max-height: 520px; overflow-y: auto; padding-bottom: 8px; }
         
         .date-group { margin-bottom: 12px; }
@@ -194,6 +194,9 @@
             font-weight: 800;
             line-height: 1.2;
             transition: 0.2s;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .date-box .day { font-size: 16px; font-weight: 900; }
         .date-box .month { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; opacity: 0.8; }
@@ -212,7 +215,7 @@
         .transaction-amount.transfer { color: var(--accent); }
 
         .transaction-actions { display: flex; gap: 2px; margin-left: 6px; }
-        .transaction-actions button { background: none; border: none; font-size: 14px; cursor: pointer; padding: 4px; transition: 0.2s; border-radius: 6px; color: var(--text-secondary); }
+        .transaction-actions button { background: none; border: none; font-size: 14px; cursor: pointer; padding: 4px; transition: 0.2s; border-radius: 6px; color: var(--text-secondary); -webkit-tap-highlight-color: transparent; }
         .transaction-actions .edit-btn:hover { background: rgba(108, 92, 231, 0.1); color: var(--primary); }
         .transaction-actions .delete-btn:hover { background: rgba(255, 107, 107, 0.1); color: var(--error); }
         .transaction-actions .delete-btn.disabled { opacity: 0.2; cursor: not-allowed; }
@@ -227,21 +230,23 @@
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; }
         .filter-select { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 10px 16px; color: var(--text-primary); flex: 1; min-width: 80px; cursor: pointer; outline: none; font-size: 13px; font-weight: 500; }
         .filter-select:focus { border-color: var(--primary); }
-        .search-bar { display: flex; gap: 8px; flex: 2; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 6px 12px; }
-        .search-bar input { flex: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 13px; min-width: 80px; }
-        .search-bar button { background: var(--primary-gradient); border: none; padding: 4px 16px; border-radius: 30px; cursor: pointer; color: white; font-weight: 600; font-size: 12px; transition: 0.2s; }
-        .search-bar button:hover { opacity: 0.9; transform: scale(0.98); }
+        
+        /* ===== SIMPLE SEARCH BAR ===== */
+        .search-bar { display: flex; gap: 8px; flex: 2; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 40px; padding: 6px 12px; align-items: center; }
+        .search-bar input { flex: 1; background: transparent; border: none; color: var(--text-primary); outline: none; font-size: 13px; min-width: 60px; }
+        .search-bar .clear-search { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 16px; padding: 4px 8px; display: none; -webkit-tap-highlight-color: transparent; }
+        .search-bar .clear-search.visible { display: block; }
+        .search-bar .search-icon { color: var(--text-secondary); font-size: 14px; }
 
         /* ===== VIEW TOGGLES ===== */
         .view-toggles { display: flex; gap: 6px; margin-bottom: 16px; background: var(--bg-card); padding: 4px; border-radius: 60px; border: 1px solid var(--border-color); }
-        .view-toggle { padding: 6px 16px; border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 12px; color: var(--text-secondary); transition: 0.2s; border: none; background: transparent; }
+        .view-toggle { padding: 6px 16px; border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 12px; color: var(--text-secondary); transition: 0.2s; border: none; background: transparent; -webkit-tap-highlight-color: transparent; }
         .view-toggle.active { background: var(--primary-gradient); color: white; box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2); }
-        .view-toggle:hover { color: var(--primary); }
-        .view-toggle.active:hover { color: white; }
+        .view-toggle:active { transform: scale(0.95); }
 
         /* ===== TABS ===== */
         .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg-card); padding: 4px; border-radius: 60px; border: 1px solid var(--border-color); }
-        .tab { flex: 1; min-width: max-content; text-align: center; padding: 10px 16px; border-radius: 50px; cursor: pointer; font-weight: 700; color: var(--text-secondary); font-size: 13px; transition: 0.2s; }
+        .tab { flex: 1; min-width: max-content; text-align: center; padding: 10px 16px; border-radius: 50px; cursor: pointer; font-weight: 700; color: var(--text-secondary); font-size: 13px; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
         .tab.active { background: var(--primary-gradient); color: white; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3); }
 
         /* ===== ADMIN / STATS ===== */
@@ -254,11 +259,74 @@
         .stat-value.net { color: var(--primary); }
 
         /* ===== SETTINGS PANELS ===== */
-        .settings-panel { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow); }
-        .settings-panel h4 { font-size: 16px; font-weight: 800; margin-bottom: 14px; }
-        .category-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .category-tag { background: var(--input-bg); padding: 6px 14px; border-radius: 40px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; border: 1px solid var(--input-border); }
-        .category-tag button { background: none; border: none; color: var(--error); cursor: pointer; font-size: 14px; font-weight: 700; }
+        .settings-panel {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .settings-panel .panel-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+        .settings-panel .panel-title .badge-count {
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--input-bg);
+            padding: 2px 10px;
+            border-radius: 20px;
+            color: var(--text-secondary);
+        }
+        .settings-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+        .settings-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .settings-row .input-field {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 120px;
+        }
+        .settings-row .primary-btn, .settings-row .secondary-btn {
+            flex: 0 0 auto;
+            padding: 12px 20px;
+            border-radius: 28px;
+            font-size: 13px;
+        }
+
+        .category-tag {
+            background: var(--input-bg);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--input-border);
+            margin: 4px;
+        }
+        .category-tag .remove-cat {
+            background: none;
+            border: none;
+            color: var(--error);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 2px;
+        }
 
         .toggle-switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -267,8 +335,23 @@
         input:checked + .toggle-slider { background-color: var(--primary); }
         input:checked + .toggle-slider:before { transform: translateX(22px); }
 
-        .input-field, .select-field, .date-field { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 28px; padding: 14px 18px; width: 100%; margin-bottom: 14px; color: var(--text-primary); font-size: 15px; outline: none; transition: 0.2s; }
-        .input-field:focus, .select-field:focus, .date-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1); }
+        .input-field, .select-field, .date-field {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 28px;
+            padding: 14px 18px;
+            width: 100%;
+            margin-bottom: 14px;
+            color: var(--text-primary);
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .input-field:focus, .select-field:focus, .date-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
         .photo-preview { background: var(--input-bg); border-radius: 28px; padding: 12px; text-align: center; margin: 12px 0; border: 1px dashed var(--input-border); cursor: pointer; transition: 0.2s; }
         .photo-preview:hover { border-color: var(--primary); }
         .flex-btns { display: flex; gap: 12px; margin-top: 16px; }
@@ -277,8 +360,9 @@
         .secondary-btn { background: transparent; border: 1.5px solid var(--border-color); padding: 14px; border-radius: 60px; font-weight: 600; flex: 1; cursor: pointer; color: var(--text-primary); transition: 0.2s; }
         .secondary-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-        .voice-icon { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 60px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .voice-icon { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 60px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
         .voice-icon:hover { border-color: var(--primary); color: var(--primary); }
+        .voice-icon:active { transform: scale(0.97); }
 
         /* ===== MODALS ===== */
         .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -293,7 +377,7 @@
         .transfer-modal-row select, .transfer-modal-row input { width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 28px; padding: 14px 18px; color: var(--text-primary); font-size: 15px; outline: none; transition: 0.2s; }
         .transfer-modal-row select:focus, .transfer-modal-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(253, 203, 110, 0.15); }
         .transfer-modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
-        .transfer-modal-buttons button { flex: 1; padding: 14px; border-radius: 60px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .transfer-modal-buttons button { flex: 1; padding: 14px; border-radius: 60px; font-weight: 700; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
         .transfer-submit { background: var(--accent); border: none; color: #1A1D26; }
         .transfer-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3); }
         .transfer-cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
@@ -302,13 +386,13 @@
         /* ===== AUTOCOMPLETE ===== */
         .autocomplete-container { position: relative; width: 100%; }
         .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-height: 160px; overflow-y: auto; z-index: 100; margin-top: 4px; box-shadow: var(--shadow-hover); }
-        .autocomplete-item { padding: 12px 18px; cursor: pointer; transition: 0.1s; color: var(--text-primary); font-size: 14px; font-weight: 500; }
-        .autocomplete-item:hover { background: var(--input-bg); }
+        .autocomplete-item { padding: 12px 18px; cursor: pointer; transition: 0.1s; color: var(--text-primary); font-size: 14px; font-weight: 500; -webkit-tap-highlight-color: transparent; }
+        .autocomplete-item:active { background: var(--primary); color: white; }
         .autocomplete-item.selected { background: var(--primary); color: white; }
 
         /* ===== VOICE CONFIRM ===== */
         .voice-confirm-modal { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 16px 24px; border-radius: 60px; z-index: 4000; border: 2px solid var(--primary); animation: slideUp 0.3s ease; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); }
-        .voice-confirm-modal button { background: var(--primary-gradient); border: none; padding: 8px 20px; border-radius: 40px; color: white; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .voice-confirm-modal button { background: var(--primary-gradient); border: none; padding: 8px 20px; border-radius: 40px; color: white; cursor: pointer; font-weight: 600; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
         .voice-confirm-modal .cancel { background: var(--input-bg); color: var(--text-secondary); border: 1px solid var(--border-color); }
         @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
@@ -317,21 +401,23 @@
         @keyframes toastFade { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
         /* ===== FLOATING MIC ===== */
-        .floating-mic { position: fixed; bottom: 30px; right: 20px; background: var(--primary-gradient); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); cursor: pointer; z-index: 200; font-size: 24px; border: none; color: white; transition: 0.3s; }
-        .floating-mic:hover { transform: scale(1.08); box-shadow: 0 8px 35px rgba(108, 92, 231, 0.5); }
+        .floating-mic { position: fixed; bottom: 30px; right: 20px; background: var(--primary-gradient); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4); cursor: pointer; z-index: 200; font-size: 24px; border: none; color: white; transition: 0.3s; -webkit-tap-highlight-color: transparent; }
+        .floating-mic:active { transform: scale(0.92); }
         .floating-mic.listening { background: var(--error); animation: pulseGlow 1.2s infinite; }
         @keyframes pulseGlow { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
         /* ===== SHORTCUTS ===== */
         .shortcuts-container { position: fixed; bottom: 100px; left: 20px; z-index: 150; }
-        .shortcuts-toggle { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; box-shadow: var(--shadow); transition: 0.2s; color: var(--text-secondary); }
-        .shortcuts-toggle:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.05); }
+        .shortcuts-toggle { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; box-shadow: var(--shadow); transition: 0.2s; color: var(--text-secondary); -webkit-tap-highlight-color: transparent; }
+        .shortcuts-toggle:active { transform: scale(0.92); }
         .shortcuts-content { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px 18px; margin-bottom: 8px; box-shadow: var(--shadow-hover); display: none; min-width: 200px; }
         .shortcuts-content.show { display: block; animation: slideUp 0.2s ease; }
         .shortcuts-content .shortcut-item { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: var(--text-secondary); }
         .shortcuts-content .shortcut-key { color: var(--primary); font-weight: 700; font-family: monospace; }
 
         .error-msg { color: var(--error); font-size: 13px; margin-top: 8px; }
+
+        .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
 
         @media (max-width: 480px) {
             .balance-amount { font-size: 28px; }
@@ -344,6 +430,10 @@
             .date-box .day { font-size: 14px; }
             .date-box .month { font-size: 7px; }
             .view-toggle { font-size: 11px; padding: 4px 12px; }
+            .search-bar input { font-size: 12px; }
+            .modal-container { padding: 20px; }
+            .settings-row { flex-direction: column; }
+            .settings-row .primary-btn, .settings-row .secondary-btn { width: 100%; }
         }
     </style>
 </head>
@@ -464,8 +554,9 @@
                 </select>
             </div>
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Search...">
-                <button id="searchBtn">Search</button>
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search...">
+                <button class="clear-search" id="clearSearchBtn">✕</button>
             </div>
         </div>
 
@@ -503,12 +594,19 @@
             <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value net" id="totalUsers">0</div></div>
         </div>
 
+        <!-- View Toggles for Admin -->
+        <div class="view-toggles">
+            <button class="view-toggle active" data-view="date-admin">📅 By Date</button>
+            <button class="view-toggle" data-view="category-admin">📂 By Category</button>
+        </div>
+
         <div class="filter-bar">
             <select id="adminFilterUser" class="filter-select"><option value="all">All Users</option></select>
             <select id="adminFilterCategory" class="filter-select"><option value="all">All Categories</option></select>
-            <div class="search-bar" style="display:flex; gap:8px; flex:2; background:var(--input-bg); border:1px solid var(--input-border); border-radius:40px; padding:6px 12px;">
-                <input type="text" id="adminSearchInput" placeholder="🔍 Search...">
-                <button id="adminSearchBtn" style="background:var(--primary-gradient); border:none; padding:4px 16px; border-radius:30px; cursor:pointer; color:white; font-weight:600; font-size:12px;">Search</button>
+            <div class="search-bar" style="display:flex; gap:8px; flex:2; background:var(--input-bg); border:1px solid var(--input-border); border-radius:40px; padding:6px 12px; align-items:center;">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="adminSearchInput" placeholder="Search...">
+                <button class="clear-search" id="adminClearSearchBtn">✕</button>
             </div>
         </div>
 
@@ -519,10 +617,12 @@
         <div id="adminExpensesList" class="transaction-list"><div style="text-align:center; padding: 32px; color: var(--text-secondary);">Loading...</div></div>
     </div>
 
-    <!-- Settings Tab -->
+    <!-- Settings Tab - Simple Categories -->
     <div id="settingsTab" style="display: none;">
+        
+        <!-- Keyboard Shortcuts -->
         <div class="settings-panel">
-            <h4>⌨️ Keyboard Shortcuts</h4>
+            <div class="panel-title">⌨️ Keyboard Shortcuts</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <span style="font-size:13px; color:var(--text-secondary);">Enable Global Shortcuts</span>
                 <label class="toggle-switch">
@@ -539,46 +639,59 @@
             </div>
         </div>
 
+        <!-- Expense Categories - Simple List -->
         <div class="settings-panel">
-            <h4>📂 Expense Categories</h4>
-            <div id="expenseCatList" class="category-list"></div>
-            <div style="display:flex; gap:10px; margin-top:14px;">
-                <input type="text" id="newExpenseCat" placeholder="New expense category" class="input-field" style="margin-bottom:0; flex:1;">
-                <button id="addExpenseCatBtn" class="primary-btn" style="flex:0 0 100px; padding: 12px; border-radius:28px;">Add</button>
+            <div class="panel-title">📂 Expense Categories <span class="badge-count" id="expenseCatCount">0</span></div>
+            <div id="expenseCatList" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
+            <div class="settings-row">
+                <input type="text" id="newExpenseCat" placeholder="New expense category" class="input-field">
+                <button id="addExpenseCatBtn" class="primary-btn" style="flex:0 0 auto; padding:12px 20px;">Add</button>
             </div>
-            <div style="display:flex; gap:10px; margin-top:12px;">
+            <div class="settings-divider"></div>
+            <div class="settings-row">
                 <select id="defaultExpenseCat" class="filter-select" style="flex:1;"><option value="">Default category</option></select>
-                <button id="setDefaultCatBtn" class="secondary-btn" style="flex:0 0 140px; padding:12px; font-size:12px; border-radius:28px;">Set Default</button>
+                <button id="setDefaultCatBtn" class="secondary-btn" style="flex:0 0 auto; padding:12px 20px; font-size:12px;">Set Default</button>
             </div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">Current default: <strong id="currentDefaultDisplay">Other</strong></div>
         </div>
 
+        <!-- Income Categories - Simple List -->
         <div class="settings-panel">
-            <h4>💰 Income Categories</h4>
-            <div id="incomeCatList" class="category-list"></div>
-            <div style="display:flex; gap:10px; margin-top:14px;">
-                <input type="text" id="newIncomeCat" placeholder="New income category" class="input-field" style="margin-bottom:0; flex:1;">
-                <button id="addIncomeCatBtn" class="primary-btn" style="flex:0 0 100px; padding:12px; border-radius:28px;">Add</button>
+            <div class="panel-title">💰 Income Categories <span class="badge-count" id="incomeCatCount">0</span></div>
+            <div id="incomeCatList" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
+            <div class="settings-row">
+                <input type="text" id="newIncomeCat" placeholder="New income category" class="input-field">
+                <button id="addIncomeCatBtn" class="primary-btn" style="flex:0 0 auto; padding:12px 20px;">Add</button>
             </div>
         </div>
 
-        <div class="settings-panel admin-section">
-            <h4>👑 User Management</h4>
-            <div><input type="text" id="newUserName" placeholder="New user name" class="input-field"></div>
-            <div><input type="email" id="newUserEmail" placeholder="Email" class="input-field"></div>
-            <div><input type="password" id="newUserPass" placeholder="Temporary Password" class="input-field"></div>
-            <button id="addUserAdminBtn" class="secondary-btn" style="width:100%; margin-bottom: 16px;">➕ Add User</button>
+        <!-- User Management -->
+        <div class="settings-panel">
+            <div class="panel-title">👑 User Management</div>
+            <div class="settings-row">
+                <input type="text" id="newUserName" placeholder="Full Name" class="input-field">
+                <input type="email" id="newUserEmail" placeholder="Email" class="input-field">
+                <input type="password" id="newUserPass" placeholder="Temp Password" class="input-field">
+                <button id="addUserAdminBtn" class="secondary-btn" style="flex:0 0 auto; padding:12px 20px;">➕ Add</button>
+            </div>
             
-            <h4 style="margin-top:16px;">Send Money Permissions</h4>
+            <div class="settings-divider"></div>
+            
+            <div class="panel-title" style="font-size:14px;">📨 Send Money Permissions</div>
             <div id="sendPermissionList"></div>
             
-            <h4 style="margin-top:16px;">User Balances</h4>
+            <div class="settings-divider"></div>
+            
+            <div class="panel-title" style="font-size:14px;">💰 User Balances</div>
             <div id="adminUserList"></div>
             
-            <div style="margin-top:16px;">
-                <h4>Add Funds</h4>
-                <select id="fundUserId" class="select-field"></select>
-                <input type="number" id="fundAmount" placeholder="Amount (₹)" class="input-field">
-                <button id="addFundsBtn" class="primary-btn" style="width:100%; background: var(--success);">Add Funds</button>
+            <div class="settings-divider"></div>
+            
+            <div class="panel-title" style="font-size:14px;">💵 Add Funds to User</div>
+            <div class="settings-row">
+                <select id="fundUserId" class="filter-select" style="flex:1;"></select>
+                <input type="number" id="fundAmount" placeholder="Amount (₹)" class="input-field" style="flex:0 0 120px;">
+                <button id="addFundsBtn" class="primary-btn" style="flex:0 0 auto; padding:12px 20px; background: var(--success);">Add</button>
             </div>
         </div>
     </div>
@@ -640,11 +753,15 @@
     let userProfile = null;
     let expenses = [];
     let allUsers = [];
-    let expenseCategories = ["Cutting", "Punching", "Lamination", "Tea", "Coffee", "Transport", "Stationery", "Food", "Other"];
+    
+    // Simple flat categories
+    let expenseCategories = ["Cutting", "Punching", "Lamination", "Printing", "Binding", "Tea", "Coffee", "Breakfast", "Lunch", "Snacks", "Dinner", "Cab", "Auto", "Bus", "Train", "Petrol", "Stationery", "Other"];
     let incomeCategories = ["Salary", "Petty Cash", "Client Payment", "Reimbursement", "Advance", "Other"];
     let defaultExpenseCategory = "Other";
+    
     let currentTab = "activity";
     let currentView = "date";
+    let adminView = "date-admin";
     let filterState = { type: "month", category: "all", search: "" };
     let adminFilterState = { user: "all", category: "all", search: "" };
     let chartInstance = null;
@@ -727,6 +844,34 @@
     }
 
     // ===================================================================
+    // FORMAT AMOUNT WITH COMMAS (Indian Format)
+    // ===================================================================
+    function formatIndianAmount(amount) {
+        if (amount === undefined || amount === null || isNaN(amount)) return '0';
+        const num = Number(amount);
+        if (num === 0) return '0';
+        const negative = num < 0;
+        const absNum = Math.abs(num);
+        const parts = absNum.toFixed(2).split('.');
+        const intPart = parts[0];
+        const decPart = parts[1] || '00';
+        
+        const lastThree = intPart.substring(intPart.length - 3);
+        const otherNumbers = intPart.substring(0, intPart.length - 3);
+        let formatted = '';
+        if (otherNumbers !== '') {
+            formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree;
+        } else {
+            formatted = lastThree;
+        }
+        return (negative ? '-' : '') + formatted + '.' + decPart;
+    }
+
+    function parseAmountFromFormatted(str) {
+        return parseFloat(str.replace(/,/g, ''));
+    }
+
+    // ===================================================================
     // BALANCE CALCULATION
     // ===================================================================
     function calculateBalance(userId) {
@@ -749,14 +894,14 @@
     // ===================================================================
     // TRANSACTION FUNCTIONS
     // ===================================================================
-    async function addTransaction(type, category, amount, description, mentionedUserId = null, photoFile = null, customDate = null, isVoice = false) {
+    async function addTransaction(type, category, amount, description, mentionedUserId = null, photoFile = null, customDate = null, isVoice = false, voiceRawText = null) {
         if (isAddingTransaction) return false;
         if (amount <= 0) { showToast("Invalid amount"); return false; }
         isAddingTransaction = true;
 
-        const allValidCats = [...expenseCategories, ...incomeCategories];
         let finalCategory = category;
-        if (!allValidCats.includes(category)) {
+        const allCategories = [...expenseCategories, ...incomeCategories];
+        if (!allCategories.includes(category)) {
             finalCategory = defaultExpenseCategory;
             showToast(`Using default category: "${defaultExpenseCategory}"`);
         }
@@ -766,12 +911,23 @@
 
         const entryDate = customDate || new Date().toISOString().split('T')[0];
 
+        let finalDescription = description || "";
+        if (isVoice && voiceRawText) {
+            let cleaned = voiceRawText;
+            const catRegex = new RegExp(finalCategory, 'gi');
+            cleaned = cleaned.replace(catRegex, '');
+            cleaned = cleaned.replace(/\d+(?:\.\d+)?\s*(?:rupees|rs|₹)/gi, '');
+            cleaned = cleaned.replace(/\d+(?:\.\d+)?/g, '');
+            cleaned = cleaned.replace(/\s+/g, ' ').trim();
+            finalDescription = cleaned || description || "voice entry";
+        }
+
         const newEntry = {
             userId: currentUser.uid,
             type: type,
             category: finalCategory,
             amount: amount,
-            description: description || "",
+            description: finalDescription,
             date: entryDate,
             timestamp: customDate ? new Date(customDate).getTime() : Date.now(),
             photoURL: photoURL,
@@ -785,7 +941,7 @@
             const savedEntry = { id: docRef.id, ...newEntry };
             expenses.push(savedEntry);
             renderAll();
-            showToast(`Added: ₹${amount}`);
+            showToast(`Added: ₹${formatIndianAmount(amount)}`);
             return true;
         } catch (e) {
             console.error("Add transaction error:", e);
@@ -831,7 +987,7 @@
                 expenses.push({ id: docRef.id, ...transaction });
                 await loadUserData();
                 renderAll();
-                showToast(`✅ ₹${amount} sent to ${receiver.name}`);
+                showToast(`✅ ₹${formatIndianAmount(amount)} sent to ${receiver.name}`);
                 return true;
             } catch (e) {
                 console.error("Transfer failed:", e);
@@ -841,7 +997,7 @@
         };
 
         if (senderBalance < amount) {
-            requestConfirmation("Insufficient Funds", `This transfer of ₹${amount} will make ${sender.name}'s balance negative. Proceed?`, performTransfer);
+            requestConfirmation("Insufficient Funds", `This transfer of ₹${formatIndianAmount(amount)} will make ${sender.name}'s balance negative. Proceed?`, performTransfer);
             return false;
         }
         await performTransfer();
@@ -1017,7 +1173,7 @@
     }
 
     // ===================================================================
-    // RENDER FUNCTIONS WITH DATE GROUPING & CATEGORY VIEW
+    // RENDER FUNCTIONS
     // ===================================================================
     function getTransactionDisplay(exp, isAdminView = false) {
         const isExpense = exp.type === "EXPENSE";
@@ -1062,7 +1218,6 @@
         const dateObj = new Date(exp.date);
         const day = dateObj.getDate().toString().padStart(2, '0');
         const month = dateObj.toLocaleString('default', { month: 'short' });
-        const year = dateObj.getFullYear();
         const fullDate = exp.date;
         const category = exp.category;
         const type = isTransfer ? 'transfer' : (isExpense ? 'expense' : 'income');
@@ -1072,7 +1227,7 @@
 
     function renderActivity() {
         const balance = calculateBalance(currentUser.uid);
-        document.getElementById('balanceAmount').innerText = `₹${balance.toFixed(2)}`;
+        document.getElementById('balanceAmount').innerText = `₹${formatIndianAmount(balance)}`;
 
         let totalInc = 0, totalExp = 0;
         expenses.forEach(e => {
@@ -1081,8 +1236,8 @@
                 if (e.type === "EXPENSE") totalExp += e.amount;
             }
         });
-        document.getElementById('totalIncomeUser').innerText = `₹${totalInc.toFixed(2)}`;
-        document.getElementById('totalExpenseUser').innerText = `₹${totalExp.toFixed(2)}`;
+        document.getElementById('totalIncomeUser').innerText = `₹${formatIndianAmount(totalInc)}`;
+        document.getElementById('totalExpenseUser').innerText = `₹${formatIndianAmount(totalExp)}`;
 
         const sendBtn = document.getElementById('sendMoneySmallBtn');
         if (sendBtn) {
@@ -1099,9 +1254,12 @@
         const range = getDateRange(filterState.type);
         if (range) filtered = filtered.filter(e => e.timestamp >= range.start && e.timestamp < range.end);
         if (filterState.category !== 'all') filtered = filtered.filter(e => e.category === filterState.category);
+        
         if (filterState.search) {
             const q = filterState.search.toLowerCase();
-            filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q));
+            filtered = filtered.filter(e => {
+                return (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
+            });
         }
         filtered.sort((a, b) => b.timestamp - a.timestamp);
 
@@ -1112,7 +1270,6 @@
         }
 
         if (currentView === 'date') {
-            // Group by Date
             const dateGroups = {};
             filtered.forEach(exp => {
                 if (!dateGroups[exp.date]) dateGroups[exp.date] = [];
@@ -1139,7 +1296,7 @@
                 html += `<div class="date-group">
                     <div class="date-group-header">
                         <span class="day-name">${dateDisplay}</span>
-                        <span class="total-amount" style="color:${dayTotal < 0 ? 'var(--error)' : 'var(--success)'}">${dayTotal < 0 ? '' : '+'}₹${dayTotal.toFixed(2)}</span>
+                        <span class="total-amount" style="color:${dayTotal < 0 ? 'var(--error)' : 'var(--success)'}">${dayTotal < 0 ? '' : '+'}₹${formatIndianAmount(dayTotal)}</span>
                     </div>`;
 
                 dateGroups[date].forEach(exp => {
@@ -1158,7 +1315,7 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
+                                <div class="transaction-amount ${iconClass}">${sign}₹${formatIndianAmount(exp.amount)}</div>
                                 <div class="transaction-actions">
                                     <button class="edit-btn" data-id="${exp.id}">✏️</button>
                                     ${deleteDisplay}
@@ -1174,7 +1331,6 @@
             container.innerHTML = html;
 
         } else {
-            // Group by Category
             const categoryGroups = {};
             filtered.forEach(exp => {
                 const type = exp.category === "Money Transfer" ? 'transfer' : (exp.type === "EXPENSE" ? 'expense' : 'income');
@@ -1192,7 +1348,6 @@
             }).forEach(key => {
                 const group = categoryGroups[key];
                 const typeClass = group.type === 'expense' ? 'expense-cat' : (group.type === 'income' ? 'income-cat' : 'transfer-cat');
-                const typeLabel = group.type === 'expense' ? '📤 Expense' : (group.type === 'income' ? '💰 Income' : '🔄 Transfer');
                 const typeIcon = group.type === 'expense' ? '📤' : (group.type === 'income' ? '💰' : '🔄');
                 
                 const catTotal = group.items.reduce((sum, exp) => {
@@ -1206,7 +1361,7 @@
                 html += `<div class="category-group">
                     <div class="category-group-header ${typeClass}">
                         <span>${typeIcon} ${group.category}</span>
-                        <span style="margin-left:auto; font-weight:600;">${catTotal < 0 ? '' : '+'}₹${catTotal.toFixed(2)}</span>
+                        <span style="margin-left:auto; font-weight:600;">${catTotal < 0 ? '' : '+'}₹${formatIndianAmount(catTotal)}</span>
                     </div>`;
 
                 group.items.forEach(exp => {
@@ -1225,7 +1380,7 @@
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
+                                <div class="transaction-amount ${iconClass}">${sign}₹${formatIndianAmount(exp.amount)}</div>
                                 <div class="transaction-actions">
                                     <button class="edit-btn" data-id="${exp.id}">✏️</button>
                                     ${deleteDisplay}
@@ -1257,9 +1412,12 @@
         let filtered = [...expenses];
         if (adminFilterState.user !== 'all') filtered = filtered.filter(e => e.userId === adminFilterState.user || e.mentionedUserId === adminFilterState.user);
         if (adminFilterState.category !== 'all') filtered = filtered.filter(e => e.category === adminFilterState.category);
+        
         if (adminFilterState.search) {
             const q = adminFilterState.search.toLowerCase();
-            filtered = filtered.filter(e => (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || getUserName(e.userId).toLowerCase().includes(q));
+            filtered = filtered.filter(e => {
+                return (e.description || '').toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || getUserName(e.userId).toLowerCase().includes(q);
+            });
         }
 
         const realExpenses = filtered.filter(e => e.type === "EXPENSE" && e.category !== "Money Transfer" && !e.mentionedUserId);
@@ -1268,9 +1426,9 @@
         const totalExp = realExpenses.reduce((s, e) => s + e.amount, 0);
         const totalInc = realIncomes.reduce((s, e) => s + e.amount, 0);
 
-        document.getElementById("totalExpenses").innerHTML = `₹${totalExp.toFixed(2)}`;
-        document.getElementById("totalIncome").innerHTML = `₹${totalInc.toFixed(2)}`;
-        document.getElementById("netFlow").innerHTML = `₹${(totalInc - totalExp).toFixed(2)}`;
+        document.getElementById("totalExpenses").innerHTML = `₹${formatIndianAmount(totalExp)}`;
+        document.getElementById("totalIncome").innerHTML = `₹${formatIndianAmount(totalInc)}`;
+        document.getElementById("netFlow").innerHTML = `₹${formatIndianAmount(totalInc - totalExp)}`;
         document.getElementById("totalUsers").innerHTML = allUsers.length;
 
         const container = document.getElementById('adminExpensesList');
@@ -1280,67 +1438,203 @@
         }
 
         filtered.sort((a, b) => b.timestamp - a.timestamp);
-        container.innerHTML = filtered.map(exp => {
-            const isExpense = exp.type === "EXPENSE";
-            const isTransfer = exp.category === "Money Transfer";
-            const isIncome = exp.type === "INCOME";
 
-            let sign = "+", color = "var(--success)", icon = "💰", iconClass = "income", prefix = "", tags = "", dateBoxClass = "income";
-            const dateObj = new Date(exp.date);
-            const day = dateObj.getDate().toString().padStart(2, '0');
-            const month = dateObj.toLocaleString('default', { month: 'short' });
+        if (adminView === 'date-admin') {
+            const dateGroups = {};
+            filtered.forEach(exp => {
+                if (!dateGroups[exp.date]) dateGroups[exp.date] = [];
+                dateGroups[exp.date].push(exp);
+            });
 
-            if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
-            if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
+            let html = '';
+            Object.keys(dateGroups).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+                const dateObj = new Date(date);
+                const dayName = dateObj.toLocaleString('default', { weekday: 'long' });
+                const day = dateObj.getDate();
+                const month = dateObj.toLocaleString('default', { month: 'long' });
+                const year = dateObj.getFullYear();
+                const dateDisplay = `${dayName}, ${day} ${month} ${year}`;
+                
+                const dayTotal = dateGroups[date].reduce((sum, exp) => {
+                    const amt = Number(exp.amount) || 0;
+                    if (exp.type === "EXPENSE") return sum - amt;
+                    if (exp.type === "INCOME") return sum + amt;
+                    return sum;
+                }, 0);
 
-            if (isTransfer) {
-                if (isExpense) {
-                    sign = "-"; color = "var(--accent)"; prefix = "Sent"; icon = "📤"; iconClass = "transfer"; dateBoxClass = "transfer";
-                    tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
-                } else {
-                    sign = "+"; color = "var(--accent)"; prefix = "Received"; icon = "📥"; iconClass = "transfer"; dateBoxClass = "transfer";
-                    tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
-                }
-            } else if (isExpense) {
-                sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense"; dateBoxClass = "expense";
-            } else if (isIncome) {
-                sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income"; dateBoxClass = "income";
-            }
+                html += `<div class="date-group">
+                    <div class="date-group-header">
+                        <span class="day-name">${dateDisplay}</span>
+                        <span class="total-amount" style="color:${dayTotal < 0 ? 'var(--error)' : 'var(--success)'}">${dayTotal < 0 ? '' : '+'}₹${formatIndianAmount(dayTotal)}</span>
+                    </div>`;
 
-            let title = "";
-            if (exp.mentionedUserId && !isTransfer) {
-                title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
-            } else if (isTransfer) {
-                title = `${prefix} ${getUserName(exp.userId)}`;
-            } else {
-                title = `${prefix} ${exp.category}`;
-            }
+                dateGroups[date].forEach(exp => {
+                    const isExpense = exp.type === "EXPENSE";
+                    const isTransfer = exp.category === "Money Transfer";
+                    const isIncome = exp.type === "INCOME";
 
-            const userTag = `<span style="display:inline-block; background:var(--badge-bg); color:var(--primary); padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; margin-bottom:4px;">👤 ${getUserName(exp.userId)}</span>`;
+                    let sign = "+", color = "var(--success)", icon = "💰", iconClass = "income", prefix = "", tags = "", dateBoxClass = "income";
+                    const dateObj2 = new Date(exp.date);
+                    const day2 = dateObj2.getDate().toString().padStart(2, '0');
+                    const month2 = dateObj2.toLocaleString('default', { month: 'short' });
 
-            return `
-                <div class="transaction-item">
-                    <div class="transaction-left">
-                        <div class="date-box ${dateBoxClass}">
-                            <span class="day">${day}</span>
-                            <span class="month">${month}</span>
+                    if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
+                    if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
+
+                    if (isTransfer) {
+                        if (isExpense) {
+                            sign = "-"; color = "var(--accent)"; prefix = "Sent"; icon = "📤"; iconClass = "transfer"; dateBoxClass = "transfer";
+                            tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
+                        } else {
+                            sign = "+"; color = "var(--accent)"; prefix = "Received"; icon = "📥"; iconClass = "transfer"; dateBoxClass = "transfer";
+                            tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
+                        }
+                    } else if (isExpense) {
+                        sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense"; dateBoxClass = "expense";
+                    } else if (isIncome) {
+                        sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income"; dateBoxClass = "income";
+                    }
+
+                    let title = "";
+                    if (exp.mentionedUserId && !isTransfer) {
+                        title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+                    } else if (isTransfer) {
+                        title = `${prefix} ${getUserName(exp.userId)}`;
+                    } else {
+                        title = `${prefix} ${exp.category}`;
+                    }
+
+                    const userTag = `<span style="display:inline-block; background:var(--badge-bg); color:var(--primary); padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; margin-bottom:4px;">👤 ${getUserName(exp.userId)}</span>`;
+
+                    html += `
+                        <div class="transaction-item">
+                            <div class="transaction-left">
+                                <div class="date-box ${dateBoxClass}">
+                                    <span class="day">${day2}</span>
+                                    <span class="month">${month2}</span>
+                                </div>
+                                <div class="transaction-info">
+                                    ${userTag}
+                                    <div class="transaction-title">${title} ${tags}</div>
+                                    <div class="transaction-meta">📝 ${exp.description || "—"}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div class="transaction-amount ${iconClass}">${sign}₹${formatIndianAmount(exp.amount)}</div>
+                                <div class="transaction-actions">
+                                    <button class="edit-btn" data-id="${exp.id}">✏️</button>
+                                    <button class="delete-btn" data-id="${exp.id}">🗑️</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="transaction-info">
-                            ${userTag}
-                            <div class="transaction-title">${title} ${tags}</div>
-                            <div class="transaction-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+
+        } else {
+            const categoryGroups = {};
+            filtered.forEach(exp => {
+                const type = exp.category === "Money Transfer" ? 'transfer' : (exp.type === "EXPENSE" ? 'expense' : 'income');
+                const key = `${type}_${exp.category}`;
+                if (!categoryGroups[key]) categoryGroups[key] = { type, category: exp.category, items: [] };
+                categoryGroups[key].items.push(exp);
+            });
+
+            let html = '';
+            const order = ['expense', 'income', 'transfer'];
+            Object.keys(categoryGroups).sort((a, b) => {
+                const typeA = categoryGroups[a].type;
+                const typeB = categoryGroups[b].type;
+                return order.indexOf(typeA) - order.indexOf(typeB) || categoryGroups[a].category.localeCompare(categoryGroups[b].category);
+            }).forEach(key => {
+                const group = categoryGroups[key];
+                const typeClass = group.type === 'expense' ? 'expense-cat' : (group.type === 'income' ? 'income-cat' : 'transfer-cat');
+                const typeIcon = group.type === 'expense' ? '📤' : (group.type === 'income' ? '💰' : '🔄');
+                
+                const catTotal = group.items.reduce((sum, exp) => {
+                    const amt = Number(exp.amount) || 0;
+                    if (exp.type === "EXPENSE") return sum - amt;
+                    if (exp.type === "INCOME") return sum + amt;
+                    return sum;
+                }, 0);
+
+                html += `<div class="category-group">
+                    <div class="category-group-header ${typeClass}">
+                        <span>${typeIcon} ${group.category}</span>
+                        <span style="margin-left:auto; font-weight:600;">${catTotal < 0 ? '' : '+'}₹${formatIndianAmount(catTotal)}</span>
+                    </div>`;
+
+                group.items.forEach(exp => {
+                    const isExpense = exp.type === "EXPENSE";
+                    const isTransfer = exp.category === "Money Transfer";
+                    const isIncome = exp.type === "INCOME";
+
+                    let sign = "+", color = "var(--success)", icon = "💰", iconClass = "income", prefix = "", tags = "", dateBoxClass = "income";
+                    const dateObj2 = new Date(exp.date);
+                    const day2 = dateObj2.getDate().toString().padStart(2, '0');
+                    const month2 = dateObj2.toLocaleString('default', { month: 'short' });
+
+                    if (exp.isVoice) tags += `<span class="badge badge-voice">🎤 Voice</span> `;
+                    if (exp.category === "Admin Fund") tags += `<span class="badge badge-admin">👑 Fund</span> `;
+
+                    if (isTransfer) {
+                        if (isExpense) {
+                            sign = "-"; color = "var(--accent)"; prefix = "Sent"; icon = "📤"; iconClass = "transfer"; dateBoxClass = "transfer";
+                            tags += `<span class="badge badge-transfer">↗️ Transfer</span>`;
+                        } else {
+                            sign = "+"; color = "var(--accent)"; prefix = "Received"; icon = "📥"; iconClass = "transfer"; dateBoxClass = "transfer";
+                            tags += `<span class="badge badge-transfer">↙️ Transfer</span>`;
+                        }
+                    } else if (isExpense) {
+                        sign = "-"; color = "var(--error)"; prefix = "Paid"; icon = "📤"; iconClass = "expense"; dateBoxClass = "expense";
+                    } else if (isIncome) {
+                        sign = "+"; color = "var(--success)"; prefix = "Income"; icon = "💰"; iconClass = "income"; dateBoxClass = "income";
+                    }
+
+                    let title = "";
+                    if (exp.mentionedUserId && !isTransfer) {
+                        title = `${getUserName(exp.userId)} → ${getUserName(exp.mentionedUserId)} for ${exp.category}`;
+                    } else if (isTransfer) {
+                        title = `${prefix} ${getUserName(exp.userId)}`;
+                    } else {
+                        title = `${prefix} ${exp.category}`;
+                    }
+
+                    const userTag = `<span style="display:inline-block; background:var(--badge-bg); color:var(--primary); padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; margin-bottom:4px;">👤 ${getUserName(exp.userId)}</span>`;
+
+                    html += `
+                        <div class="transaction-item">
+                            <div class="transaction-left">
+                                <div class="date-box ${dateBoxClass}">
+                                    <span class="day">${day2}</span>
+                                    <span class="month">${month2}</span>
+                                </div>
+                                <div class="transaction-info">
+                                    ${userTag}
+                                    <div class="transaction-title">${title} ${tags}</div>
+                                    <div class="transaction-meta">📅 ${exp.date} 📝 ${exp.description || "—"}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div class="transaction-amount ${iconClass}">${sign}₹${formatIndianAmount(exp.amount)}</div>
+                                <div class="transaction-actions">
+                                    <button class="edit-btn" data-id="${exp.id}">✏️</button>
+                                    <button class="delete-btn" data-id="${exp.id}">🗑️</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <div class="transaction-amount ${iconClass}">${sign}₹${exp.amount.toFixed(2)}</div>
-                        <div class="transaction-actions">
-                            <button class="edit-btn" data-id="${exp.id}">✏️</button>
-                            <button class="delete-btn" data-id="${exp.id}">🗑️</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
 
         document.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = () => deleteTransaction(btn.getAttribute('data-id')));
         document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -1355,26 +1649,31 @@
     function renderSettings() {
         if (!userProfile?.isAdmin) return;
 
-        document.getElementById('expenseCatList').innerHTML = expenseCategories.map(cat => `
-            <div class="category-tag">${cat} <button class="remove-expense" data-cat="${cat}">✕</button></div>
-        `).join('');
+        // Expense categories - simple list
+        const catContainer = document.getElementById('expenseCatList');
+        if (catContainer) {
+            document.getElementById('expenseCatCount').textContent = expenseCategories.length;
+            catContainer.innerHTML = expenseCategories.map(cat => `
+                <span class="category-tag">
+                    ${cat}
+                    <button class="remove-expense" data-cat="${cat}" style="background:none; border:none; color:var(--error); cursor:pointer; font-size:14px; padding:0 2px;">✕</button>
+                </span>
+            `).join('');
+        }
 
-        document.getElementById('incomeCatList').innerHTML = incomeCategories.map(cat => `
-            <div class="category-tag">${cat} <button class="remove-income" data-cat="${cat}">✕</button></div>
-        `).join('');
+        // Income categories - simple list
+        const incContainer = document.getElementById('incomeCatList');
+        if (incContainer) {
+            document.getElementById('incomeCatCount').textContent = incomeCategories.length;
+            incContainer.innerHTML = incomeCategories.map(cat => `
+                <span class="category-tag">
+                    ${cat}
+                    <button class="remove-income" data-cat="${cat}" style="background:none; border:none; color:var(--error); cursor:pointer; font-size:14px; padding:0 2px;">✕</button>
+                </span>
+            `).join('');
+        }
 
-        document.getElementById('adminUserList').innerHTML = allUsers.map(user => `
-            <div class="user-list-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-color);">
-                <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}<br><small style="font-size:10px; color:var(--text-secondary);">${user.email}</small></span>
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="color:${calculateBalance(user.id) < 0 ? 'var(--error)' : 'var(--success)'}; font-weight:700;">₹${calculateBalance(user.id).toFixed(2)}</span>
-                    ${!user.isAdmin && user.id !== currentUser.uid ? `<button class="delete-user" data-id="${user.id}" style="color:var(--error); background:none; border:none; cursor:pointer;">Delete</button>` : ''}
-                </div>
-            </div>
-        `).join('');
-
-        renderSendPermissions();
-
+        // Remove expense category
         document.querySelectorAll('.remove-expense').forEach(btn => {
             btn.onclick = async () => {
                 const cat = btn.getAttribute('data-cat');
@@ -1383,10 +1682,12 @@
                     if (defaultExpenseCategory === cat) defaultExpenseCategory = expenseCategories[0];
                     await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                     renderAll();
+                    showToast(`Removed "${cat}"`);
                 } else showToast("Need at least one category");
             };
         });
 
+        // Remove income category
         document.querySelectorAll('.remove-income').forEach(btn => {
             btn.onclick = async () => {
                 const cat = btn.getAttribute('data-cat');
@@ -1394,9 +1695,23 @@
                     incomeCategories = incomeCategories.filter(c => c !== cat);
                     await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                     renderAll();
+                    showToast(`Removed "${cat}"`);
                 } else showToast("Need at least one category");
             };
         });
+
+        // User list
+        document.getElementById('adminUserList').innerHTML = allUsers.map(user => `
+            <div class="user-list-item">
+                <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}<br><small style="font-size:10px; color:var(--text-secondary);">${user.email}</small></span>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="color:${calculateBalance(user.id) < 0 ? 'var(--error)' : 'var(--success)'}; font-weight:700;">₹${formatIndianAmount(calculateBalance(user.id))}</span>
+                    ${!user.isAdmin && user.id !== currentUser.uid ? `<button class="delete-user" data-id="${user.id}" style="color:var(--error); background:none; border:none; cursor:pointer;">Delete</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        renderSendPermissions();
 
         document.querySelectorAll('.delete-user').forEach(btn => {
             btn.onclick = async () => {
@@ -1416,6 +1731,9 @@
                 }
             };
         });
+
+        // Default category display
+        document.getElementById('currentDefaultDisplay').textContent = defaultExpenseCategory;
     }
 
     function renderSendPermissions() {
@@ -1483,13 +1801,19 @@
     }
 
     function updateDropdowns() {
-        const allCats = [...new Set([...expenseCategories, ...incomeCategories])];
+        const allCats = [...expenseCategories, ...incomeCategories];
+        
         ['filterCategory', 'adminFilterCategory'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             const current = el.value;
             el.innerHTML = '<option value="all">All Categories</option>';
-            allCats.forEach(cat => { const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; el.appendChild(opt); });
+            allCats.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                el.appendChild(opt);
+            });
             if (allCats.includes(current)) el.value = current;
         });
 
@@ -1504,13 +1828,19 @@
         const fundSelect = document.getElementById('fundUserId');
         if (fundSelect && userProfile?.isAdmin) {
             fundSelect.innerHTML = '';
-            allUsers.forEach(u => { const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.name} (₹${calculateBalance(u.id).toFixed(2)})`; fundSelect.appendChild(opt); });
+            allUsers.forEach(u => { const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.name} (₹${formatIndianAmount(calculateBalance(u.id))})`; fundSelect.appendChild(opt); });
         }
 
         const defaultCat = document.getElementById('defaultExpenseCat');
         if (defaultCat && userProfile?.isAdmin) {
             defaultCat.innerHTML = '<option value="">Default category</option>';
-            expenseCategories.forEach(cat => { const opt = document.createElement('option'); opt.value = cat; opt.textContent = cat; if (cat === defaultExpenseCategory) opt.selected = true; defaultCat.appendChild(opt); });
+            expenseCategories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                if (cat === defaultExpenseCategory) opt.selected = true;
+                defaultCat.appendChild(opt);
+            });
         }
     }
 
@@ -1556,14 +1886,21 @@
                 const div = document.createElement('div');
                 div.className = 'autocomplete-item' + (i === selectedIndex ? ' selected' : '');
                 div.textContent = item;
-                div.onmousedown = (e) => {
+                div.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     input.value = item;
                     list.style.display = 'none';
                     selectedIndex = -1;
                     const next = document.getElementById('transAmt') || document.getElementById('editAmt');
                     if (next) setTimeout(() => next.focus(), 50);
-                };
+                });
+                div.addEventListener('click', (e) => {
+                    input.value = item;
+                    list.style.display = 'none';
+                    selectedIndex = -1;
+                    const next = document.getElementById('transAmt') || document.getElementById('editAmt');
+                    if (next) setTimeout(() => next.focus(), 50);
+                });
                 div.onmouseenter = () => {
                     selectedIndex = i;
                     render(filtered);
@@ -1576,19 +1913,15 @@
             }
         }
 
-        input.addEventListener('focus', () => {
+        const showSuggestions = () => {
             const val = input.value.trim().toLowerCase();
             const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
             selectedIndex = -1;
             render(filtered);
-        });
+        };
 
-        input.addEventListener('input', () => {
-            selectedIndex = -1;
-            const val = input.value.trim().toLowerCase();
-            const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
-            render(filtered);
-        });
+        input.addEventListener('focus', showSuggestions);
+        input.addEventListener('input', showSuggestions);
 
         input.addEventListener('keydown', (e) => {
             const val = input.value.trim().toLowerCase();
@@ -1643,7 +1976,7 @@
             setTimeout(() => { 
                 list.style.display = 'none'; 
                 selectedIndex = -1;
-            }, 150); 
+            }, 200); 
         });
     }
 
@@ -1680,7 +2013,7 @@
                     <input type="text" id="transCat" class="input-field modal-focus-field" placeholder="Category" autocomplete="off" tabindex="2">
                     <div id="transCatList" class="autocomplete-list" style="display:none;"></div>
                 </div>
-                <input type="number" id="transAmt" placeholder="Amount (₹)" class="input-field modal-focus-field" tabindex="3">
+                <input type="text" id="transAmt" class="input-field modal-focus-field" placeholder="Amount (₹)" tabindex="3" inputmode="numeric">
                 <input type="text" id="transDesc" placeholder="Description" class="input-field modal-focus-field" tabindex="4">
                 ${type === 'EXPENSE' ? `
                 <select id="transMention" class="select-field modal-focus-field" tabindex="5">
@@ -1698,6 +2031,36 @@
             </div>
         `;
         document.body.appendChild(modal);
+
+        const amountInput = modal.querySelector('#transAmt');
+        if (amountInput) {
+            amountInput.addEventListener('input', (e) => {
+                let raw = e.target.value.replace(/,/g, '');
+                if (raw === '') return;
+                const num = parseFloat(raw);
+                if (!isNaN(num)) {
+                    const formatted = formatIndianAmount(num);
+                    const cursorPos = e.target.selectionStart;
+                    if (e.target.value !== formatted) {
+                        e.target.value = formatted;
+                        e.target.setSelectionRange(cursorPos, cursorPos);
+                    }
+                }
+            });
+            amountInput.addEventListener('focus', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw) e.target.value = raw;
+            });
+            amountInput.addEventListener('blur', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw) {
+                    const num = parseFloat(raw);
+                    if (!isNaN(num)) {
+                        e.target.value = formatIndianAmount(num);
+                    }
+                }
+            });
+        }
 
         initAutocomplete('transCat', categories, 'transCatList');
         setupModalTabNavigation(modal);
@@ -1731,7 +2094,8 @@
                 const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
                 const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
                 let category = null;
-                categories.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
+                const allCats = type === 'EXPENSE' ? expenseCategories : incomeCategories;
+                allCats.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
                 let mentionedUser = null;
                 if (type === 'EXPENSE') {
                     const found = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
@@ -1743,15 +2107,28 @@
                         category: category || defaultExpenseCategory,
                         amount: amount,
                         description: text,
-                        mention: mentionedUser ? getUserName(mentionedUser) : null
+                        mention: mentionedUser ? getUserName(mentionedUser) : null,
+                        rawText: text
                     }, async (confirmed) => {
                         if (confirmed) {
                             if (category) modal.querySelector('#transCat').value = category;
-                            modal.querySelector('#transAmt').value = amount;
-                            modal.querySelector('#transDesc').value = text;
+                            modal.querySelector('#transAmt').value = formatIndianAmount(amount);
                             if (mentionedUser && type === 'EXPENSE') modal.querySelector('#transMention').value = mentionedUser;
                             modal.querySelector('#voiceBtn').innerHTML = '✅ Voice captured';
                             showToast("Voice captured, click Save to confirm");
+                            
+                            const cat = modal.querySelector('#transCat').value;
+                            const amt = parseFloat(modal.querySelector('#transAmt').value.replace(/,/g, ''));
+                            const desc = modal.querySelector('#transDesc').value;
+                            const mention = type === 'EXPENSE' ? modal.querySelector('#transMention').value || null : null;
+                            const date = modal.querySelector('#transDate').value;
+                            
+                            if (mention && type === 'EXPENSE') {
+                                await sendMoney(currentUser.uid, mention, amt, desc);
+                            } else {
+                                await addTransaction(type, cat, amt, desc, null, selectedPhoto, date, true, text);
+                            }
+                            modal.remove();
                         }
                     });
                 } else {
@@ -1764,7 +2141,8 @@
 
         modal.querySelector('#confirmBtn').onclick = async () => {
             const cat = modal.querySelector('#transCat').value;
-            const amt = parseFloat(modal.querySelector('#transAmt').value);
+            const amtRaw = modal.querySelector('#transAmt').value.replace(/,/g, '');
+            const amt = parseFloat(amtRaw);
             const desc = modal.querySelector('#transDesc').value;
             const mention = type === 'EXPENSE' ? modal.querySelector('#transMention').value || null : null;
             const date = modal.querySelector('#transDate').value;
@@ -1794,7 +2172,7 @@
                     <input type="text" id="editCat" class="input-field modal-focus-field" placeholder="Category" value="${transaction.category}" autocomplete="off" tabindex="2">
                     <div id="editCatList" class="autocomplete-list" style="display:none;"></div>
                 </div>
-                <input type="number" id="editAmt" placeholder="Amount (₹)" class="input-field modal-focus-field" value="${transaction.amount}" tabindex="3">
+                <input type="text" id="editAmt" class="input-field modal-focus-field" placeholder="Amount (₹)" value="${formatIndianAmount(transaction.amount)}" tabindex="3" inputmode="numeric">
                 <input type="text" id="editDesc" placeholder="Description" class="input-field modal-focus-field" value="${transaction.description || ''}" tabindex="4">
                 ${transaction.type === 'EXPENSE' ? `
                 <select id="editMention" class="select-field modal-focus-field" tabindex="5">
@@ -1810,6 +2188,36 @@
         `;
         document.body.appendChild(modal);
 
+        const amountInput = modal.querySelector('#editAmt');
+        if (amountInput) {
+            amountInput.addEventListener('input', (e) => {
+                let raw = e.target.value.replace(/,/g, '');
+                if (raw === '') return;
+                const num = parseFloat(raw);
+                if (!isNaN(num)) {
+                    const formatted = formatIndianAmount(num);
+                    const cursorPos = e.target.selectionStart;
+                    if (e.target.value !== formatted) {
+                        e.target.value = formatted;
+                        e.target.setSelectionRange(cursorPos, cursorPos);
+                    }
+                }
+            });
+            amountInput.addEventListener('focus', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw) e.target.value = raw;
+            });
+            amountInput.addEventListener('blur', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw) {
+                    const num = parseFloat(raw);
+                    if (!isNaN(num)) {
+                        e.target.value = formatIndianAmount(num);
+                    }
+                }
+            });
+        }
+
         initAutocomplete('editCat', categories, 'editCatList');
         setupModalTabNavigation(modal);
 
@@ -1822,7 +2230,7 @@
             const updated = {
                 date: modal.querySelector('#editDate').value,
                 category: modal.querySelector('#editCat').value,
-                amount: parseFloat(modal.querySelector('#editAmt').value),
+                amount: parseFloat(modal.querySelector('#editAmt').value.replace(/,/g, '')),
                 description: modal.querySelector('#editDesc').value,
             };
             if (transaction.type === 'EXPENSE') {
@@ -1855,18 +2263,18 @@
                 </div>
                 <div class="transfer-modal-row">
                     <label>Sender</label>
-                    <input type="text" value="${userProfile?.name || 'You'} (₹${calculateBalance(currentUser.uid).toFixed(2)})" disabled style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:28px; padding:14px 18px; color:var(--text-secondary);">
+                    <input type="text" value="${userProfile?.name || 'You'} (₹${formatIndianAmount(calculateBalance(currentUser.uid))})" disabled style="background:var(--input-bg); border:1px solid var(--border-color); border-radius:28px; padding:14px 18px; color:var(--text-secondary);">
                 </div>
                 <div class="transfer-modal-row">
                     <label>Receiver</label>
                     <select id="modalReceiverUser" class="modal-focus-field">
                         <option value="">Select Receiver</option>
-                        ${otherUsers.map(u => `<option value="${u.id}">${u.name} (₹${calculateBalance(u.id).toFixed(2)})</option>`).join('')}
+                        ${otherUsers.map(u => `<option value="${u.id}">${u.name} (₹${formatIndianAmount(calculateBalance(u.id))})</option>`).join('')}
                     </select>
                 </div>
                 <div class="transfer-modal-row">
                     <label>Amount (₹)</label>
-                    <input type="number" id="modalAmount" class="modal-focus-field" placeholder="Enter amount" step="1">
+                    <input type="text" id="modalAmount" class="modal-focus-field" placeholder="Enter amount" inputmode="numeric">
                 </div>
                 <div class="transfer-modal-row">
                     <label>Note (Optional)</label>
@@ -1881,6 +2289,36 @@
         document.body.appendChild(modal);
         setupModalTabNavigation(modal);
 
+        const amountInput = modal.querySelector('#modalAmount');
+        if (amountInput) {
+            amountInput.addEventListener('input', (e) => {
+                let raw = e.target.value.replace(/,/g, '');
+                if (raw === '') return;
+                const num = parseFloat(raw);
+                if (!isNaN(num)) {
+                    const formatted = formatIndianAmount(num);
+                    const cursorPos = e.target.selectionStart;
+                    if (e.target.value !== formatted) {
+                        e.target.value = formatted;
+                        e.target.setSelectionRange(cursorPos, cursorPos);
+                    }
+                }
+            });
+            amountInput.addEventListener('focus', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw) e.target.value = raw;
+            });
+            amountInput.addEventListener('blur', (e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (raw) {
+                    const num = parseFloat(raw);
+                    if (!isNaN(num)) {
+                        e.target.value = formatIndianAmount(num);
+                    }
+                }
+            });
+        }
+
         setTimeout(() => {
             const first = modal.querySelector('#modalReceiverUser');
             if (first) first.focus();
@@ -1888,7 +2326,8 @@
 
         modal.querySelector('#modalSendBtn').onclick = async () => {
             const receiverId = modal.querySelector('#modalReceiverUser').value;
-            const amount = parseFloat(modal.querySelector('#modalAmount').value);
+            const amtRaw = modal.querySelector('#modalAmount').value.replace(/,/g, '');
+            const amount = parseFloat(amtRaw);
             const note = modal.querySelector('#modalNote').value;
             if (!receiverId) { showToast("Please select a receiver"); return; }
             if (isNaN(amount) || amount <= 0) { showToast("Enter a valid amount"); return; }
@@ -1905,7 +2344,7 @@
         popup.className = 'voice-confirm-modal';
         popup.innerHTML = `
             <span>🎤 Voice detected:</span>
-            <span style="font-weight:600;">${details.category} ₹${details.amount}</span>
+            <span style="font-weight:600;">${details.category} ₹${formatIndianAmount(details.amount)}</span>
             <span style="font-size:12px; color:var(--text-secondary);">${details.description || ""}</span>
             ${details.mention ? `<span style="background:var(--badge-bg); padding:2px 8px; border-radius:20px;">→ ${details.mention}</span>` : ''}
             <button id="voiceConfirmYes">✓ Add</button>
@@ -1951,11 +2390,15 @@
                 category: category,
                 amount: amount,
                 description: desc,
-                mention: mentioned ? getUserName(mentioned) : null
+                mention: mentioned ? getUserName(mentioned) : null,
+                rawText: raw
             }, async (confirmed) => {
                 if (confirmed) {
-                    if (mentioned) await sendMoney(currentUser.uid, mentioned, amount, desc);
-                    else await addTransaction(type, category, amount, desc, null, null, null, true);
+                    if (mentioned) {
+                        await sendMoney(currentUser.uid, mentioned, amount, desc);
+                    } else {
+                        await addTransaction(type, category, amount, desc, null, null, null, true, raw);
+                    }
                 }
             });
         };
@@ -2000,7 +2443,7 @@
             await db.collection('expenses').add(newEntry);
             await loadUserData();
             renderAll();
-            showToast(`₹${amount} added to ${getUserName(userId)}`);
+            showToast(`₹${formatIndianAmount(amount)} added to ${getUserName(userId)}`);
         } catch (e) { showToast("Failed to add funds"); }
     }
 
@@ -2124,14 +2567,76 @@
     // VIEW TOGGLES
     // ===================================================================
     function setupViewToggles() {
-        document.querySelectorAll('.view-toggle').forEach(btn => {
+        document.querySelectorAll('#activityTab .view-toggle').forEach(btn => {
             btn.onclick = () => {
-                document.querySelectorAll('.view-toggle').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#activityTab .view-toggle').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentView = btn.getAttribute('data-view');
                 renderActivity();
             };
         });
+
+        document.querySelectorAll('#adminTab .view-toggle').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('#adminTab .view-toggle').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                adminView = btn.getAttribute('data-view');
+                renderAdmin();
+            };
+        });
+    }
+
+    // ===================================================================
+    // SIMPLE SEARCH
+    // ===================================================================
+    function setupSimpleSearch() {
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        
+        if (searchInput && clearBtn) {
+            const updateSearch = () => {
+                filterState.search = searchInput.value.toLowerCase();
+                clearBtn.classList.toggle('visible', searchInput.value.length > 0);
+                renderActivity();
+            };
+            
+            searchInput.addEventListener('input', updateSearch);
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') updateSearch();
+            });
+            
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.classList.remove('visible');
+                filterState.search = '';
+                renderActivity();
+                searchInput.focus();
+            });
+        }
+        
+        const adminSearchInput = document.getElementById('adminSearchInput');
+        const adminClearBtn = document.getElementById('adminClearSearchBtn');
+        
+        if (adminSearchInput && adminClearBtn) {
+            const updateAdminSearch = () => {
+                adminFilterState.search = adminSearchInput.value.toLowerCase();
+                adminClearBtn.classList.toggle('visible', adminSearchInput.value.length > 0);
+                renderAdmin();
+            };
+            
+            adminSearchInput.addEventListener('input', updateAdminSearch);
+            adminSearchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') updateAdminSearch();
+            });
+            
+            adminClearBtn.addEventListener('click', () => {
+                adminSearchInput.value = '';
+                adminClearBtn.classList.remove('visible');
+                adminFilterState.search = '';
+                renderAdmin();
+                adminSearchInput.focus();
+            });
+        }
     }
 
     // ===================================================================
@@ -2144,8 +2649,8 @@
         setupShortcuts();
         setupShortcutsToggle();
         setupViewToggles();
+        setupSimpleSearch();
 
-        // Auth listener
         auth.onAuthStateChanged(async (user) => {
             document.getElementById('loadingScreen').style.opacity = '0';
             setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 300);
@@ -2163,7 +2668,6 @@
             }
         });
 
-        // Event Listeners
         document.getElementById('loginBtn').onclick = () => {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -2198,25 +2702,13 @@
             };
         });
 
-        // Filters
         document.getElementById('filterType').onchange = (e) => { filterState.type = e.target.value; renderActivity(); };
         document.getElementById('filterCategory').onchange = (e) => { filterState.category = e.target.value; renderActivity(); };
-        document.getElementById('searchBtn').onclick = () => { 
-            filterState.search = document.getElementById('searchInput').value.toLowerCase(); 
-            renderActivity(); 
-        };
-        document.getElementById('searchInput').addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                filterState.search = document.getElementById('searchInput').value.toLowerCase();
-                renderActivity();
-            }
-        });
         document.getElementById('adminFilterUser').onchange = (e) => { adminFilterState.user = e.target.value; renderAdmin(); };
         document.getElementById('adminFilterCategory').onchange = (e) => { adminFilterState.category = e.target.value; renderAdmin(); };
-        document.getElementById('adminSearchBtn').onclick = () => { adminFilterState.search = document.getElementById('adminSearchInput').value.toLowerCase(); renderAdmin(); };
         document.getElementById('analyticsFilterType').onchange = renderAnalytics;
 
-        // Settings
+        // Settings - Add Expense Category
         document.getElementById('addExpenseCatBtn').onclick = async () => {
             const cat = document.getElementById('newExpenseCat').value.trim();
             if (cat && !expenseCategories.includes(cat)) {
@@ -2224,9 +2716,15 @@
                 await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                 renderAll();
                 document.getElementById('newExpenseCat').value = '';
-                showToast("Category added");
+                showToast(`Category "${cat}" added`);
+            } else if (cat && expenseCategories.includes(cat)) {
+                showToast("Category already exists");
+            } else {
+                showToast("Enter a category name");
             }
         };
+
+        // Settings - Add Income Category
         document.getElementById('addIncomeCatBtn').onclick = async () => {
             const cat = document.getElementById('newIncomeCat').value.trim();
             if (cat && !incomeCategories.includes(cat)) {
@@ -2234,17 +2732,27 @@
                 await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                 renderAll();
                 document.getElementById('newIncomeCat').value = '';
-                showToast("Category added");
+                showToast(`Income category "${cat}" added`);
+            } else if (cat && incomeCategories.includes(cat)) {
+                showToast("Category already exists");
+            } else {
+                showToast("Enter a category name");
             }
         };
+
+        // Settings - Set Default Category
         document.getElementById('setDefaultCatBtn').onclick = async () => {
             const val = document.getElementById('defaultExpenseCat').value;
-            if (val) {
+            if (val && expenseCategories.includes(val)) {
                 defaultExpenseCategory = val;
                 await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
+                renderAll();
                 showToast(`Default: ${defaultExpenseCategory}`);
+            } else {
+                showToast("Please select a valid category");
             }
         };
+
         document.getElementById('addUserAdminBtn').onclick = () => {
             const name = document.getElementById('newUserName').value.trim();
             const email = document.getElementById('newUserEmail').value.trim();
@@ -2254,14 +2762,19 @@
                 document.getElementById('newUserName').value = '';
                 document.getElementById('newUserEmail').value = '';
                 document.getElementById('newUserPass').value = '';
+            } else {
+                showToast("Fill all fields");
             }
         };
+
         document.getElementById('addFundsBtn').onclick = () => {
             const userId = document.getElementById('fundUserId').value;
             const amount = parseFloat(document.getElementById('fundAmount').value);
             if (userId && amount && amount > 0) {
                 addFundsToUser(userId, amount);
                 document.getElementById('fundAmount').value = '';
+            } else {
+                showToast("Select a user and enter a valid amount");
             }
         };
 
@@ -2271,7 +2784,6 @@
         };
     }
 
-    // Start
     window.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
