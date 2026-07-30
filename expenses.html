@@ -366,7 +366,7 @@
 
         /* ===== MODALS ===== */
         .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .modal-container { background: var(--bg-card); border-radius: 32px; width: 100%; max-width: 420px; padding: 28px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
+        .modal-container { background: var(--bg-card); border-radius: 32px; width: 100%; max-width: 420px; padding: 28px; border: 1px solid var(--border-color); max-height: 90vh; overflow: visible; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2); }
         .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; }
 
         .transfer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(12px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -383,12 +383,41 @@
         .transfer-cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
         .transfer-cancel:hover { border-color: var(--error); color: var(--error); }
 
-        /* ===== AUTOCOMPLETE ===== */
-        .autocomplete-container { position: relative; width: 100%; }
-        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; max-height: 160px; overflow-y: auto; z-index: 100; margin-top: 4px; box-shadow: var(--shadow-hover); }
-        .autocomplete-item { padding: 12px 18px; cursor: pointer; transition: 0.1s; color: var(--text-primary); font-size: 14px; font-weight: 500; -webkit-tap-highlight-color: transparent; }
-        .autocomplete-item:active { background: var(--primary); color: white; }
-        .autocomplete-item.selected { background: var(--primary); color: white; }
+        /* ===== AUTOCOMPLETE - FIXED FOR MOUSE ===== */
+        .autocomplete-container { position: relative; width: 100%; z-index: 1200; }
+        .autocomplete-list { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            right: 0; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            max-height: 160px; 
+            overflow-y: auto; 
+            z-index: 2000; 
+            margin-top: 4px; 
+            box-shadow: var(--shadow-hover);
+            display: none;
+            pointer-events: auto;
+        }
+        .autocomplete-list.show {
+            display: block;
+        }
+        .autocomplete-item { 
+            padding: 12px 18px; 
+            cursor: pointer; 
+            transition: 0.1s; 
+            color: var(--text-primary); 
+            font-size: 14px; 
+            font-weight: 500; 
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .autocomplete-item:hover, .autocomplete-item.selected { 
+            background: var(--primary); 
+            color: white; 
+        }
 
         /* ===== VOICE CONFIRM ===== */
         .voice-confirm-modal { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 16px 24px; border-radius: 60px; z-index: 4000; border: 2px solid var(--primary); animation: slideUp 0.3s ease; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); }
@@ -418,6 +447,29 @@
         .error-msg { color: var(--error); font-size: 13px; margin-top: 8px; }
 
         .user-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+
+        /* ===== CALCULATOR DISPLAY ===== */
+        .calc-preview {
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 4px 18px;
+            text-align: right;
+            min-height: 20px;
+            background: var(--input-bg);
+            border-radius: 0 0 28px 28px;
+            margin-top: -14px;
+            margin-bottom: 14px;
+            border: 1px solid var(--input-border);
+            border-top: none;
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.5px;
+        }
+        .calc-preview.active {
+            border-color: var(--primary);
+            border-top: none;
+            color: var(--primary);
+            font-weight: 600;
+        }
 
         @media (max-width: 480px) {
             .balance-amount { font-size: 28px; }
@@ -617,7 +669,7 @@
         <div id="adminExpensesList" class="transaction-list"><div style="text-align:center; padding: 32px; color: var(--text-secondary);">Loading...</div></div>
     </div>
 
-    <!-- Settings Tab - Simple Categories -->
+    <!-- Settings Tab -->
     <div id="settingsTab" style="display: none;">
         
         <!-- Keyboard Shortcuts -->
@@ -639,7 +691,7 @@
             </div>
         </div>
 
-        <!-- Expense Categories - Simple List -->
+        <!-- Expense Categories -->
         <div class="settings-panel">
             <div class="panel-title">📂 Expense Categories <span class="badge-count" id="expenseCatCount">0</span></div>
             <div id="expenseCatList" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
@@ -655,7 +707,7 @@
             <div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">Current default: <strong id="currentDefaultDisplay">Other</strong></div>
         </div>
 
-        <!-- Income Categories - Simple List -->
+        <!-- Income Categories -->
         <div class="settings-panel">
             <div class="panel-title">💰 Income Categories <span class="badge-count" id="incomeCatCount">0</span></div>
             <div id="incomeCatList" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;"></div>
@@ -754,7 +806,6 @@
     let expenses = [];
     let allUsers = [];
     
-    // Simple flat categories
     let expenseCategories = ["Cutting", "Punching", "Lamination", "Printing", "Binding", "Tea", "Coffee", "Breakfast", "Lunch", "Snacks", "Dinner", "Cab", "Auto", "Bus", "Train", "Petrol", "Stationery", "Other"];
     let incomeCategories = ["Salary", "Petty Cash", "Client Payment", "Reimbursement", "Advance", "Other"];
     let defaultExpenseCategory = "Other";
@@ -774,9 +825,6 @@
     let currentTheme = localStorage.getItem('khata_app_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', currentTheme);
 
-    // ===================================================================
-    // HELPER FUNCTIONS
-    // ===================================================================
     function showToast(msg) {
         const t = document.createElement("div");
         t.className = "toast";
@@ -843,9 +891,6 @@
         });
     }
 
-    // ===================================================================
-    // FORMAT AMOUNT WITH COMMAS (Indian Format)
-    // ===================================================================
     function formatIndianAmount(amount) {
         if (amount === undefined || amount === null || isNaN(amount)) return '0';
         const num = Number(amount);
@@ -867,13 +912,20 @@
         return (negative ? '-' : '') + formatted + '.' + decPart;
     }
 
-    function parseAmountFromFormatted(str) {
-        return parseFloat(str.replace(/,/g, ''));
+    function evaluateExpression(expr) {
+        try {
+            let cleaned = expr.replace(/,/g, '').trim();
+            if (!/^[\d+\-*/().\s]+$/.test(cleaned)) return null;
+            const result = new Function(`return (${cleaned})`)();
+            if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+                return result;
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
     }
 
-    // ===================================================================
-    // BALANCE CALCULATION
-    // ===================================================================
     function calculateBalance(userId) {
         let balance = 0;
         expenses.forEach(exp => {
@@ -1149,9 +1201,6 @@
         document.getElementById('loginError').innerText = "";
     }
 
-    // ===================================================================
-    // REAL-TIME LISTENERS
-    // ===================================================================
     function listenToExpenses() {
         if (unsubscribeExpenses) unsubscribeExpenses();
         unsubscribeExpenses = db.collection('expenses').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
@@ -1649,7 +1698,6 @@
     function renderSettings() {
         if (!userProfile?.isAdmin) return;
 
-        // Expense categories - simple list
         const catContainer = document.getElementById('expenseCatList');
         if (catContainer) {
             document.getElementById('expenseCatCount').textContent = expenseCategories.length;
@@ -1661,7 +1709,6 @@
             `).join('');
         }
 
-        // Income categories - simple list
         const incContainer = document.getElementById('incomeCatList');
         if (incContainer) {
             document.getElementById('incomeCatCount').textContent = incomeCategories.length;
@@ -1673,7 +1720,6 @@
             `).join('');
         }
 
-        // Remove expense category
         document.querySelectorAll('.remove-expense').forEach(btn => {
             btn.onclick = async () => {
                 const cat = btn.getAttribute('data-cat');
@@ -1687,7 +1733,6 @@
             };
         });
 
-        // Remove income category
         document.querySelectorAll('.remove-income').forEach(btn => {
             btn.onclick = async () => {
                 const cat = btn.getAttribute('data-cat');
@@ -1700,7 +1745,6 @@
             };
         });
 
-        // User list
         document.getElementById('adminUserList').innerHTML = allUsers.map(user => `
             <div class="user-list-item">
                 <span>${user.name} ${user.isAdmin ? "(Admin)" : ""}<br><small style="font-size:10px; color:var(--text-secondary);">${user.email}</small></span>
@@ -1732,7 +1776,6 @@
             };
         });
 
-        // Default category display
         document.getElementById('currentDefaultDisplay').textContent = defaultExpenseCategory;
     }
 
@@ -1867,118 +1910,131 @@
     }
 
     // ===================================================================
-    // AUTOCOMPLETE
-    // ===================================================================
-    function initAutocomplete(inputId, suggestions, listId) {
-        const input = document.getElementById(inputId);
-        const list = document.getElementById(listId);
-        if (!input || !list) return;
-        let selectedIndex = -1;
+// AUTOCOMPLETE - FIXED FOR MOUSE CLICKS
+// ===================================================================
+function initAutocomplete(inputId, suggestions, listId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    if (!input || !list) return;
+    let selectedIndex = -1;
+    let isSelectingFromList = false;
 
-        function render(filtered) {
-            list.innerHTML = '';
-            if (filtered.length === 0) { 
-                list.style.display = 'none'; 
-                return; 
-            }
-            list.style.display = 'block';
-            filtered.forEach((item, i) => {
-                const div = document.createElement('div');
-                div.className = 'autocomplete-item' + (i === selectedIndex ? ' selected' : '');
-                div.textContent = item;
-                div.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    input.value = item;
-                    list.style.display = 'none';
-                    selectedIndex = -1;
-                    const next = document.getElementById('transAmt') || document.getElementById('editAmt');
-                    if (next) setTimeout(() => next.focus(), 50);
-                });
-                div.addEventListener('click', (e) => {
-                    input.value = item;
-                    list.style.display = 'none';
-                    selectedIndex = -1;
-                    const next = document.getElementById('transAmt') || document.getElementById('editAmt');
-                    if (next) setTimeout(() => next.focus(), 50);
-                });
-                div.onmouseenter = () => {
-                    selectedIndex = i;
-                    render(filtered);
-                };
-                list.appendChild(div);
+    function selectSuggestion(item) {
+        input.value = item;
+        list.classList.remove('show');
+        selectedIndex = -1;
+        const next = document.getElementById('transAmt') || document.getElementById('editAmt') || document.getElementById('modalAmount');
+        if (next) {
+            setTimeout(function() { next.focus(); }, 50);
+        }
+    }
+
+    function render(filtered) {
+        list.innerHTML = '';
+        if (filtered.length === 0) { 
+            list.classList.remove('show');
+            return; 
+        }
+        list.classList.add('show');
+        filtered.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item' + (i === selectedIndex ? ' selected' : '');
+            div.textContent = item;
+            
+            div.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isSelectingFromList = true;
+                selectSuggestion(item);
             });
-            if (selectedIndex >= 0 && selectedIndex < filtered.length) {
-                const sel = list.children[selectedIndex];
-                if (sel) sel.scrollIntoView({ block: 'nearest' });
+            
+            div.addEventListener('mouseenter', function() {
+                selectedIndex = i;
+                Array.from(list.children).forEach((child, idx) => {
+                    child.classList.toggle('selected', idx === selectedIndex);
+                });
+            });
+            list.appendChild(div);
+        });
+        if (selectedIndex >= 0 && selectedIndex < filtered.length) {
+            const sel = list.children[selectedIndex];
+            if (sel) sel.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function showSuggestions() {
+        const val = input.value.trim().toLowerCase();
+        const filtered = suggestions.filter(function(s) { 
+            return s.toLowerCase().includes(val); 
+        });
+        selectedIndex = -1;
+        render(filtered);
+    }
+
+    input.addEventListener('focus', showSuggestions);
+    input.addEventListener('input', showSuggestions);
+
+    list.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    input.addEventListener('keydown', function(e) {
+        const val = input.value.trim().toLowerCase();
+        const filtered = suggestions.filter(function(s) { 
+            return s.toLowerCase().includes(val); 
+        });
+        
+        if (!list.classList.contains('show')) {
+            if (e.key === 'ArrowDown') { 
+                e.preventDefault();
+                selectedIndex = -1;
+                render(filtered); 
+                return;
             }
+            return;
         }
 
-        const showSuggestions = () => {
-            const val = input.value.trim().toLowerCase();
-            const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
-            selectedIndex = -1;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (filtered.length === 0) return;
+            selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1);
             render(filtered);
-        };
-
-        input.addEventListener('focus', showSuggestions);
-        input.addEventListener('input', showSuggestions);
-
-        input.addEventListener('keydown', (e) => {
-            const val = input.value.trim().toLowerCase();
-            const filtered = suggestions.filter(s => s.toLowerCase().includes(val));
-            
-            if (list.style.display === 'none' || list.style.display === '') {
-                if (e.key === 'ArrowDown') { 
-                    e.preventDefault();
-                    selectedIndex = -1;
-                    render(filtered); 
-                    return;
-                }
-                return;
-            }
-
-            if (e.key === 'ArrowDown') {
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (filtered.length === 0) return;
+            selectedIndex = Math.max(selectedIndex - 1, -1);
+            render(filtered);
+        } else if (e.key === 'Enter') {
+            if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
                 e.preventDefault();
-                if (filtered.length === 0) return;
-                selectedIndex = Math.min(selectedIndex + 1, filtered.length - 1);
-                render(filtered);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (filtered.length === 0) return;
-                selectedIndex = Math.max(selectedIndex - 1, -1);
-                render(filtered);
-            } else if (e.key === 'Enter') {
-                if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    input.value = filtered[selectedIndex];
-                    list.style.display = 'none';
-                    selectedIndex = -1;
-                    const next = document.getElementById('transAmt') || document.getElementById('editAmt');
-                    if (next) setTimeout(() => next.focus(), 50);
-                }
-            } else if (e.key === 'Tab') {
-                if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
-                    input.value = filtered[selectedIndex];
-                    list.style.display = 'none';
-                    selectedIndex = -1;
-                }
-                return;
-            } else if (e.key === 'Escape') {
-                list.style.display = 'none';
-                selectedIndex = -1;
                 e.stopPropagation();
-                input.blur();
+                selectSuggestion(filtered[selectedIndex]);
             }
-        });
+        } else if (e.key === 'Tab') {
+            if (selectedIndex >= 0 && filtered.length > 0 && filtered[selectedIndex]) {
+                selectSuggestion(filtered[selectedIndex]);
+            }
+            return;
+        } else if (e.key === 'Escape') {
+            list.classList.remove('show');
+            selectedIndex = -1;
+            e.stopPropagation();
+            input.blur();
+        }
+    });
 
-        input.addEventListener('blur', () => { 
-            setTimeout(() => { 
-                list.style.display = 'none'; 
-                selectedIndex = -1;
-            }, 200); 
-        });
-    }
+    input.addEventListener('blur', function() {
+        setTimeout(function() {
+            if (isSelectingFromList) {
+                isSelectingFromList = false;
+                return;
+            }
+            list.classList.remove('show');
+            selectedIndex = -1;
+        }, 180);
+    });
+}
 
     // ===================================================================
     // MODAL FUNCTIONS
@@ -1986,7 +2042,7 @@
     function setupModalTabNavigation(modal) {
         const fields = Array.from(modal.querySelectorAll('.modal-focus-field, input, select, button'));
         fields.forEach((field, index) => {
-            field.onkeydown = (e) => {
+            field.onkeydown = function(e) {
                 if (e.key === 'Enter') {
                     const tag = field.tagName.toLowerCase();
                     if (tag === 'button') return;
@@ -1995,6 +2051,73 @@
                     if (next) { next.focus(); if (next.tagName.toLowerCase() === 'input') next.select(); }
                 }
             };
+        });
+    }
+
+    function setupCalculator(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        if (!input || !preview) return;
+        
+        let lastResult = null;
+
+        input.addEventListener('input', function(e) {
+            const val = e.target.value;
+            if (val.includes('+') || val.includes('-') || val.includes('*') || val.includes('/') || val.startsWith('=')) {
+                const expr = val.startsWith('=') ? val.slice(1) : val;
+                const result = evaluateExpression(expr);
+                if (result !== null) {
+                    lastResult = result;
+                    preview.textContent = '= ' + formatIndianAmount(result);
+                    preview.className = 'calc-preview active';
+                    return;
+                }
+            }
+            const raw = val.replace(/,/g, '');
+            if (raw !== '' && !isNaN(raw) && raw !== '-') {
+                const num = parseFloat(raw);
+                if (!isNaN(num)) {
+                    const formatted = formatIndianAmount(num);
+                    const cursorPos = e.target.selectionStart;
+                    if (e.target.value !== formatted && !val.includes('+') && !val.includes('-') && !val.includes('*') && !val.includes('/')) {
+                        e.target.value = formatted;
+                        e.target.setSelectionRange(cursorPos, cursorPos);
+                    }
+                }
+            }
+            preview.textContent = '';
+            preview.className = 'calc-preview';
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && lastResult !== null) {
+                e.preventDefault();
+                input.value = formatIndianAmount(lastResult);
+                preview.textContent = '✅ ' + formatIndianAmount(lastResult);
+                preview.className = 'calc-preview active';
+                const next = document.getElementById('transDesc') || document.getElementById('editDesc') || document.getElementById('modalNote');
+                if (next) setTimeout(function() { next.focus(); }, 50);
+                lastResult = null;
+            }
+        });
+
+        input.addEventListener('focus', function(e) {
+            const raw = e.target.value.replace(/,/g, '');
+            if (raw !== '' && !isNaN(raw)) {
+                e.target.value = raw;
+            }
+        });
+
+        input.addEventListener('blur', function(e) {
+            const raw = e.target.value.replace(/,/g, '');
+            if (raw !== '' && !isNaN(raw)) {
+                const num = parseFloat(raw);
+                if (!isNaN(num)) {
+                    e.target.value = formatIndianAmount(num);
+                }
+            }
+            preview.textContent = '';
+            preview.className = 'calc-preview';
         });
     }
 
@@ -2011,9 +2134,10 @@
                 <input type="date" id="transDate" class="date-field modal-focus-field" value="${today}" tabindex="1">
                 <div class="autocomplete-container">
                     <input type="text" id="transCat" class="input-field modal-focus-field" placeholder="Category" autocomplete="off" tabindex="2">
-                    <div id="transCatList" class="autocomplete-list" style="display:none;"></div>
+                    <div id="transCatList" class="autocomplete-list"></div>
                 </div>
-                <input type="text" id="transAmt" class="input-field modal-focus-field" placeholder="Amount (₹)" tabindex="3" inputmode="numeric">
+                <input type="text" id="transAmt" class="input-field modal-focus-field" placeholder="Amount (₹) - use = for calculator" tabindex="3" inputmode="text">
+                <div id="transAmtPreview" class="calc-preview"></div>
                 <input type="text" id="transDesc" placeholder="Description" class="input-field modal-focus-field" tabindex="4">
                 ${type === 'EXPENSE' ? `
                 <select id="transMention" class="select-field modal-focus-field" tabindex="5">
@@ -2032,40 +2156,11 @@
         `;
         document.body.appendChild(modal);
 
-        const amountInput = modal.querySelector('#transAmt');
-        if (amountInput) {
-            amountInput.addEventListener('input', (e) => {
-                let raw = e.target.value.replace(/,/g, '');
-                if (raw === '') return;
-                const num = parseFloat(raw);
-                if (!isNaN(num)) {
-                    const formatted = formatIndianAmount(num);
-                    const cursorPos = e.target.selectionStart;
-                    if (e.target.value !== formatted) {
-                        e.target.value = formatted;
-                        e.target.setSelectionRange(cursorPos, cursorPos);
-                    }
-                }
-            });
-            amountInput.addEventListener('focus', (e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (raw) e.target.value = raw;
-            });
-            amountInput.addEventListener('blur', (e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (raw) {
-                    const num = parseFloat(raw);
-                    if (!isNaN(num)) {
-                        e.target.value = formatIndianAmount(num);
-                    }
-                }
-            });
-        }
-
+        setupCalculator('transAmt', 'transAmtPreview');
         initAutocomplete('transCat', categories, 'transCatList');
         setupModalTabNavigation(modal);
 
-        setTimeout(() => {
+        setTimeout(function() {
             const dateField = modal.querySelector('#transDate');
             if (dateField) dateField.focus();
         }, 100);
@@ -2073,8 +2168,8 @@
         let selectedPhoto = null;
         const photoArea = modal.querySelector('#photoArea');
         const photoInput = modal.querySelector('#photoInput');
-        photoArea.onclick = () => photoInput.click();
-        photoInput.onchange = async (e) => {
+        photoArea.onclick = function() { photoInput.click(); };
+        photoInput.onchange = async function(e) {
             if (e.target.files[0]) {
                 photoArea.innerHTML = '⏳ Compressing...';
                 selectedPhoto = e.target.files[0];
@@ -2085,20 +2180,20 @@
             }
         };
 
-        modal.querySelector('#voiceBtn').onclick = () => {
+        modal.querySelector('#voiceBtn').onclick = function() {
             if (!('webkitSpeechRecognition' in window)) return showToast("Voice not supported");
             const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             rec.lang = 'en-IN';
-            rec.onresult = (e) => {
+            rec.onresult = function(e) {
                 const text = e.results[0][0].transcript;
                 const amtMatch = text.match(/(\d+(?:\.\d+)?)/);
                 const amount = amtMatch ? parseFloat(amtMatch[0]) : null;
                 let category = null;
                 const allCats = type === 'EXPENSE' ? expenseCategories : incomeCategories;
-                allCats.forEach(c => { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
+                allCats.forEach(function(c) { if (text.toLowerCase().includes(c.toLowerCase())) category = c; });
                 let mentionedUser = null;
                 if (type === 'EXPENSE') {
-                    const found = allUsers.find(u => u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()));
+                    const found = allUsers.find(function(u) { return u.id !== currentUser.uid && text.toLowerCase().includes(u.name.toLowerCase()); });
                     if (found) mentionedUser = found.id;
                 }
 
@@ -2109,7 +2204,7 @@
                         description: text,
                         mention: mentionedUser ? getUserName(mentionedUser) : null,
                         rawText: text
-                    }, async (confirmed) => {
+                    }, async function(confirmed) {
                         if (confirmed) {
                             if (category) modal.querySelector('#transCat').value = category;
                             modal.querySelector('#transAmt').value = formatIndianAmount(amount);
@@ -2139,7 +2234,7 @@
             modal.querySelector('#voiceBtn').innerHTML = '🎙️ Listening...';
         };
 
-        modal.querySelector('#confirmBtn').onclick = async () => {
+        modal.querySelector('#confirmBtn').onclick = async function() {
             const cat = modal.querySelector('#transCat').value;
             const amtRaw = modal.querySelector('#transAmt').value.replace(/,/g, '');
             const amt = parseFloat(amtRaw);
@@ -2151,7 +2246,7 @@
             const success = await addTransaction(type, cat, amt, desc, mention, selectedPhoto, date);
             if (success) modal.remove();
         };
-        modal.querySelector('#cancelBtn').onclick = () => modal.remove();
+        modal.querySelector('#cancelBtn').onclick = function() { modal.remove(); };
     }
 
     function openEditModal(transaction) {
@@ -2170,9 +2265,10 @@
                 <input type="date" id="editDate" class="date-field modal-focus-field" value="${transaction.date}" tabindex="1">
                 <div class="autocomplete-container">
                     <input type="text" id="editCat" class="input-field modal-focus-field" placeholder="Category" value="${transaction.category}" autocomplete="off" tabindex="2">
-                    <div id="editCatList" class="autocomplete-list" style="display:none;"></div>
+                    <div id="editCatList" class="autocomplete-list"></div>
                 </div>
-                <input type="text" id="editAmt" class="input-field modal-focus-field" placeholder="Amount (₹)" value="${formatIndianAmount(transaction.amount)}" tabindex="3" inputmode="numeric">
+                <input type="text" id="editAmt" class="input-field modal-focus-field" placeholder="Amount (₹) - use = for calculator" value="${formatIndianAmount(transaction.amount)}" tabindex="3" inputmode="text">
+                <div id="editAmtPreview" class="calc-preview"></div>
                 <input type="text" id="editDesc" placeholder="Description" class="input-field modal-focus-field" value="${transaction.description || ''}" tabindex="4">
                 ${transaction.type === 'EXPENSE' ? `
                 <select id="editMention" class="select-field modal-focus-field" tabindex="5">
@@ -2188,45 +2284,16 @@
         `;
         document.body.appendChild(modal);
 
-        const amountInput = modal.querySelector('#editAmt');
-        if (amountInput) {
-            amountInput.addEventListener('input', (e) => {
-                let raw = e.target.value.replace(/,/g, '');
-                if (raw === '') return;
-                const num = parseFloat(raw);
-                if (!isNaN(num)) {
-                    const formatted = formatIndianAmount(num);
-                    const cursorPos = e.target.selectionStart;
-                    if (e.target.value !== formatted) {
-                        e.target.value = formatted;
-                        e.target.setSelectionRange(cursorPos, cursorPos);
-                    }
-                }
-            });
-            amountInput.addEventListener('focus', (e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (raw) e.target.value = raw;
-            });
-            amountInput.addEventListener('blur', (e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (raw) {
-                    const num = parseFloat(raw);
-                    if (!isNaN(num)) {
-                        e.target.value = formatIndianAmount(num);
-                    }
-                }
-            });
-        }
-
+        setupCalculator('editAmt', 'editAmtPreview');
         initAutocomplete('editCat', categories, 'editCatList');
         setupModalTabNavigation(modal);
 
-        setTimeout(() => {
+        setTimeout(function() {
             const dateField = modal.querySelector('#editDate');
             if (dateField) dateField.focus();
         }, 100);
 
-        modal.querySelector('#saveEditBtn').onclick = async () => {
+        modal.querySelector('#saveEditBtn').onclick = async function() {
             const updated = {
                 date: modal.querySelector('#editDate').value,
                 category: modal.querySelector('#editCat').value,
@@ -2243,7 +2310,7 @@
             await updateTransaction(transaction.id, updated);
             modal.remove();
         };
-        modal.querySelector('#cancelEditBtn').onclick = () => modal.remove();
+        modal.querySelector('#cancelEditBtn').onclick = function() { modal.remove(); };
     }
 
     function openSendMoneyModal() {
@@ -2254,7 +2321,7 @@
 
         const modal = document.createElement('div');
         modal.className = 'transfer-modal';
-        const otherUsers = allUsers.filter(u => u.id !== currentUser.uid);
+        const otherUsers = allUsers.filter(function(u) { return u.id !== currentUser.uid; });
 
         modal.innerHTML = `
             <div class="transfer-modal-container">
@@ -2269,12 +2336,13 @@
                     <label>Receiver</label>
                     <select id="modalReceiverUser" class="modal-focus-field">
                         <option value="">Select Receiver</option>
-                        ${otherUsers.map(u => `<option value="${u.id}">${u.name} (₹${formatIndianAmount(calculateBalance(u.id))})</option>`).join('')}
+                        ${otherUsers.map(function(u) { return '<option value="' + u.id + '">' + u.name + ' (₹' + formatIndianAmount(calculateBalance(u.id)) + ')</option>'; }).join('')}
                     </select>
                 </div>
                 <div class="transfer-modal-row">
                     <label>Amount (₹)</label>
-                    <input type="text" id="modalAmount" class="modal-focus-field" placeholder="Enter amount" inputmode="numeric">
+                    <input type="text" id="modalAmount" class="modal-focus-field" placeholder="Enter amount - use = for calculator" inputmode="text">
+                    <div id="modalAmtPreview" class="calc-preview"></div>
                 </div>
                 <div class="transfer-modal-row">
                     <label>Note (Optional)</label>
@@ -2288,43 +2356,14 @@
         `;
         document.body.appendChild(modal);
         setupModalTabNavigation(modal);
+        setupCalculator('modalAmount', 'modalAmtPreview');
 
-        const amountInput = modal.querySelector('#modalAmount');
-        if (amountInput) {
-            amountInput.addEventListener('input', (e) => {
-                let raw = e.target.value.replace(/,/g, '');
-                if (raw === '') return;
-                const num = parseFloat(raw);
-                if (!isNaN(num)) {
-                    const formatted = formatIndianAmount(num);
-                    const cursorPos = e.target.selectionStart;
-                    if (e.target.value !== formatted) {
-                        e.target.value = formatted;
-                        e.target.setSelectionRange(cursorPos, cursorPos);
-                    }
-                }
-            });
-            amountInput.addEventListener('focus', (e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (raw) e.target.value = raw;
-            });
-            amountInput.addEventListener('blur', (e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (raw) {
-                    const num = parseFloat(raw);
-                    if (!isNaN(num)) {
-                        e.target.value = formatIndianAmount(num);
-                    }
-                }
-            });
-        }
-
-        setTimeout(() => {
+        setTimeout(function() {
             const first = modal.querySelector('#modalReceiverUser');
             if (first) first.focus();
         }, 100);
 
-        modal.querySelector('#modalSendBtn').onclick = async () => {
+        modal.querySelector('#modalSendBtn').onclick = async function() {
             const receiverId = modal.querySelector('#modalReceiverUser').value;
             const amtRaw = modal.querySelector('#modalAmount').value.replace(/,/g, '');
             const amount = parseFloat(amtRaw);
@@ -2334,7 +2373,7 @@
             await sendMoney(currentUser.uid, receiverId, amount, note);
             modal.remove();
         };
-        modal.querySelector('#modalCancelBtn').onclick = () => modal.remove();
+        modal.querySelector('#modalCancelBtn').onclick = function() { modal.remove(); };
     }
 
     function showVoiceConfirmPopup(details, onConfirm) {
@@ -2346,14 +2385,14 @@
             <span>🎤 Voice detected:</span>
             <span style="font-weight:600;">${details.category} ₹${formatIndianAmount(details.amount)}</span>
             <span style="font-size:12px; color:var(--text-secondary);">${details.description || ""}</span>
-            ${details.mention ? `<span style="background:var(--badge-bg); padding:2px 8px; border-radius:20px;">→ ${details.mention}</span>` : ''}
+            ${details.mention ? '<span style="background:var(--badge-bg); padding:2px 8px; border-radius:20px;">→ ' + details.mention + '</span>' : ''}
             <button id="voiceConfirmYes">✓ Add</button>
             <button class="cancel" id="voiceConfirmNo">✗ Cancel</button>
         `;
         document.body.appendChild(popup);
-        document.getElementById('voiceConfirmYes').onclick = () => { popup.remove(); onConfirm(true); };
-        document.getElementById('voiceConfirmNo').onclick = () => { popup.remove(); onConfirm(false); showToast("Cancelled"); };
-        setTimeout(() => { if (document.body.contains(popup)) popup.remove(); }, 15000);
+        document.getElementById('voiceConfirmYes').onclick = function() { popup.remove(); onConfirm(true); };
+        document.getElementById('voiceConfirmNo').onclick = function() { popup.remove(); onConfirm(false); showToast("Cancelled"); };
+        setTimeout(function() { if (document.body.contains(popup)) popup.remove(); }, 15000);
     }
 
     function startQuickVoice() {
@@ -2363,7 +2402,7 @@
         const micBtn = document.getElementById('floatingMicBtn');
         micBtn.classList.add('listening');
 
-        rec.onresult = (e) => {
+        rec.onresult = function(e) {
             const raw = e.results[0][0].transcript;
             micBtn.classList.remove('listening');
             const words = raw.replace(/[₹$,]/g, '').trim().split(/\s+/);
@@ -2372,18 +2411,18 @@
             for (let w of words) {
                 const num = parseFloat(w);
                 if (!isNaN(num) && amount === null) { amount = num; continue; }
-                const expMatch = expenseCategories.find(c => c.toLowerCase() === w.toLowerCase());
+                const expMatch = expenseCategories.find(function(c) { return c.toLowerCase() === w.toLowerCase(); });
                 if (expMatch) { category = expMatch; type = "EXPENSE"; continue; }
-                const incMatch = incomeCategories.find(c => c.toLowerCase() === w.toLowerCase());
+                const incMatch = incomeCategories.find(function(c) { return c.toLowerCase() === w.toLowerCase(); });
                 if (incMatch) { category = incMatch; type = "INCOME"; }
             }
 
             if (amount === null) { showToast("No amount detected. Say 'cutting 150'"); return; }
-            if (!category) { category = defaultExpenseCategory; showToast(`Using default: "${defaultExpenseCategory}"`); }
+            if (!category) { category = defaultExpenseCategory; showToast("Using default: \"" + defaultExpenseCategory + "\""); }
 
             let desc = words.length >= 3 ? words.slice(2).join(" ") : raw;
             let mentioned = null;
-            const found = allUsers.find(u => u.id !== currentUser.uid && raw.toLowerCase().includes(u.name.toLowerCase()));
+            const found = allUsers.find(function(u) { return u.id !== currentUser.uid && raw.toLowerCase().includes(u.name.toLowerCase()); });
             if (found) mentioned = found.id;
 
             showVoiceConfirmPopup({
@@ -2392,7 +2431,7 @@
                 description: desc,
                 mention: mentioned ? getUserName(mentioned) : null,
                 rawText: raw
-            }, async (confirmed) => {
+            }, async function(confirmed) {
                 if (confirmed) {
                     if (mentioned) {
                         await sendMoney(currentUser.uid, mentioned, amount, desc);
@@ -2402,8 +2441,8 @@
                 }
             });
         };
-        rec.onerror = () => { micBtn.classList.remove('listening'); showToast("Voice recognition failed"); };
-        rec.onend = () => micBtn.classList.remove('listening');
+        rec.onerror = function() { micBtn.classList.remove('listening'); showToast("Voice recognition failed"); };
+        rec.onend = function() { micBtn.classList.remove('listening'); };
         rec.start();
     }
 
@@ -2422,7 +2461,7 @@
             await tempApp.delete();
             await loadUserData();
             renderAll();
-            showToast(`User ${name} created`);
+            showToast("User " + name + " created");
         } catch (e) { showToast(e.message); }
     }
 
@@ -2443,7 +2482,7 @@
             await db.collection('expenses').add(newEntry);
             await loadUserData();
             renderAll();
-            showToast(`₹${formatIndianAmount(amount)} added to ${getUserName(userId)}`);
+            showToast("₹" + formatIndianAmount(amount) + " added to " + getUserName(userId));
         } catch (e) { showToast("Failed to add funds"); }
     }
 
@@ -2453,7 +2492,7 @@
     function setupThemeToggle() {
         const btn = document.getElementById('themeToggleBtn');
         if (!btn) return;
-        btn.onclick = () => {
+        btn.onclick = function() {
             currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('khata_app_theme', currentTheme);
@@ -2470,13 +2509,13 @@
     }
 
     function setupSync() {
-        document.getElementById('syncBtn').onclick = () => {
+        document.getElementById('syncBtn').onclick = function() {
             if (isSyncing) return;
             isSyncing = true;
             const btn = document.getElementById('syncBtn');
             btn.classList.add('syncing');
             btn.textContent = '⏳ Syncing...';
-            setTimeout(async () => {
+            setTimeout(async function() {
                 await loadUserData(true);
                 isSyncing = false;
                 btn.classList.remove('syncing');
@@ -2487,30 +2526,30 @@
     }
 
     function setupCSVExport() {
-        document.getElementById('downloadFullReportBtn').onclick = () => {
+        document.getElementById('downloadFullReportBtn').onclick = function() {
             let csv = "Date,Type,Category,Amount,Description,From User,To User\n";
-            expenses.forEach(e => {
+            expenses.forEach(function(e) {
                 const from = getUserName(e.userId);
                 const to = e.mentionedUserId ? getUserName(e.mentionedUserId) : "";
-                const amt = e.type === "EXPENSE" ? `-${e.amount.toFixed(2)}` : `+${e.amount.toFixed(2)}`;
+                const amt = e.type === "EXPENSE" ? "-" + e.amount.toFixed(2) : "+" + e.amount.toFixed(2);
                 const dateParts = e.date.split('-');
-                const d = dateParts.length === 3 ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` : e.date;
-                csv += `"${d}","${e.type}","${e.category}",${amt},"${e.description || ""}","${from}","${to}"\n`;
+                const d = dateParts.length === 3 ? dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0] : e.date;
+                csv += '"' + d + '","' + e.type + '","' + e.category + '",' + amt + ',"' + (e.description || "") + '","' + from + '","' + to + '"\n';
             });
             const blob = new Blob([csv], { type: "text/csv" });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `khata_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = "khata_report_" + new Date().toISOString().split('T')[0] + ".csv";
             a.click();
             showToast("CSV exported");
         };
     }
 
     // ===================================================================
-    // KEYBOARD SHORTCUTS
+    // SHORTCUTS
     // ===================================================================
     function setupShortcuts() {
-        document.onkeydown = (e) => {
+        document.onkeydown = function(e) {
             if (!shortcutsEnabled) return;
             const isTyping = ['input', 'textarea', 'select'].includes(document.activeElement?.tagName?.toLowerCase());
 
@@ -2538,22 +2577,19 @@
         };
     }
 
-    // ===================================================================
-    // SHORTCUTS TOGGLE
-    // ===================================================================
     function setupShortcutsToggle() {
         const toggleBtn = document.getElementById('shortcutsToggle');
         const content = document.getElementById('shortcutsContent');
         let isOpen = false;
 
-        toggleBtn.onclick = (e) => {
+        toggleBtn.onclick = function(e) {
             e.stopPropagation();
             isOpen = !isOpen;
             content.classList.toggle('show', isOpen);
             toggleBtn.textContent = isOpen ? '⌨️ ✕' : '⌨️';
         };
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', function(e) {
             const container = document.querySelector('.shortcuts-container');
             if (container && !container.contains(e.target) && isOpen) {
                 isOpen = false;
@@ -2563,22 +2599,19 @@
         });
     }
 
-    // ===================================================================
-    // VIEW TOGGLES
-    // ===================================================================
     function setupViewToggles() {
-        document.querySelectorAll('#activityTab .view-toggle').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('#activityTab .view-toggle').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#activityTab .view-toggle').forEach(function(btn) {
+            btn.onclick = function() {
+                document.querySelectorAll('#activityTab .view-toggle').forEach(function(b) { b.classList.remove('active'); });
                 btn.classList.add('active');
                 currentView = btn.getAttribute('data-view');
                 renderActivity();
             };
         });
 
-        document.querySelectorAll('#adminTab .view-toggle').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('#adminTab .view-toggle').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#adminTab .view-toggle').forEach(function(btn) {
+            btn.onclick = function() {
+                document.querySelectorAll('#adminTab .view-toggle').forEach(function(b) { b.classList.remove('active'); });
                 btn.classList.add('active');
                 adminView = btn.getAttribute('data-view');
                 renderAdmin();
@@ -2586,26 +2619,23 @@
         });
     }
 
-    // ===================================================================
-    // SIMPLE SEARCH
-    // ===================================================================
     function setupSimpleSearch() {
         const searchInput = document.getElementById('searchInput');
         const clearBtn = document.getElementById('clearSearchBtn');
         
         if (searchInput && clearBtn) {
-            const updateSearch = () => {
+            const updateSearch = function() {
                 filterState.search = searchInput.value.toLowerCase();
                 clearBtn.classList.toggle('visible', searchInput.value.length > 0);
                 renderActivity();
             };
             
             searchInput.addEventListener('input', updateSearch);
-            searchInput.addEventListener('keyup', (e) => {
+            searchInput.addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') updateSearch();
             });
             
-            clearBtn.addEventListener('click', () => {
+            clearBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 clearBtn.classList.remove('visible');
                 filterState.search = '';
@@ -2618,18 +2648,18 @@
         const adminClearBtn = document.getElementById('adminClearSearchBtn');
         
         if (adminSearchInput && adminClearBtn) {
-            const updateAdminSearch = () => {
+            const updateAdminSearch = function() {
                 adminFilterState.search = adminSearchInput.value.toLowerCase();
                 adminClearBtn.classList.toggle('visible', adminSearchInput.value.length > 0);
                 renderAdmin();
             };
             
             adminSearchInput.addEventListener('input', updateAdminSearch);
-            adminSearchInput.addEventListener('keyup', (e) => {
+            adminSearchInput.addEventListener('keyup', function(e) {
                 if (e.key === 'Enter') updateAdminSearch();
             });
             
-            adminClearBtn.addEventListener('click', () => {
+            adminClearBtn.addEventListener('click', function() {
                 adminSearchInput.value = '';
                 adminClearBtn.classList.remove('visible');
                 adminFilterState.search = '';
@@ -2651,15 +2681,15 @@
         setupViewToggles();
         setupSimpleSearch();
 
-        auth.onAuthStateChanged(async (user) => {
+        auth.onAuthStateChanged(async function(user) {
             document.getElementById('loadingScreen').style.opacity = '0';
-            setTimeout(() => document.getElementById('loadingScreen').style.display = 'none', 300);
+            setTimeout(function() { document.getElementById('loadingScreen').style.display = 'none'; }, 300);
             if (user) {
                 currentUser = user;
                 await loadUserData();
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
-                showToast(`Welcome back!`);
+                showToast("Welcome back!");
             } else {
                 document.getElementById('appContainer').style.display = 'none';
                 document.getElementById('loginScreen').style.display = 'flex';
@@ -2668,14 +2698,14 @@
             }
         });
 
-        document.getElementById('loginBtn').onclick = () => {
+        document.getElementById('loginBtn').onclick = function() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             if (!email || !password) { showToast("Enter email and password"); return; }
             login(email, password);
         };
 
-        document.getElementById('signupBtn').onclick = () => {
+        document.getElementById('signupBtn').onclick = function() {
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
@@ -2688,35 +2718,34 @@
         document.getElementById('showLoginBtn').onclick = toggleMode;
         document.getElementById('logoutBtn').onclick = logout;
 
-        document.getElementById('addExpenseBtn').onclick = () => openModal('EXPENSE');
-        document.getElementById('addIncomeBtn').onclick = () => openModal('INCOME');
+        document.getElementById('addExpenseBtn').onclick = function() { openModal('EXPENSE'); };
+        document.getElementById('addIncomeBtn').onclick = function() { openModal('INCOME'); };
         document.getElementById('sendMoneySmallBtn').onclick = openSendMoneyModal;
         document.getElementById('floatingMicBtn').onclick = startQuickVoice;
 
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.onclick = () => {
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.onclick = function() {
                 currentTab = tab.getAttribute('data-tab');
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
                 tab.classList.add('active');
                 renderAll();
             };
         });
 
-        document.getElementById('filterType').onchange = (e) => { filterState.type = e.target.value; renderActivity(); };
-        document.getElementById('filterCategory').onchange = (e) => { filterState.category = e.target.value; renderActivity(); };
-        document.getElementById('adminFilterUser').onchange = (e) => { adminFilterState.user = e.target.value; renderAdmin(); };
-        document.getElementById('adminFilterCategory').onchange = (e) => { adminFilterState.category = e.target.value; renderAdmin(); };
+        document.getElementById('filterType').onchange = function(e) { filterState.type = e.target.value; renderActivity(); };
+        document.getElementById('filterCategory').onchange = function(e) { filterState.category = e.target.value; renderActivity(); };
+        document.getElementById('adminFilterUser').onchange = function(e) { adminFilterState.user = e.target.value; renderAdmin(); };
+        document.getElementById('adminFilterCategory').onchange = function(e) { adminFilterState.category = e.target.value; renderAdmin(); };
         document.getElementById('analyticsFilterType').onchange = renderAnalytics;
 
-        // Settings - Add Expense Category
-        document.getElementById('addExpenseCatBtn').onclick = async () => {
+        document.getElementById('addExpenseCatBtn').onclick = async function() {
             const cat = document.getElementById('newExpenseCat').value.trim();
             if (cat && !expenseCategories.includes(cat)) {
                 expenseCategories.push(cat);
                 await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                 renderAll();
                 document.getElementById('newExpenseCat').value = '';
-                showToast(`Category "${cat}" added`);
+                showToast("Category \"" + cat + "\" added");
             } else if (cat && expenseCategories.includes(cat)) {
                 showToast("Category already exists");
             } else {
@@ -2724,15 +2753,14 @@
             }
         };
 
-        // Settings - Add Income Category
-        document.getElementById('addIncomeCatBtn').onclick = async () => {
+        document.getElementById('addIncomeCatBtn').onclick = async function() {
             const cat = document.getElementById('newIncomeCat').value.trim();
             if (cat && !incomeCategories.includes(cat)) {
                 incomeCategories.push(cat);
                 await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                 renderAll();
                 document.getElementById('newIncomeCat').value = '';
-                showToast(`Income category "${cat}" added`);
+                showToast("Income category \"" + cat + "\" added");
             } else if (cat && incomeCategories.includes(cat)) {
                 showToast("Category already exists");
             } else {
@@ -2740,20 +2768,19 @@
             }
         };
 
-        // Settings - Set Default Category
-        document.getElementById('setDefaultCatBtn').onclick = async () => {
+        document.getElementById('setDefaultCatBtn').onclick = async function() {
             const val = document.getElementById('defaultExpenseCat').value;
             if (val && expenseCategories.includes(val)) {
                 defaultExpenseCategory = val;
                 await db.collection('metadata').doc('settings').set({ expenseCategories, incomeCategories, defaultExpenseCategory }, { merge: true });
                 renderAll();
-                showToast(`Default: ${defaultExpenseCategory}`);
+                showToast("Default: " + defaultExpenseCategory);
             } else {
                 showToast("Please select a valid category");
             }
         };
 
-        document.getElementById('addUserAdminBtn').onclick = () => {
+        document.getElementById('addUserAdminBtn').onclick = function() {
             const name = document.getElementById('newUserName').value.trim();
             const email = document.getElementById('newUserEmail').value.trim();
             const pass = document.getElementById('newUserPass').value;
@@ -2767,7 +2794,7 @@
             }
         };
 
-        document.getElementById('addFundsBtn').onclick = () => {
+        document.getElementById('addFundsBtn').onclick = function() {
             const userId = document.getElementById('fundUserId').value;
             const amount = parseFloat(document.getElementById('fundAmount').value);
             if (userId && amount && amount > 0) {
@@ -2778,7 +2805,7 @@
             }
         };
 
-        document.getElementById('toggleShortcutsCheckbox').onchange = (e) => {
+        document.getElementById('toggleShortcutsCheckbox').onchange = function(e) {
             shortcutsEnabled = e.target.checked;
             showToast(shortcutsEnabled ? "Shortcuts enabled" : "Shortcuts disabled");
         };
