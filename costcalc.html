@@ -438,9 +438,39 @@
         .print-only {
             display: none;
         }
+
+        /* --- LOGIN OVERLAY --- */
+        body.locked { overflow: hidden; }
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg); z-index: 100000;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
-<body>
+<body class="locked">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginOverlay">
+        <div class="neumorphic-panel" style="width: 90%; max-width: 400px; text-align: center; padding: 40px 30px;">
+            <h1 style="color: var(--accent); margin-bottom: 5px; font-size: 2em; text-shadow: var(--shadow-glow);">Estimator Pro</h1>
+            <p style="color: var(--text-light); margin-bottom: 30px; font-weight: bold;">Secure Cloud Access</p>
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label>Admin Email</label>
+                <input type="email" id="loginUser" class="neumorphic-input" placeholder="admin@example.com">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 25px;">
+                <label>Password</label>
+                <input type="password" id="loginPass" class="neumorphic-input" placeholder="••••••••" onkeyup="if(event.key === 'Enter') handleLogin()">
+            </div>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="neumorphic-btn btn-accent" style="flex:1; padding: 12px; font-size: 1.1em;" onclick="handleLogin()">Login</button>
+                <button class="neumorphic-btn" style="flex:1; padding: 12px; font-size: 1.1em; background:var(--info); color:white;" onclick="handleSignup()">Create Account</button>
+            </div>
+            <p style="font-size: 0.75em; color: var(--text-light); margin-top: 15px;">Note: You must enable "Email/Password" in Firebase Authentication settings.</p>
+        </div>
+    </div>
 
     <div id="systemToast" class="toast">Action Successful!</div>
 
@@ -450,9 +480,11 @@
             <span id="cloudStatus" style="font-size: 0.8em; font-weight: bold; color: var(--text-light); display: inline-flex; align-items: center; gap: 5px; margin-right: 10px;">
                 <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--danger); display: inline-block; transition: background 0.3s;" id="cloudStatusIndicator"></span> <span id="cloudStatusText">Offline</span>
             </span>
+            <button class="neumorphic-btn" onclick="updateToLatestRates()" title="Apply current global settings to this order"><span class="status-dot" style="background:var(--accent); box-shadow:0 0 8px var(--accent);"></span>Update Rates</button>
             <button class="neumorphic-btn" onclick="openActualsTracker()"><span class="status-dot" style="background:var(--success); box-shadow:0 0 8px var(--success);"></span>Actuals</button>
             <button class="neumorphic-btn" onclick="openHistoryModal()"><span class="status-dot" style="background:var(--info); box-shadow:0 0 8px var(--info);"></span>History</button>
             <button class="neumorphic-btn" onclick="openAdmin()"><span class="status-dot" style="background:#8e44ad; box-shadow:0 0 8px #8e44ad;"></span>Settings</button>
+            <button class="neumorphic-btn" onclick="logout()"><span class="status-dot" style="background:var(--danger); box-shadow:0 0 8px var(--danger);"></span>Lock App</button>
         </div>
     </div>
 
@@ -467,11 +499,11 @@
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 4px; font-family: monospace; font-size: 1.2em; font-weight: bold; color: var(--text-light); user-select: none;">
-                        <span id="mBtn0" onclick="setQuickMargin(0)" style="cursor:pointer; padding:8px; transition:all 0.2s; border-radius:6px;" title="Actual Cost">0</span>
+                        <span id="mBtn0" onclick="setQuickMargin(0)" style="cursor:pointer; padding:8px; transition:all 0.2s; border-radius:6px;" title="Actual Cost (Press 0)">0</span>
                         <span style="opacity:0.3; padding-bottom:5px;">.</span>
-                        <span id="mBtn30" onclick="setQuickMargin(30)" style="cursor:pointer; padding:8px; transition:all 0.2s; border-radius:6px;" title="30% Margin">3</span>
+                        <span id="mBtn30" onclick="setQuickMargin(30)" style="cursor:pointer; padding:8px; transition:all 0.2s; border-radius:6px;" title="30% Margin (Press 3)">3</span>
                         <span style="opacity:0.3; padding-bottom:5px;">.</span>
-                        <span id="mBtn50" onclick="setQuickMargin(50)" style="cursor:pointer; padding:8px; transition:all 0.2s; border-radius:6px;" title="50% Margin">5</span>
+                        <span id="mBtn50" onclick="setQuickMargin(50)" style="cursor:pointer; padding:8px; transition:all 0.2s; border-radius:6px;" title="50% Margin (Press 5)">5</span>
                     </div>
                 </div>
                 
@@ -648,6 +680,20 @@
                         <option value="digital">Digital Printing</option>
                     </select>
                 </div>
+                
+                <div class="form-group full-width">
+                    <label style="color: var(--accent);">Final Job Size (Auto Layout Optimizer)</label>
+                    <select id="mCardJobSize" class="neumorphic-input" onchange="handleJobSizeChange('card')">
+                        <option value="custom">Manual / Custom Setup</option>
+                        <option value="a3">A3 (11.7" x 16.5")</option>
+                        <option value="a4">A4 (8.3" x 11.7")</option>
+                        <option value="a5">A5 (5.8" x 8.3")</option>
+                        <option value="a6">A6 (4.1" x 5.8")</option>
+                        <option value="q4">1/4th [22x28cm] (8.66" x 11.02")</option>
+                        <option value="q8">1/8th [22x14cm] (8.66" x 5.51")</option>
+                        <option value="q5">1/5th [25.2x19cm] (9.92" x 7.48")</option>
+                    </select>
+                </div>
 
                 <div class="form-group card-offset-only">
                     <label>Colour Mode</label>
@@ -665,12 +711,7 @@
                 <div class="form-group card-offset-only">
                     <label>Machine Size</label>
                     <select id="mCardMasterSheet" class="neumorphic-input" onchange="toggleCardCustomSize(); triggerLiveItemTotal();">
-                        <option value="23x18">23" x 18" (Standard)</option>
-                        <option value="25x18">25" x 18" (Standard)</option>
-                        <option value="20x30">20" x 30" (Medium)</option>
-                        <option value="23x36">23" x 36" (Large)</option>
-                        <option value="25x36">25" x 36" (Large)</option>
-                        <option value="custom">Custom Size...</option>
+                        <!-- Injected via JS -->
                     </select>
                 </div>
                 
@@ -764,6 +805,25 @@
                     <label>Total Pages (Inner)</label>
                     <input type="number" id="mBookPages" class="neumorphic-input" value="8" oninput="triggerLiveItemTotal()">
                 </div>
+                
+                <div class="form-group full-width">
+                    <label style="color: var(--accent);">Final Job Size (Auto Layout Optimizer)</label>
+                    <select id="mBookJobSize" class="neumorphic-input" onchange="handleJobSizeChange('book')">
+                        <option value="custom">Manual / Custom Setup</option>
+                        <option value="a3">A3 (11.7" x 16.5")</option>
+                        <option value="a4">A4 (8.3" x 11.7")</option>
+                        <option value="a5">A5 (5.8" x 8.3")</option>
+                        <option value="a6">A6 (4.1" x 5.8")</option>
+                        <option value="q4">1/4th [22x28cm] (8.66" x 11.02")</option>
+                        <option value="q8">1/8th [22x14cm] (8.66" x 5.51")</option>
+                        <option value="q5">1/5th [25.2x19cm] (9.92" x 7.48")</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width" style="display:flex; flex-direction:row; align-items:center; gap:10px;">
+                    <input type="checkbox" id="mBookCommonPages" style="width:20px; height:20px; box-shadow:none; cursor:pointer;" onchange="triggerLiveItemTotal()">
+                    <label for="mBookCommonPages" style="margin:0; cursor:pointer; color:var(--accent);">Common Pages (Reuse plates for all signatures, e.g. Notebooks)</label>
+                </div>
                 <div class="form-group">
                     <label>Colour Mode</label>
                     <select id="mBookColorMode" class="neumorphic-input" onchange="triggerLiveItemTotal()">
@@ -786,12 +846,7 @@
                 <div class="form-group">
                     <label>Machine / Master Size</label>
                     <select id="mBookMasterSheet" class="neumorphic-input" onchange="toggleBookCustomSize(); triggerLiveItemTotal();">
-                        <option value="23x18">23" x 18" (Standard)</option>
-                        <option value="25x18">25" x 18" (Standard)</option>
-                        <option value="20x30">20" x 30" (Medium)</option>
-                        <option value="23x36">23" x 36" (Large)</option>
-                        <option value="25x36">25" x 36" (Large)</option>
-                        <option value="custom">Custom Size...</option>
+                        <!-- Injected via JS -->
                     </select>
                 </div>
                 
@@ -811,6 +866,15 @@
                 <div class="form-group">
                     <label>Waste Sheets (Per Signature)</label>
                     <input type="number" id="mBookWaste" class="neumorphic-input" value="20" oninput="triggerLiveItemTotal()">
+                </div>
+                <div class="form-group">
+                    <label>Lamination (Inner Pages)</label>
+                    <select id="mBookLamination" class="neumorphic-input" onchange="triggerLiveItemTotal()">
+                        <option value="None">None</option>
+                        <option value="GL">Gloss (GL)</option>
+                        <option value="MT">Matte (MT)</option>
+                        <option value="VL">Velvet (VL)</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Custom Paper Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
@@ -968,6 +1032,7 @@
                 <button class="neumorphic-btn admin-tab btn-accent" id="admin-tab-general" onclick="setAdminTab('general')" style="flex:1; min-width: 150px;">General & Offset</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-digital" onclick="setAdminTab('digital')" style="flex:1; min-width: 150px;">Digital Rates Matrix</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-cloud" onclick="setAdminTab('cloud')" style="flex:1; min-width: 150px;">☁️ Cloud Setup</button>
+                <button class="neumorphic-btn admin-tab" id="admin-tab-security" onclick="setAdminTab('security')" style="flex:1; min-width: 150px;">🔒 Security</button>
             </div>
 
             <div id="admin-sect-general" class="space-y-6">
@@ -1004,7 +1069,26 @@
                     </div>
                 </div>
 
-                <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase;">Offset Machine Class Matrix</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 20px;">
+                    <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin: 0;">Master Paper Sizes & Classes</h3>
+                    <button class="neumorphic-btn" onclick="addAdminMasterPaperRow()" style="font-size:0.8em; padding: 6px 12px;">+ Add Size</button>
+                </div>
+                <div class="neumorphic-panel" style="padding: 15px; overflow-x: auto; margin-top: 10px;">
+                    <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(0,0,0,0.1); color: var(--text-light); font-size: 0.85em;">
+                                <th style="padding: 8px;">Length (inches)</th>
+                                <th style="padding: 8px;">Breadth (inches)</th>
+                                <th style="padding: 8px;">Machine Rate Class</th>
+                                <th style="padding: 8px; width: 60px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminMasterPaperRows">
+                            </tbody>
+                    </table>
+                </div>
+
+                <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px;">Offset Machine Class Matrix</h3>
                 <div class="neumorphic-panel" style="padding: 15px; overflow-x: auto;">
                     <table style="width: 100%; text-align: left; border-collapse: collapse;">
                         <thead>
@@ -1102,6 +1186,28 @@
                     </p>
                 </div>
             </div>
+
+            <div id="admin-sect-security" class="space-y-6 hidden">
+                <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin: 0 0 10px 0;">Firebase Authentication Credentials</h3>
+                <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
+                    <div class="form-group full-width">
+                        <label>Account Email</label>
+                        <input type="email" id="adminUsername" class="neumorphic-input" placeholder="admin@example.com">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Change Password</label>
+                        <input type="password" id="adminPassword" class="neumorphic-input" placeholder="Enter new password (min 6 characters)">
+                    </div>
+                    <div class="form-group full-width">
+                        <button class="neumorphic-btn btn-accent" style="margin-top: 10px;" onclick="updateFirebaseCredentials()">Update Firebase Account</button>
+                    </div>
+                    <div class="form-group full-width">
+                        <p style="font-size: 0.85em; color: var(--danger); margin: 0; font-weight: bold;">
+                            Warning: Updating these credentials requires a recent login. If it fails, lock the app and sign in again.
+                        </p>
+                    </div>
+                </div>
+            </div>
             
             <div class="modal-actions" style="margin-top: 25px;">
                 <button class="neumorphic-btn" style="color:var(--danger); margin-right:auto;" onclick="resetDefaults()">Restore Factory Defaults</button>
@@ -1158,23 +1264,46 @@
         });
 
         document.addEventListener('keydown', function(e) {
+            // Avoid triggering shortcuts when user is typing in an input field
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+
             if (e.shiftKey && (e.key === '+' || e.key === '=')) {
                 e.preventDefault();
                 openItemModal('card');
+            }
+
+            if (!isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                if (e.key === '0') {
+                    e.preventDefault();
+                    setQuickMargin(0);
+                } else if (e.key === '3') {
+                    e.preventDefault();
+                    setQuickMargin(30);
+                } else if (e.key === '5') {
+                    e.preventDefault();
+                    setQuickMargin(50);
+                }
             }
         });
 
         function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 
         function roundUpToTen(val) {
-            // FIX: Removed the aggressive Math.ceil(val/10)*10 rounding for individual components 
-            // because it caused inaccurate margins where 0% markup still generated positive profit.
+            // Eliminated arbitrary rounding to guarantee perfect math accuracy
             return val;
         }
 
         const defaultSettings = {
             paperPriceKg: 85,
             cardCuttingCharge: 40,
+            masterPapers: [
+                { l: 23, b: 18, machClass: 'std' },
+                { l: 25, b: 18, machClass: 'std' },
+                { l: 20, b: 30, machClass: 'med' },
+                { l: 23, b: 36, machClass: 'lrg' },
+                { l: 25, b: 36, machClass: 'lrg' }
+            ],
             offsetRates: {
                 std: { setup: 1800, run: 600 },
                 med: { setup: 2600, run: 700 },
@@ -1232,6 +1361,7 @@
 
         function sanitizeSettings(settings) {
             if (!settings) return JSON.parse(JSON.stringify(defaultSettings));
+            if (!settings.masterPapers || settings.masterPapers.length === 0) settings.masterPapers = JSON.parse(JSON.stringify(defaultSettings.masterPapers));
             if (!settings.foilingConfig) settings.foilingConfig = JSON.parse(JSON.stringify(defaultSettings.foilingConfig));
             if (!settings.singleColorRates) settings.singleColorRates = JSON.parse(JSON.stringify(defaultSettings.singleColorRates));
             if (!settings.offsetRates) settings.offsetRates = JSON.parse(JSON.stringify(defaultSettings.offsetRates));
@@ -1250,8 +1380,17 @@
             orderMarkup: 0,
             cards: [], expenses: [],
             detailedBreakdown: [],
-            actuals: { unexpectedCosts: [] }
+            actuals: { unexpectedCosts: [] },
+            savedRates: null // Freezes historical rates
         };
+
+        // Core helper to retrieve the correct rates (historical vs global)
+        function getRates() {
+            if (state.savedRates) {
+                return sanitizeSettings(state.savedRates);
+            }
+            return appSettings;
+        }
 
         function showToast(msg, isError = false) {
             const toast = document.getElementById('systemToast');
@@ -1294,9 +1433,11 @@
                 calcResult = runBookCalculation(c);
                 paperCost = calcResult.paperCost;
                 printCost = calcResult.printCost;
-                lamCost = 0;
+                lamCost = calcResult.lamCost;
                 sheets = calcResult.sheetsNeeded;
-                breakdownDesc = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages • ${calcResult.signatures} Sig (${calcResult.machClass})`;
+                
+                let commonText = c.commonPages ? ' (Common Pages)' : '';
+                breakdownDesc = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText} • ${calcResult.signatures} Sig (${calcResult.machClass})`;
             } else if (c.printMethod === 'offset') {
                 calcResult = runOffsetCalculation(c);
                 paperCost = calcResult.paperCost;
@@ -1317,7 +1458,7 @@
             
             if (c.postPressRows && c.postPressRows.length > 0) {
                 c.postPressRows.forEach(row => {
-                    const globalProc = appSettings.postPressRates[row.processKey];
+                    const globalProc = getRates().postPressRates[row.processKey];
                     const procName = globalProc ? globalProc.name : 'Unknown Process';
                     const displayDesc = row.desc ? `${procName} (${row.desc})` : procName;
                     
@@ -1335,7 +1476,7 @@
                 });
             } else if (c.postPress && Array.isArray(c.postPress)) {
                 c.postPress.forEach(procKey => {
-                    const proc = appSettings.postPressRates[procKey];
+                    const proc = getRates().postPressRates[procKey];
                     if (proc) {
                         let runCost = 0;
                         if (proc.type === 'perUnit') {
@@ -1358,7 +1499,7 @@
             }
 
             let otherExp = c.otherExp || 0;
-            let cuttingCharge = (c.itemType !== 'book') ? appSettings.cardCuttingCharge : 0;
+            let cuttingCharge = (c.itemType !== 'book') ? getRates().cardCuttingCharge : 0;
 
             let totalActual = paperCost + printCost + lamCost + postPressCost + foilCost + otherExp + cuttingCharge;
 
@@ -1387,16 +1528,18 @@
                 printMethod: document.getElementById('mCardPrintMethod') ? document.getElementById('mCardPrintMethod').value : 'offset',
                 colorMode: document.getElementById(currentModalType === 'book' ? 'mBookColorMode' : 'mCardColorMode').value,
                 gsm: Number(document.getElementById(currentModalType === 'book' ? 'mBookGSM' : 'mCardGSM').value) || 130,
+                jobSize: document.getElementById(currentModalType === 'book' ? 'mBookJobSize' : 'mCardJobSize').value || 'custom',
                 masterSheet: document.getElementById(currentModalType === 'book' ? 'mBookMasterSheet' : 'mCardMasterSheet').value,
                 customL: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomL' : 'mCardCustomL').value) || 0,
                 customB: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomB' : 'mCardCustomB').value) || 0,
                 pages: Number(document.getElementById('mBookPages') ? document.getElementById('mBookPages').value : 8),
+                commonPages: document.getElementById('mBookCommonPages') ? document.getElementById('mBookCommonPages').checked : false,
                 sides: Number(document.getElementById(currentModalType === 'book' ? 'mBookSides' : 'mCardSidesOffset').value) || 2,
                 sets: Number(document.getElementById('mCardSets') ? document.getElementById('mCardSets').value : 1),
                 ups: Number(document.getElementById(currentModalType === 'book' ? 'mBookUps' : 'mCardUps').value) || 4,
                 waste: Number(document.getElementById('mBookWaste') ? document.getElementById('mBookWaste').value : 20),
                 paper: document.getElementById('mCardDigitalPaper') ? document.getElementById('mCardDigitalPaper').value : '',
-                lamination: document.getElementById('mCardLamination') ? document.getElementById('mCardLamination').value : 'None',
+                lamination: document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination') ? document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination').value : 'None',
                 customPaperPrice: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomPaperPrice' : 'mCardCustomPaperPrice').value) || 0,
                 otherExp: Number(document.getElementById(currentModalType === 'book' ? 'mBookOtherExp' : 'mCardOtherExp').value) || 0,
                 postPressRows: JSON.parse(JSON.stringify(activePostPressRows)),
@@ -1435,11 +1578,9 @@
             const container = document.getElementById('markupFieldContainer');
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
-                showToast('Profit Markup Revealed!');
                 document.getElementById('orderMarkup').focus();
             } else {
                 container.classList.add('hidden');
-                showToast('Profit Markup Hidden');
             }
         }
 
@@ -1527,7 +1668,6 @@
                 });
             });
 
-            // Preserve any existing actuals if they were already typed in
             if (state.detailedBreakdown && state.detailedBreakdown.length > 0) {
                 newBreakdown.forEach(newBlock => {
                     let oldBlock = state.detailedBreakdown.find(b => b.id === newBlock.id);
@@ -1555,9 +1695,8 @@
                 return;
             }
 
-            rebuildDetailedBreakdown(); // This ensures state has the latest estimates generated
+            rebuildDetailedBreakdown(); 
             
-            // FIX: Create deep copies so user input doesn't mutate main state until "Save Actuals" is explicitly clicked.
             trackerStateBreakdown = JSON.parse(JSON.stringify(state.detailedBreakdown));
             trackerStateUnexpected = JSON.parse(JSON.stringify(state.actuals.unexpectedCosts || []));
 
@@ -1572,7 +1711,6 @@
             const container = document.getElementById('trackerBreakdownContainer');
             container.innerHTML = '';
 
-            // Render Item Breakdowns
             trackerStateBreakdown.forEach((block, bIndex) => {
                 let html = `
                     <div class="item-breakdown-card">
@@ -1597,7 +1735,6 @@
                 container.insertAdjacentHTML('beforeend', html);
             });
 
-            // Render Unexpected Overhead Costs
             let unexpectedHTML = `
                 <div class="item-breakdown-card" style="border-color: rgba(231, 76, 60, 0.4); background: rgba(231, 76, 60, 0.02);">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid rgba(163,177,198,0.2); padding-bottom: 8px; margin-bottom: 15px;">
@@ -1657,14 +1794,12 @@
         function calculateTrackerVariance() {
             let totalActual = 0;
             
-            // Sum all item block costs
             trackerStateBreakdown.forEach(block => {
                 block.costs.forEach(c => {
                     if (c.act !== '') totalActual += parseFloat(c.act) || 0;
                 });
             });
 
-            // Sum unexpected global costs
             trackerStateUnexpected.forEach(unex => {
                 if (unex.act !== '') totalActual += parseFloat(unex.act) || 0;
             });
@@ -1680,7 +1815,6 @@
         }
 
         window.saveTrackerActuals = function() {
-            // FIX: Apply isolated tracker state back to the main memory structure
             state.detailedBreakdown = JSON.parse(JSON.stringify(trackerStateBreakdown));
             state.actuals.unexpectedCosts = JSON.parse(JSON.stringify(trackerStateUnexpected));
             
@@ -1758,7 +1892,15 @@
             document.getElementById('modalViewOrder').classList.add('active');
         }
 
-        // --- END ACTUALS TRACKER LOGIC ---
+        window.updateToLatestRates = function() {
+            openConfirmModal('Update to Latest Rates?', 'This will recalculate all costs in this order using your current global settings. Proceed?', () => {
+                state.savedRates = JSON.parse(JSON.stringify(appSettings));
+                isDirty = true;
+                rebuildDetailedBreakdown(); 
+                renderAll();
+                showToast('Order updated to latest rates!');
+            });
+        };
 
         function saveProgress() {
             if(!document.getElementById('orderName').value.trim()) {
@@ -1779,7 +1921,10 @@
             }
             state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
             
-            // Rebuild breakdowns to ensure latest estimates are saved
+            if (!state.savedRates) {
+                state.savedRates = JSON.parse(JSON.stringify(appSettings));
+            }
+
             rebuildDetailedBreakdown();
 
             let record = JSON.parse(JSON.stringify(state));
@@ -1811,7 +1956,8 @@
                 orderMarkup: 0,
                 cards: [], expenses: [],
                 detailedBreakdown: [],
-                actuals: { unexpectedCosts: [] }
+                actuals: { unexpectedCosts: [] },
+                savedRates: null
             };
             document.getElementById('orderDate').value = state.orderDate;
             document.getElementById('orderName').value = '';
@@ -2033,14 +2179,14 @@
         }
 
         function getPaperPrice(paper, sheets) {
-            let matrixRow = appSettings.digitalRates[paper];
+            let matrixRow = getRates().digitalRates[paper];
             if (!matrixRow) return 0;
             let tier = sheets > 25 ? 3 : sheets > 15 ? 2 : sheets > 7 ? 1 : 0;
             return matrixRow[tier] || 0;
         }
 
         function getUniqueDigitalPaperNames() {
-            const keys = Object.keys(appSettings.digitalRates);
+            const keys = Object.keys(getRates().digitalRates);
             const baseNames = new Set();
             keys.forEach(k => {
                 const base = k.replace(/_(single|double)$/, '');
@@ -2051,10 +2197,13 @@
 
         function getMachineClass(sheetStr, sheetL = 0, sheetB = 0) {
             if (sheetStr !== 'custom') {
-                if (sheetStr === '23x18' || sheetStr === '25x18') return 'std';
-                if (sheetStr === '20x30') return 'med';
-                return 'lrg'; 
+                const parts = sheetStr.split('x');
+                const sl = parseFloat(parts[0]);
+                const sb = parseFloat(parts[1]);
+                const match = getRates().masterPapers.find(m => m.l === sl && m.b === sb);
+                if (match) return match.machClass;
             }
+            // Fallback for custom or unknown
             let maxD = Math.max(sheetL, sheetB);
             let minD = Math.min(sheetL, sheetB);
             if (maxD <= 25.5 && minD <= 18.5) return 'std';
@@ -2082,7 +2231,7 @@
             if (item.customPaperPrice && item.customPaperPrice > 0) {
                 pricePerSheet = parseFloat(item.customPaperPrice);
             } else {
-                pricePerSheet = (masterArea / 1550) * (item.gsm / 1000) * appSettings.paperPriceKg;
+                pricePerSheet = (masterArea / 1550) * (item.gsm / 1000) * getRates().paperPriceKg;
             }
             let paperCost = sheetsNeeded * pricePerSheet;
             
@@ -2091,14 +2240,14 @@
 
             if (item.colorMode === 'single' || item.colorMode === 'two') {
                 let thousands = impressionsPerSet / 1000;
-                let setupRate = appSettings.singleColorRates.setup;
-                let runRate = appSettings.singleColorRates.run;
+                let setupRate = getRates().singleColorRates.setup;
+                let runRate = getRates().singleColorRates.run;
                 let singleSetCost = (thousands <= 1) ? setupRate : (setupRate + ((Math.ceil(thousands) - 1) * runRate));
                 if (item.colorMode === 'two') singleSetCost *= 2;
                 printCost = singleSetCost * item.sets;
             } else {
                 const machClass = getMachineClass(item.masterSheet, sheetL, sheetB);
-                const machRates = appSettings.offsetRates[machClass] || appSettings.offsetRates.std;
+                const machRates = getRates().offsetRates[machClass] || getRates().offsetRates.std;
                 const roundupImpressions = Math.ceil(impressionsPerSet / 1000);
                 let setCost = (roundupImpressions <= 1) ? machRates.setup : (machRates.setup + ((roundupImpressions - 1) * machRates.run));
                 printCost = setCost * item.sets;
@@ -2106,7 +2255,7 @@
             
             let lamCost = 0;
             if (item.lamination && item.lamination !== 'None') {
-                const rate = appSettings.lamRates.offset[item.lamination] || 0;
+                const rate = getRates().lamRates.offset[item.lamination] || 0;
                 lamCost = (masterArea * rate * sheetsNeeded * item.sides) / 100;
             }
             
@@ -2130,7 +2279,7 @@
                 ratePerSheet = parseFloat(item.customPaperPrice);
                 printCost = ratePerSheet * sheetsNeeded;
             } else {
-                if (appSettings.digitalRates[lookupKey]) {
+                if (getRates().digitalRates[lookupKey]) {
                     ratePerSheet = getPaperPrice(lookupKey, sheetsNeeded);
                     printCost = ratePerSheet * sheetsNeeded;
                 } else {
@@ -2142,7 +2291,7 @@
             
             let lamCost = 0;
             if (item.lamination && item.lamination !== 'None') {
-                const rate = appSettings.lamRates.digital[item.lamination] || 0;
+                const rate = getRates().lamRates.digital[item.lamination] || 0;
                 lamCost = rate * sheetsNeeded * item.sides;
             }
             
@@ -2169,35 +2318,55 @@
             if (item.customPaperPrice && item.customPaperPrice > 0) {
                 pricePerSheet = parseFloat(item.customPaperPrice);
             } else {
-                pricePerSheet = (masterArea / 1550) * (item.gsm / 1000) * appSettings.paperPriceKg;
+                pricePerSheet = (masterArea / 1550) * (item.gsm / 1000) * getRates().paperPriceKg;
             }
             let paperCost = totalSheets * pricePerSheet;
             
             let printCost = 0;
+            let thousandsForCommon = Math.ceil((item.qty * signatures) / 1000);
+            let normalThousands = Math.ceil(item.qty / 1000);
+
             if (item.colorMode === 'single' || item.colorMode === 'two') {
-                let thousands = item.qty / 1000;
-                let setupRate = appSettings.singleColorRates.setup;
-                let runRate = appSettings.singleColorRates.run;
-                let costPerSig = (thousands <= 1) ? setupRate : (setupRate + ((Math.ceil(thousands) - 1) * runRate));
-                if (item.colorMode === 'two') costPerSig *= 2;
-                printCost = costPerSig * signatures;
+                let setupRate = getRates().singleColorRates.setup;
+                let runRate = getRates().singleColorRates.run;
+                
+                if (item.commonPages) {
+                    let costBase = (thousandsForCommon <= 1) ? setupRate : (setupRate + ((thousandsForCommon - 1) * runRate));
+                    if (item.colorMode === 'two') costBase *= 2;
+                    printCost = costBase;
+                } else {
+                    let costPerSig = (normalThousands <= 1) ? setupRate : (setupRate + ((normalThousands - 1) * runRate));
+                    if (item.colorMode === 'two') costPerSig *= 2;
+                    printCost = costPerSig * signatures;
+                }
             } else {
                 let machClass = getMachineClass(item.masterSheet, sheetL, sheetB);
-                let machRates = appSettings.offsetRates[machClass] || appSettings.offsetRates.std;
+                let machRates = getRates().offsetRates[machClass] || getRates().offsetRates.std;
                 
-                let roundupImpressions = Math.ceil(item.qty / 1000);
-                let costPerSignature = machRates.setup;
-                if (roundupImpressions > 1) {
-                    costPerSignature += ((roundupImpressions - 1) * machRates.run);
+                if (item.commonPages) {
+                    let costBase = (thousandsForCommon <= 1) ? machRates.setup : (machRates.setup + ((thousandsForCommon - 1) * machRates.run));
+                    printCost = costBase;
+                } else {
+                    let costPerSignature = machRates.setup;
+                    if (normalThousands > 1) {
+                        costPerSignature += ((normalThousands - 1) * machRates.run);
+                    }
+                    printCost = costPerSignature * signatures;
                 }
-                printCost = costPerSignature * signatures;
             }
             
-            return { paperCost, printCost, lamCost: 0, sheetsNeeded: totalSheets, signatures: signatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet };
+            let lamCost = 0;
+            if (item.lamination && item.lamination !== 'None') {
+                const rate = getRates().lamRates.offset[item.lamination] || 0;
+                // Treat sides multiplicatively for inner pages if laminated
+                lamCost = (masterArea * rate * totalSheets * item.sides) / 100;
+            }
+
+            return { paperCost, printCost, lamCost, sheetsNeeded: totalSheets, signatures: signatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet, commonPages: item.commonPages };
         }
 
         function calculateSingleFoilRow(row, unit = 'cm') {
-            const fCfg = appSettings.foilingConfig;
+            const fCfg = getRates().foilingConfig;
             
             let wCm = row.width;
             let hCm = row.height;
@@ -2267,7 +2436,6 @@
             state.cards.forEach(c => {
                 let data = computeItemActualCosts(c);
                 
-                // FIX: Eliminated arbitrary inner-rounding to ensure mathematically pure subtotals
                 const markedUpPaper = data.paperCost * markupFactor;
                 const markedUpPrint = data.printCost * markupFactor;
                 const markedUpLam = data.lamCost * markupFactor;
@@ -2284,7 +2452,6 @@
 
                 let exactItemClientTotal = markedUpPaper + markedUpPrint + markedUpLam + markedUpPostPressTotal + markedUpFoilTotal + markedUpOtherExp + markedUpCutting;
                 
-                // Only the final outer total gets formatted
                 let itemClientTotal = roundUpToTen(exactItemClientTotal); 
                 
                 grandTotalActual += data.totalActual;
@@ -2314,9 +2481,12 @@
                 let printDescOffice = '';
 
                 if (c.itemType === 'book') {
-                    descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages`;
+                    let commonText = c.commonPages ? ' (Common Pages)' : '';
+                    descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
-                    printDescOffice = `↳ Print Cost (${data.calcResult.signatures} Sig)`;
+                    
+                    let impText = c.commonPages ? `${Math.ceil((c.qty * data.calcResult.signatures) / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
+                    printDescOffice = `↳ Print Cost (${impText})`;
                 } else if (c.printMethod === 'offset') {
                     descCustomer = `Offset Print [${displaySheet}]${colorStr}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
@@ -2437,6 +2607,86 @@
             });
         }
 
+        function populateMasterSheets() {
+            const rates = getRates();
+            const cardSelect = document.getElementById('mCardMasterSheet');
+            const bookSelect = document.getElementById('mBookMasterSheet');
+            if (!cardSelect || !bookSelect) return;
+            
+            let html = '';
+            rates.masterPapers.forEach(m => {
+                const displayStr = `${m.l}x${m.b}`;
+                let classStr = m.machClass === 'std' ? 'Standard' : (m.machClass === 'med' ? 'Medium' : 'Large');
+                html += `<option value="${displayStr}">${m.l}" x ${m.b}" (${classStr})</option>`;
+            });
+            html += `<option value="custom">Custom Size...</option>`;
+            
+            const currCardVal = cardSelect.value;
+            const currBookVal = bookSelect.value;
+            
+            cardSelect.innerHTML = html;
+            bookSelect.innerHTML = html;
+            
+            if (currCardVal) cardSelect.value = currCardVal;
+            if (currBookVal) bookSelect.value = currBookVal;
+        }
+
+        function handleJobSizeChange(type) {
+            const sizeKey = document.getElementById(type === 'book' ? 'mBookJobSize' : 'mCardJobSize').value;
+            if (sizeKey === 'custom') return;
+
+            const sizes = {
+                a3: { l: 16.54, b: 11.69 },
+                a4: { l: 11.69, b: 8.27 },
+                a5: { l: 8.27, b: 5.83 },
+                a6: { l: 5.83, b: 4.13 },
+                q4: { l: 11.02, b: 8.66 }, // 1/4th (22x28cm)
+                q8: { l: 8.66, b: 5.51 },  // 1/8th (22x14cm)
+                q5: { l: 9.92, b: 7.48 }   // 1/5th (25.2x19cm)
+            };
+            const target = sizes[sizeKey];
+            if (!target) return;
+
+            const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
+            
+            if (printMethod === 'offset') {
+                let bestFit = null;
+                let bestScore = -1;
+
+                getRates().masterPapers.forEach(master => {
+                    const masterStr = `${master.l}x${master.b}`;
+                    const ups = autoCalcOffsetUps(target.l, target.b, masterStr);
+                    if (ups > 0) {
+                        const utilization = (target.l * target.b * ups) / (master.l * master.b);
+                        // Penalize area to bias towards small/medium signatures when utilization is close
+                        const area = master.l * master.b;
+                        const score = utilization - (area * 0.0001); 
+                        
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestFit = { masterStr, ups };
+                        }
+                    }
+                });
+
+                if (bestFit) {
+                    document.getElementById(type === 'book' ? 'mBookMasterSheet' : 'mCardMasterSheet').value = bestFit.masterStr;
+                    document.getElementById(type === 'book' ? 'mBookUps' : 'mCardUps').value = bestFit.ups;
+                    toggleCardCustomSize();
+                    toggleBookCustomSize();
+                    showToast(`Auto-Layout: ${bestFit.ups} pieces per sheet on ${bestFit.masterStr}`);
+                } else {
+                    showToast(`Warning: Cannot cleanly fit this size on configured master sheets.`, true);
+                }
+            } else {
+                const ups = autoCalcDigitalUps(target.l, target.b);
+                document.getElementById('mCardUps').value = ups || 1;
+                showToast(`Auto-Layout: ${ups} pieces per Digital Sheet`);
+            }
+            
+            triggerLiveItemTotal();
+        }
+
         function toggleCardCustomSize() {
             const isCustom = document.getElementById('mCardMasterSheet').value === 'custom';
             document.querySelectorAll('.card-custom-size').forEach(el => el.classList.toggle('hidden', !isCustom));
@@ -2452,7 +2702,7 @@
             const container = document.getElementById('modalPostPressContainer');
             container.innerHTML = '';
             
-            const rates = appSettings.postPressRates || {};
+            const rates = getRates().postPressRates || {};
             if (Object.keys(rates).length === 0) {
                 container.innerHTML = `<span style="font-size:0.85em; color:var(--text-light); font-style: italic">No custom post press processes defined in global settings.</span>`;
                 return;
@@ -2511,7 +2761,7 @@
         }
 
         function addPostPressRow() {
-            const rates = appSettings.postPressRates || {};
+            const rates = getRates().postPressRates || {};
             const keys = Object.keys(rates);
             if (keys.length === 0) {
                 showToast("No post-press processes available in settings.", true);
@@ -2537,7 +2787,7 @@
             if (!row) return;
             
             const newKey = document.getElementById(`ppRowKey_${rowId}`).value;
-            const proc = appSettings.postPressRates[newKey];
+            const proc = getRates().postPressRates[newKey];
             if (proc) {
                 row.processKey = newKey;
                 row.rate = proc.rate;
@@ -2555,7 +2805,7 @@
             row.qty = Number(document.getElementById(`ppRowQty_${rowId}`).value) || 0;
             row.rate = parseFloat(document.getElementById(`ppRowRate_${rowId}`).value) || 0;
             
-            const procConfig = appSettings.postPressRates[row.processKey];
+            const procConfig = getRates().postPressRates[row.processKey];
             row.setup = procConfig ? procConfig.setup : 0; 
             
             const procType = procConfig ? procConfig.type : 'perUnit';
@@ -2620,6 +2870,7 @@
 
         function openItemModal(type = 'card', id = null) {
             populateDigitalPaperDropdown();
+            populateMasterSheets();
             document.getElementById('itemEditId').value = id || '';
             activeFoilRows = []; 
             activePostPressRows = []; 
@@ -2642,6 +2893,8 @@
                     document.getElementById('mBookName').value = item.name;
                     document.getElementById('mBookQty').value = item.qty;
                     document.getElementById('mBookPages').value = item.pages || 8;
+                    document.getElementById('mBookCommonPages').checked = item.commonPages || false;
+                    document.getElementById('mBookJobSize').value = item.jobSize || 'custom';
                     document.getElementById('mBookColorMode').value = item.colorMode || 'multi';
                     document.getElementById('mBookSides').value = item.sides || 2;
                     document.getElementById('mBookGSM').value = item.gsm || 130;
@@ -2650,6 +2903,7 @@
                     document.getElementById('mBookCustomB').value = item.customB || '';
                     document.getElementById('mBookUps').value = item.ups || 4;
                     document.getElementById('mBookWaste').value = item.waste || 20;
+                    document.getElementById('mBookLamination').value = item.lamination || 'None';
                     document.getElementById('mBookCustomPaperPrice').value = item.customPaperPrice || 0;
                     document.getElementById('mBookOtherExp').value = item.otherExp || 0;
 
@@ -2658,6 +2912,7 @@
                     document.getElementById('mCardName').value = item.name;
                     document.getElementById('mCardQty').value = item.qty;
                     document.getElementById('mCardPrintMethod').value = item.printMethod || 'offset';
+                    document.getElementById('mCardJobSize').value = item.jobSize || 'custom';
                     document.getElementById('mCardColorMode').value = item.colorMode || 'multi';
                     document.getElementById('mCardGSM').value = item.gsm || 130;
                     document.getElementById('mCardMasterSheet').value = item.masterSheet || '23x18';
@@ -2690,7 +2945,7 @@
                         activePostPressRows = JSON.parse(JSON.stringify(item.postPressRows));
                     } else if (item.postPress && Array.isArray(item.postPress)) {
                         item.postPress.forEach(key => {
-                            const proc = appSettings.postPressRates[key];
+                            const proc = getRates().postPressRates[key];
                             if (proc) {
                                 activePostPressRows.push({
                                     id: Date.now() + Math.random().toString(36).substr(2),
@@ -2710,9 +2965,10 @@
                 document.getElementById('mCardName').value = `Printed Item ${state.cards.length + 1}`;
                 document.getElementById('mCardQty').value = state.globalQty;
                 document.getElementById('mCardPrintMethod').value = 'offset';
+                document.getElementById('mCardJobSize').value = 'custom';
                 document.getElementById('mCardColorMode').value = 'multi';
                 document.getElementById('mCardGSM').value = 130;
-                document.getElementById('mCardMasterSheet').value = '23x18';
+                document.getElementById('mCardMasterSheet').value = getRates().masterPapers.length > 0 ? `${getRates().masterPapers[0].l}x${getRates().masterPapers[0].b}` : '23x18';
                 document.getElementById('mCardCustomL').value = '';
                 document.getElementById('mCardCustomB').value = '';
                 document.getElementById('mCardUnit').value = 'inches';
@@ -2730,14 +2986,17 @@
                 document.getElementById('mBookName').value = `Book Inner Pages ${state.cards.length + 1}`;
                 document.getElementById('mBookQty').value = state.globalQty;
                 document.getElementById('mBookPages').value = 8;
+                document.getElementById('mBookCommonPages').checked = false;
+                document.getElementById('mBookJobSize').value = 'custom';
                 document.getElementById('mBookColorMode').value = 'multi';
                 document.getElementById('mBookSides').value = 2;
                 document.getElementById('mBookGSM').value = 130;
-                document.getElementById('mBookMasterSheet').value = '23x18';
+                document.getElementById('mBookMasterSheet').value = getRates().masterPapers.length > 0 ? `${getRates().masterPapers[0].l}x${getRates().masterPapers[0].b}` : '23x18';
                 document.getElementById('mBookCustomL').value = '';
                 document.getElementById('mBookCustomB').value = '';
                 document.getElementById('mBookUps').value = 4;
                 document.getElementById('mBookWaste').value = 20;
+                document.getElementById('mBookLamination').value = 'None';
                 document.getElementById('mBookCustomPaperPrice').value = 0;
                 document.getElementById('mBookOtherExp').value = 0;
 
@@ -2974,6 +3233,7 @@
                 qty: qty,
                 unlinked: qty !== state.globalQty,
                 printMethod: document.getElementById('mCardPrintMethod').value,
+                jobSize: document.getElementById('mCardJobSize').value || 'custom',
                 colorMode: document.getElementById('mCardColorMode').value,
                 gsm: Number(document.getElementById('mCardGSM').value) || 130,
                 masterSheet: document.getElementById('mCardMasterSheet').value,
@@ -3033,6 +3293,8 @@
                 qty: qty,
                 unlinked: qty !== state.globalQty,
                 pages: Number(document.getElementById('mBookPages').value) || 8,
+                commonPages: document.getElementById('mBookCommonPages').checked,
+                jobSize: document.getElementById('mBookJobSize').value || 'custom',
                 colorMode: document.getElementById('mBookColorMode').value,
                 sides: Number(document.getElementById('mBookSides').value) || 2,
                 gsm: Number(document.getElementById('mBookGSM').value) || 130,
@@ -3041,6 +3303,7 @@
                 customB: Number(document.getElementById('mBookCustomB').value) || '',
                 ups: Number(document.getElementById('mBookUps').value) || 4,
                 waste: Number(document.getElementById('mBookWaste').value) || 20,
+                lamination: document.getElementById('mBookLamination').value,
                 customPaperPrice: Number(document.getElementById('mBookCustomPaperPrice').value) || 0,
                 otherExp: Number(document.getElementById('mBookOtherExp').value) || 0,
                 postPressRows: JSON.parse(JSON.stringify(activePostPressRows))
@@ -3125,6 +3388,7 @@
         // --- ADMIN CONFIGURATION ACTIONS ---
         let adminPaperCount = 0;
         let adminPostPressCount = 0;
+        let adminMasterPaperCount = 0;
 
         function setAdminTab(tab) {
             document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('btn-accent'));
@@ -3133,14 +3397,17 @@
             const sectGeneral = document.getElementById('admin-sect-general');
             const sectDigital = document.getElementById('admin-sect-digital');
             const sectCloud = document.getElementById('admin-sect-cloud');
+            const sectSecurity = document.getElementById('admin-sect-security');
 
             sectGeneral.classList.add('hidden');
             sectDigital.classList.add('hidden');
             sectCloud.classList.add('hidden');
+            sectSecurity.classList.add('hidden');
 
             if (tab === 'general') sectGeneral.classList.remove('hidden');
             else if (tab === 'digital') sectDigital.classList.remove('hidden');
             else if (tab === 'cloud') sectCloud.classList.remove('hidden');
+            else if (tab === 'security') sectSecurity.classList.remove('hidden');
         }
 
         function openAdmin() {
@@ -3173,6 +3440,8 @@
             document.getElementById('adminLamDigMt').value = appSettings.lamRates.digital.MT;
             document.getElementById('adminLamDigVl').value = appSettings.lamRates.digital.VL;
             
+            renderAdminMasterPapers();
+
             adminPostPressCount = 0;
             document.getElementById('adminPostPressRows').innerHTML = '';
             for (let processKey in appSettings.postPressRates) {
@@ -3193,6 +3462,46 @@
             }
             
             document.getElementById('adminModal').classList.add('active');
+        }
+
+        function renderAdminMasterPapers() {
+            const container = document.getElementById('adminMasterPaperRows');
+            container.innerHTML = '';
+            adminMasterPaperCount = 0;
+            if (appSettings.masterPapers && appSettings.masterPapers.length > 0) {
+                appSettings.masterPapers.forEach(paper => {
+                    addAdminMasterPaperRow(paper);
+                });
+            }
+        }
+
+        function addAdminMasterPaperRow(data = { l: 23, b: 18, machClass: 'std' }) {
+            adminMasterPaperCount++;
+            document.getElementById('adminMasterPaperRows').insertAdjacentHTML('beforeend', `
+                <tr id="adminMasterPaperRow_${adminMasterPaperCount}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <td style="padding: 6px 8px;">
+                        <input type="number" id="adminMasterPaperL_${adminMasterPaperCount}" value="${data.l}" class="neumorphic-input" style="padding: 8px;" step="0.1">
+                    </td>
+                    <td style="padding: 6px 8px;">
+                        <input type="number" id="adminMasterPaperB_${adminMasterPaperCount}" value="${data.b}" class="neumorphic-input" style="padding: 8px;" step="0.1">
+                    </td>
+                    <td style="padding: 6px 8px;">
+                        <select id="adminMasterPaperClass_${adminMasterPaperCount}" class="neumorphic-input" style="padding: 8px;">
+                            <option value="std" ${data.machClass === 'std' ? 'selected' : ''}>Standard</option>
+                            <option value="med" ${data.machClass === 'med' ? 'selected' : ''}>Medium</option>
+                            <option value="lrg" ${data.machClass === 'lrg' ? 'selected' : ''}>Large</option>
+                        </select>
+                    </td>
+                    <td style="padding: 6px 8px; text-align: center;">
+                        <button type="button" onclick="removeAdminMasterPaperRow(${adminMasterPaperCount})" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Delete">✕</button>
+                    </td>
+                </tr>
+            `);
+        }
+
+        function removeAdminMasterPaperRow(id) {
+            const row = document.getElementById(`adminMasterPaperRow_${id}`);
+            if (row) row.remove();
         }
 
         function addPostPressRowHTML(key, data) {
@@ -3234,7 +3543,6 @@
             const paperName = parts[0];
             const sides = parts[1] || 'single';
 
-            // FIX: Removed the outer <div...> wrapper on the <select> tag which caused the grid to break on row deletion.
             document.getElementById('adminMatrixGrid').insertAdjacentHTML('beforeend', `
                 <div id="adminRowNameWrap_${adminPaperCount}" style="display:flex; gap:5px; align-items:center; min-width: 150px;">
                     <button type="button" onclick="removeAdminRow(${adminPaperCount})" style="padding:4px 8px; background:var(--danger); color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;" title="Delete">X</button>
@@ -3287,6 +3595,19 @@
             appSettings.lamRates.digital.MT = parseFloat(document.getElementById('adminLamDigMt').value) || 0;
             appSettings.lamRates.digital.VL = parseFloat(document.getElementById('adminLamDigVl').value) || 0;
             
+            let newMasterPapers = [];
+            for (let i = 1; i <= adminMasterPaperCount; i++) {
+                let lInp = document.getElementById(`adminMasterPaperL_${i}`);
+                if (!lInp) continue;
+                let l = parseFloat(lInp.value) || 0;
+                let b = parseFloat(document.getElementById(`adminMasterPaperB_${i}`).value) || 0;
+                let machClass = document.getElementById(`adminMasterPaperClass_${i}`).value;
+                if (l > 0 && b > 0) {
+                    newMasterPapers.push({ l, b, machClass });
+                }
+            }
+            appSettings.masterPapers = newMasterPapers;
+
             let nextPostPressRates = {};
             for (let i = 1; i <= adminPostPressCount; i++) {
                 const keyElem = document.getElementById(`adminPostPressKey_${i}`);
@@ -3353,6 +3674,16 @@
             }
         };
 
+        window.updateToLatestRates = function() {
+            openConfirmModal('Update to Latest Rates?', 'This will recalculate all costs in this order using your current global settings. Proceed?', () => {
+                state.savedRates = JSON.parse(JSON.stringify(appSettings));
+                isDirty = true;
+                rebuildDetailedBreakdown(); 
+                renderAll();
+                showToast('Order updated to latest rates!');
+            });
+        };
+
         // Exposed global mappings
         window.openHistoryModal = openHistoryModal;
         window.openAdmin = openAdmin;
@@ -3405,6 +3736,15 @@
         window.clearFoilCalc = clearFoilCalc;
         window.manualFoilEntry = manualFoilEntry;
         window.filterHistory = filterHistory;
+        window.openActualsTracker = openActualsTracker;
+        window.addTrackerUnexpected = addTrackerUnexpected;
+        window.updateTrackerUnexpectedLabel = updateTrackerUnexpectedLabel;
+        window.updateTrackerUnexpectedCost = updateTrackerUnexpectedCost;
+        window.removeTrackerUnexpected = removeTrackerUnexpected;
+        window.saveTrackerActuals = saveTrackerActuals;
+        window.addAdminMasterPaperRow = addAdminMasterPaperRow;
+        window.removeAdminMasterPaperRow = removeAdminMasterPaperRow;
+        window.handleJobSizeChange = handleJobSizeChange;
 
         // INIT Configuration 
         window.onload = () => {
@@ -3431,7 +3771,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithCustomToken, signInWithEmailAndPassword, createUserWithEmailAndPassword, updatePassword, updateEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         try {
@@ -3454,13 +3794,64 @@
                 const auth = getAuth(app);
                 const db = getFirestore(app);
                 
-                // FIX: Ensure compliance with restrictive iframe environment permissions if missing
                 let appId = 'designspacejobs-estimator';
                 if (typeof __app_id !== 'undefined' && __app_id) {
                     appId = __app_id;
                 }
 
                 let user = null;
+
+                // --- SECURE FIREBASE AUTH METHODS ---
+                window.handleLogin = async function() {
+                    const e = document.getElementById('loginUser').value;
+                    const p = document.getElementById('loginPass').value;
+                    if(!e || !p) { showToast('Enter email and password', true); return; }
+                    try {
+                        await signInWithEmailAndPassword(auth, e, p);
+                    } catch(err) {
+                        showToast('Login Failed: ' + err.message, true);
+                    }
+                };
+
+                window.handleSignup = async function() {
+                    const e = document.getElementById('loginUser').value;
+                    const p = document.getElementById('loginPass').value;
+                    if(!e || !p) { showToast('Enter email and password', true); return; }
+                    try {
+                        await createUserWithEmailAndPassword(auth, e, p);
+                        showToast('Account Created & Secured successfully!');
+                    } catch(err) {
+                        showToast('Signup Failed: ' + err.message, true);
+                    }
+                };
+
+                window.logout = function() {
+                    signOut(auth).then(() => {
+                        showToast('App Locked Securely');
+                    });
+                };
+
+                window.updateFirebaseCredentials = async function() {
+                    if(!auth.currentUser) return;
+                    const newEmail = document.getElementById('adminUsername').value;
+                    const newPass = document.getElementById('adminPassword').value;
+                    try {
+                        if(newEmail && newEmail !== auth.currentUser.email) {
+                            await updateEmail(auth.currentUser, newEmail);
+                        }
+                        if(newPass && newPass.length >= 6) {
+                            await updatePassword(auth.currentUser, newPass);
+                        }
+                        showToast('Credentials updated! (May require re-login)');
+                        document.getElementById('adminPassword').value = '';
+                    } catch(err) {
+                        if (err.code === 'auth/requires-recent-login') {
+                             showToast('Security Error: Please lock the app and login again to change credentials.', true);
+                        } else {
+                             showToast('Update Failed: ' + err.message, true);
+                        }
+                    }
+                };
 
                 window.cloudSaveOrder = function(record) {
                     if (!user) return;
@@ -3529,7 +3920,18 @@
 
                 const initAuth = async () => {
                     try {
-                        await signInAnonymously(auth);
+                        // Allow isolated AI test canvas to work without password block if provided a secure token
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            try {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } catch (tokenErr) {
+                                if (tokenErr.code === 'auth/custom-token-mismatch') {
+                                    console.log("Custom Firebase Project Detected: Falling back to Email/Password authentication.");
+                                } else {
+                                    console.error("Custom token auth failed:", tokenErr);
+                                }
+                            }
+                        }
                     } catch (err) {
                         console.error("Auth initialization failed:", err);
                     }
@@ -3542,11 +3944,17 @@
                     const ind = document.getElementById('cloudStatusIndicator');
                     const txt = document.getElementById('cloudStatusText');
 
-                    if (user) {
+                    if (user && !user.isAnonymous) {
+                        // User is securely authenticated -> Unlock App
+                        document.getElementById('loginOverlay').style.display = 'none';
+                        document.body.classList.remove('locked');
+                        
+                        document.getElementById('adminUsername').value = user.email || '';
+
                         if (ind && txt) {
                             ind.style.background = 'var(--success)';
                             ind.classList.remove('animate-pulse');
-                            txt.textContent = ' Synced';
+                            txt.textContent = ' Secured';
                         }
                         
                         const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'rates');
@@ -3578,10 +3986,14 @@
                             console.error("Sync backup histories failed: ", err);
                         });
                     } else {
+                        // Logged out, anonymous, or unverified -> Force Hard Login Block
+                        document.getElementById('loginOverlay').style.display = 'flex';
+                        document.body.classList.add('locked');
+                        
                         if (ind && txt) {
                             ind.style.background = 'var(--danger)';
                             ind.classList.remove('animate-pulse');
-                            txt.textContent = ' Offline';
+                            txt.textContent = ' Locked';
                         }
                     }
                 });
