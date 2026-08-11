@@ -682,7 +682,7 @@
                 </div>
                 
                 <div class="form-group full-width">
-                    <label style="color: var(--accent);">Final Job Size (Auto Layout Optimizer)</label>
+                    <label style="color: var(--accent);">Finishing Size (Auto Layout Optimizer)</label>
                     <select id="mCardJobSize" class="neumorphic-input" onchange="handleJobSizeChange('card')">
                         <option value="custom">Manual / Custom Setup</option>
                         <option value="a3">A3 (11.7" x 16.5")</option>
@@ -709,8 +709,8 @@
                     <input type="number" id="mCardGSM" class="neumorphic-input" value="130" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group card-offset-only">
-                    <label>Machine Size</label>
-                    <select id="mCardMasterSheet" class="neumorphic-input" onchange="toggleCardCustomSize(); triggerLiveItemTotal();">
+                    <label>Print / Paper Size</label>
+                    <select id="mCardMasterSheet" class="neumorphic-input" onchange="handleMasterSheetChange('card')">
                         <!-- Injected via JS -->
                     </select>
                 </div>
@@ -807,7 +807,7 @@
                 </div>
                 
                 <div class="form-group full-width">
-                    <label style="color: var(--accent);">Final Job Size (Auto Layout Optimizer)</label>
+                    <label style="color: var(--accent);">Finishing Size (Auto Layout Optimizer)</label>
                     <select id="mBookJobSize" class="neumorphic-input" onchange="handleJobSizeChange('book')">
                         <option value="custom">Manual / Custom Setup</option>
                         <option value="a3">A3 (11.7" x 16.5")</option>
@@ -844,8 +844,8 @@
                     <input type="number" id="mBookGSM" class="neumorphic-input" value="130" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
-                    <label>Machine / Master Size</label>
-                    <select id="mBookMasterSheet" class="neumorphic-input" onchange="toggleBookCustomSize(); triggerLiveItemTotal();">
+                    <label>Print / Paper Size</label>
+                    <select id="mBookMasterSheet" class="neumorphic-input" onchange="handleMasterSheetChange('book')">
                         <!-- Injected via JS -->
                     </select>
                 </div>
@@ -1079,7 +1079,7 @@
                             <tr style="border-bottom: 2px solid rgba(0,0,0,0.1); color: var(--text-light); font-size: 0.85em;">
                                 <th style="padding: 8px;">Length (inches)</th>
                                 <th style="padding: 8px;">Breadth (inches)</th>
-                                <th style="padding: 8px;">Machine Rate Class</th>
+                                <th style="padding: 8px;">Print / Paper Rate Class</th>
                                 <th style="padding: 8px; width: 60px;">Action</th>
                             </tr>
                         </thead>
@@ -1300,6 +1300,7 @@
             masterPapers: [
                 { l: 23, b: 18, machClass: 'std' },
                 { l: 25, b: 18, machClass: 'std' },
+                { l: 20, b: 15, machClass: 'std' },
                 { l: 20, b: 30, machClass: 'med' },
                 { l: 23, b: 36, machClass: 'lrg' },
                 { l: 25, b: 36, machClass: 'lrg' }
@@ -2653,7 +2654,7 @@
                 let bestFit = null;
                 let bestScore = -1;
 
-                getRates().masterPapers.forEach(master => {
+                getRates().masterPapers.filter(m => m.machClass === 'std').forEach(master => {
                     const masterStr = `${master.l}x${master.b}`;
                     const ups = autoCalcOffsetUps(target.l, target.b, masterStr);
                     if (ups > 0) {
@@ -2676,7 +2677,7 @@
                     toggleBookCustomSize();
                     showToast(`Auto-Layout: ${bestFit.ups} pieces per sheet on ${bestFit.masterStr}`);
                 } else {
-                    showToast(`Warning: Cannot cleanly fit this size on configured master sheets.`, true);
+                    showToast(`Warning: Cannot cleanly fit this size on configured standard master sheets.`, true);
                 }
             } else {
                 const ups = autoCalcDigitalUps(target.l, target.b);
@@ -2684,6 +2685,35 @@
                 showToast(`Auto-Layout: ${ups} pieces per Digital Sheet`);
             }
             
+            triggerLiveItemTotal();
+        }
+
+        function handleMasterSheetChange(type) {
+            if (type === 'card') toggleCardCustomSize();
+            if (type === 'book') toggleBookCustomSize();
+
+            const sizeKey = document.getElementById(type === 'book' ? 'mBookJobSize' : 'mCardJobSize').value;
+            if (sizeKey !== 'custom') {
+                const sizes = {
+                    a3: { l: 16.54, b: 11.69 },
+                    a4: { l: 11.69, b: 8.27 },
+                    a5: { l: 8.27, b: 5.83 },
+                    a6: { l: 5.83, b: 4.13 },
+                    q4: { l: 11.02, b: 8.66 },
+                    q8: { l: 8.66, b: 5.51 },
+                    q5: { l: 9.92, b: 7.48 }
+                };
+                const target = sizes[sizeKey];
+                const masterSheetStr = document.getElementById(type === 'book' ? 'mBookMasterSheet' : 'mCardMasterSheet').value;
+                
+                if (target && masterSheetStr !== 'custom') {
+                    const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
+                    if (printMethod === 'offset') {
+                        const ups = autoCalcOffsetUps(target.l, target.b, masterSheetStr);
+                        document.getElementById(type === 'book' ? 'mBookUps' : 'mCardUps').value = ups || 1;
+                    }
+                }
+            }
             triggerLiveItemTotal();
         }
 
@@ -3745,6 +3775,7 @@
         window.addAdminMasterPaperRow = addAdminMasterPaperRow;
         window.removeAdminMasterPaperRow = removeAdminMasterPaperRow;
         window.handleJobSizeChange = handleJobSizeChange;
+        window.handleMasterSheetChange = handleMasterSheetChange;
 
         // INIT Configuration 
         window.onload = () => {
