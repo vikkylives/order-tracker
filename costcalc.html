@@ -472,6 +472,9 @@
         </div>
     </div>
 
+    <!-- Client Autocomplete Datalist -->
+    <datalist id="clientsList"></datalist>
+
     <div id="systemToast" class="toast">Action Successful!</div>
 
     <div class="app-header">
@@ -512,15 +515,24 @@
                         <span style="font-weight:800; font-size:0.85em; color:var(--text-light); letter-spacing:1px; min-width:50px;">DATE</span>
                         <input type="date" id="orderDate" class="neumorphic-input" oninput="updateGlobalState()">
                     </div>
-                    <input type="text" id="orderName" class="neumorphic-input" placeholder="Order Name" oninput="updateGlobalState()">
+                    <div class="qty-wrapper">
+                        <span style="font-weight:800; font-size:0.85em; color:var(--text-light); letter-spacing:1px; min-width:50px;">CLIENT</span>
+                        <input type="text" id="clientName" class="neumorphic-input" placeholder="Name / Walk-in" list="clientsList" onchange="autoFillClient()">
+                        <input type="text" id="clientPhone" class="neumorphic-input" placeholder="Phone Number" style="width: 40%;" oninput="updateGlobalState()">
+                    </div>
+                    <input type="text" id="clientCompany" class="neumorphic-input" placeholder="Company / Office Name" oninput="updateGlobalState()">
+                    
+                    <input type="text" id="orderName" class="neumorphic-input" placeholder="Order Name" oninput="updateGlobalState()" style="border-top: 1px dashed rgba(163,177,198,0.5); margin-top: 5px;">
                     <input type="text" id="orderDesc" class="neumorphic-input" placeholder="Order Notes & Details" oninput="updateGlobalState()">
+                    
                     <div class="qty-wrapper">
                         <span style="font-weight:800; font-size:0.85em; color:var(--text-light); letter-spacing:1px; min-width:50px;">QTY</span>
-                        <input type="number" id="globalQty" class="neumorphic-input" value="1000" min="1" oninput="handleGlobalQtyChange()">
+                        <input type="text" inputmode="decimal" id="globalQty" class="neumorphic-input calc-capable" value="1000" oninput="handleGlobalQtyChange()">
                     </div>
                     <div class="qty-wrapper hidden" id="markupFieldContainer">
                         <span style="font-weight:800; font-size:0.85em; color:var(--accent); letter-spacing:1px; min-width:50px;">PROFIT %</span>
-                        <input type="number" id="orderMarkup" class="neumorphic-input" value="0" min="0" max="500" oninput="updateGlobalState()" placeholder="Margin % (e.g. 20)">
+                        <input type="text" inputmode="decimal" id="orderMarkup" class="neumorphic-input calc-capable" value="0" oninput="updateGlobalState()" placeholder="Margin %">
+                        <input type="text" inputmode="decimal" id="manualQuote" class="neumorphic-input calc-capable" placeholder="Manual Quote ₹ Override" oninput="updateGlobalState()" style="color:var(--accent);">
                     </div>
                 </div>
 
@@ -584,7 +596,7 @@
             </div>
 
             <!-- Scrollable Items Area -->
-            <div style="padding: 20px 30px; overflow-y: auto; flex-grow: 1;" id="trackerBreakdownContainer">
+            <div id="trackerBreakdownContainer" style="padding: 20px 30px; overflow-y: auto; flex-grow: 1;">
                 <!-- Javascript generates detailed breakdown cards here -->
             </div>
 
@@ -671,7 +683,7 @@
                 </div>
                 <div class="form-group">
                     <label>Quantity</label>
-                    <input type="number" id="mCardQty" class="neumorphic-input" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mCardQty" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Print Method</label>
@@ -706,7 +718,7 @@
 
                 <div class="form-group card-offset-only">
                     <label>Paper GSM</label>
-                    <input type="number" id="mCardGSM" class="neumorphic-input" value="130" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mCardGSM" class="neumorphic-input calc-capable" value="130" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group card-offset-only">
                     <label>Print / Paper Size</label>
@@ -717,11 +729,11 @@
                 
                 <div class="form-group card-custom-size hidden">
                     <label>Custom Length (inch)</label>
-                    <input type="number" id="mCardCustomL" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mCardCustomL" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group card-custom-size hidden">
                     <label>Custom Breadth (inch)</label>
-                    <input type="number" id="mCardCustomB" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mCardCustomB" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                 </div>
 
                 <div class="form-group card-offset-only">
@@ -733,7 +745,7 @@
                 </div>
                 <div class="form-group card-offset-only">
                     <label>Number of Sets</label>
-                    <input type="number" id="mCardSets" class="neumorphic-input" value="1" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mCardSets" class="neumorphic-input calc-capable" value="1" oninput="triggerLiveItemTotal()">
                 </div>
                 
                 <div class="form-group card-digital-only hidden">
@@ -751,7 +763,7 @@
                 <div class="form-group card-printable">
                     <label>Pcs / Sheet (Ups)</label>
                     <div style="display:flex; gap:8px;">
-                        <input type="number" id="mCardUps" class="neumorphic-input" oninput="triggerLiveItemTotal()">
+                        <input type="text" inputmode="decimal" id="mCardUps" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                         <button type="button" class="neumorphic-btn animate-pulse" onclick="openUpsCalculator()" style="padding: 10px 15px; font-size: 0.8em; white-space: nowrap; font-weight: bold; background: var(--bg); color: var(--accent); box-shadow: var(--shadow-raised);" title="Calculate Pieces per Sheet based on dimensions">
                             📐 Calc
                         </button>
@@ -770,13 +782,13 @@
 
                 <div class="form-group card-printable">
                     <label>Custom Paper Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
-                    <input type="number" id="mCardCustomPaperPrice" class="neumorphic-input" value="0" step="0.01" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mCardCustomPaperPrice" class="neumorphic-input calc-capable" value="0" oninput="triggerLiveItemTotal()">
                 </div>
 
                 <div class="form-group">
                     <label>Foiling Cost (₹)</label>
                     <div style="display:flex; gap: 5px;">
-                        <input type="number" id="mCardFoil" class="neumorphic-input" value="0" oninput="manualFoilEntry()" style="flex:1; padding-left: 8px; padding-right: 8px;">
+                        <input type="text" inputmode="decimal" id="mCardFoil" class="neumorphic-input calc-capable" value="0" oninput="manualFoilEntry()" style="flex:1; padding-left: 8px; padding-right: 8px;">
                         <button type="button" class="neumorphic-btn animate-pulse" onclick="openFoilSubCalculator()" style="padding: 10px; font-size: 0.8em; font-weight: bold; background: var(--bg); color: var(--accent); box-shadow: var(--shadow-raised);" title="Dynamic Foiling Matrix Estimator">
                             📐 Calc
                         </button>
@@ -787,7 +799,7 @@
                 </div>
                 <div class="form-group">
                     <label>Other Expenses (₹)</label>
-                    <input type="number" id="mCardOtherExp" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
+                    <input type="text" inputmode="decimal" id="mCardOtherExp" class="neumorphic-input calc-capable" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
                 </div>
             </div>
 
@@ -799,11 +811,11 @@
                 </div>
                 <div class="form-group">
                     <label>Quantity (Books)</label>
-                    <input type="number" id="mBookQty" class="neumorphic-input" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookQty" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Total Pages (Inner)</label>
-                    <input type="number" id="mBookPages" class="neumorphic-input" value="8" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookPages" class="neumorphic-input calc-capable" value="8" oninput="triggerLiveItemTotal()">
                 </div>
                 
                 <div class="form-group full-width">
@@ -841,7 +853,7 @@
                 </div>
                 <div class="form-group">
                     <label>Paper GSM</label>
-                    <input type="number" id="mBookGSM" class="neumorphic-input" value="130" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookGSM" class="neumorphic-input calc-capable" value="130" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Print / Paper Size</label>
@@ -852,20 +864,20 @@
                 
                 <div class="form-group book-custom-size hidden">
                     <label>Custom Length (inch)</label>
-                    <input type="number" id="mBookCustomL" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookCustomL" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group book-custom-size hidden">
                     <label>Custom Breadth (inch)</label>
-                    <input type="number" id="mBookCustomB" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookCustomB" class="neumorphic-input calc-capable" oninput="triggerLiveItemTotal()">
                 </div>
 
                 <div class="form-group">
                     <label>Pages per Sheet Side (Ups)</label>
-                    <input type="number" id="mBookUps" class="neumorphic-input" value="4" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookUps" class="neumorphic-input calc-capable" value="4" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Waste Sheets (Per Signature)</label>
-                    <input type="number" id="mBookWaste" class="neumorphic-input" value="20" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookWaste" class="neumorphic-input calc-capable" value="20" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Lamination (Inner Pages)</label>
@@ -878,11 +890,11 @@
                 </div>
                 <div class="form-group">
                     <label>Custom Paper Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
-                    <input type="number" id="mBookCustomPaperPrice" class="neumorphic-input" value="0" step="0.01" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mBookCustomPaperPrice" class="neumorphic-input calc-capable" value="0" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Other Expenses (₹)</label>
-                    <input type="number" id="mBookOtherExp" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
+                    <input type="text" inputmode="decimal" id="mBookOtherExp" class="neumorphic-input calc-capable" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
                 </div>
             </div>
 
@@ -894,7 +906,7 @@
                 </div>
                 <div class="form-group">
                     <label>Cost (₹)</label>
-                    <input type="number" id="mExpCost" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()">
+                    <input type="text" inputmode="decimal" id="mExpCost" class="neumorphic-input calc-capable" value="0" oninput="triggerLiveItemTotal()">
                 </div>
             </div>
 
@@ -949,11 +961,11 @@
                 </div>
                 <div class="form-group">
                     <label id="lblCardLength">Length (inches)</label>
-                    <input type="number" id="mCardLength" class="neumorphic-input" value="11" step="0.1">
+                    <input type="text" inputmode="decimal" id="mCardLength" class="neumorphic-input calc-capable" value="11">
                 </div>
                 <div class="form-group">
                     <label id="lblCardBreadth">Breadth (inches)</label>
-                    <input type="number" id="mCardBreadth" class="neumorphic-input" value="8.5" step="0.1">
+                    <input type="text" inputmode="decimal" id="mCardBreadth" class="neumorphic-input calc-capable" value="8.5">
                 </div>
             </div>
 
@@ -1031,41 +1043,42 @@
             <div style="display:flex; gap:10px; margin-bottom: 25px; border-bottom: 2px solid var(--shadow-pressed); padding-bottom: 15px; overflow-x: auto;">
                 <button class="neumorphic-btn admin-tab btn-accent" id="admin-tab-general" onclick="setAdminTab('general')" style="flex:1; min-width: 150px;">General & Offset</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-digital" onclick="setAdminTab('digital')" style="flex:1; min-width: 150px;">Digital Rates Matrix</button>
+                <button class="neumorphic-btn admin-tab" id="admin-tab-clients" onclick="setAdminTab('clients')" style="flex:1; min-width: 150px;">👥 Clients</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-cloud" onclick="setAdminTab('cloud')" style="flex:1; min-width: 150px;">☁️ Cloud Setup</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-security" onclick="setAdminTab('security')" style="flex:1; min-width: 150px;">🔒 Security</button>
             </div>
 
             <div id="admin-sect-general" class="space-y-6">
                 <div class="form-grid">
-                    <div class="form-group"><label>Paper Price per Kg (₹)</label><input type="number" id="adminPaperPriceKg" class="neumorphic-input" step="0.1"></div>
-                    <div class="form-group"><label>Card Base Cutting Charge (₹)</label><input type="number" id="adminCardCutting" class="neumorphic-input"></div>
+                    <div class="form-group"><label>Paper Price per Kg (₹)</label><input type="text" inputmode="decimal" id="adminPaperPriceKg" class="neumorphic-input calc-capable"></div>
+                    <div class="form-group"><label>Card Base Cutting Charge (₹)</label><input type="text" inputmode="decimal" id="adminCardCutting" class="neumorphic-input calc-capable"></div>
                 </div>
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase;">Metallic Foiling & Block Die Settings</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
                     <div class="form-group">
                         <label>Die Margin Buffer (cm)</label>
-                        <input type="number" id="adminBlockMargin" class="neumorphic-input" step="0.1">
+                        <input type="text" inputmode="decimal" id="adminBlockMargin" class="neumorphic-input calc-capable">
                     </div>
                     <div class="form-group">
                         <label>Die Rate per cm² (₹)</label>
-                        <input type="number" id="adminBlockRate" class="neumorphic-input" step="0.01">
+                        <input type="text" inputmode="decimal" id="adminBlockRate" class="neumorphic-input calc-capable">
                     </div>
                     <div class="form-group">
                         <label>Min Block Die Cost (₹)</label>
-                        <input type="number" id="adminBlockMin" class="neumorphic-input" step="1">
+                        <input type="text" inputmode="decimal" id="adminBlockMin" class="neumorphic-input calc-capable">
                     </div>
                     <div class="form-group">
                         <label>Foil Margin Buffer (inch)</label>
-                        <input type="number" id="adminFoilMargin" class="neumorphic-input" step="0.01">
+                        <input type="text" inputmode="decimal" id="adminFoilMargin" class="neumorphic-input calc-capable">
                     </div>
                     <div class="form-group">
                         <label>Foil Rate per sq in (₹)</label>
-                        <input type="number" id="adminFoilRate" class="neumorphic-input" step="0.001">
+                        <input type="text" inputmode="decimal" id="adminFoilRate" class="neumorphic-input calc-capable">
                     </div>
                     <div class="form-group">
                         <label>Min Foil Cost / 1k (₹)</label>
-                        <input type="number" id="adminFoilMin" class="neumorphic-input" step="1">
+                        <input type="text" inputmode="decimal" id="adminFoilMin" class="neumorphic-input calc-capable">
                     </div>
                 </div>
 
@@ -1100,19 +1113,19 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding: 8px; font-weight: bold;">Standard (23x18, 25x18)</td>
-                                <td style="padding: 8px;"><input type="number" id="adminStdSetup" class="neumorphic-input" style="padding: 8px;"></td>
-                                <td style="padding: 8px;"><input type="number" id="adminStdRun" class="neumorphic-input" style="padding: 8px;"></td>
+                                <td style="padding: 8px; font-weight: bold;">Standard (23x18, 25x18, 20x15)</td>
+                                <td style="padding: 8px;"><input type="text" inputmode="decimal" id="adminStdSetup" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="text" inputmode="decimal" id="adminStdRun" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
                             </tr>
                             <tr>
                                 <td style="padding: 8px; font-weight: bold;">Medium (20x30)</td>
-                                <td style="padding: 8px;"><input type="number" id="adminMedSetup" class="neumorphic-input" style="padding: 8px;"></td>
-                                <td style="padding: 8px;"><input type="number" id="adminMedRun" class="neumorphic-input" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="text" inputmode="decimal" id="adminMedSetup" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="text" inputmode="decimal" id="adminMedRun" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
                             </tr>
                             <tr>
                                 <td style="padding: 8px; font-weight: bold;">Large (23x36, 25x36)</td>
-                                <td style="padding: 8px;"><input type="number" id="adminLrgSetup" class="neumorphic-input" style="padding: 8px;"></td>
-                                <td style="padding: 8px;"><input type="number" id="adminLrgRun" class="neumorphic-input" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="text" inputmode="decimal" id="adminLrgSetup" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="text" inputmode="decimal" id="adminLrgRun" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -1120,15 +1133,15 @@
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">Single / Double Colour Rates (Max 25x18)</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
-                    <div class="form-group"><label>1st 1000 Pcs (₹)</label><input type="number" id="adminSingleSetup" class="neumorphic-input" step="1"></div>
-                    <div class="form-group"><label>Next 1000 Pcs (₹)</label><input type="number" id="adminSingleRun" class="neumorphic-input" step="1"></div>
+                    <div class="form-group"><label>1st 1000 Pcs (₹)</label><input type="text" inputmode="decimal" id="adminSingleSetup" class="neumorphic-input calc-capable"></div>
+                    <div class="form-group"><label>Next 1000 Pcs (₹)</label><input type="text" inputmode="decimal" id="adminSingleRun" class="neumorphic-input calc-capable"></div>
                 </div>
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">Offset Lamination Rates</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
-                    <div class="form-group"><label>Offset Gloss (GL) / 100 sqin (₹)</label><input type="number" id="adminLamOffGl" class="neumorphic-input" step="0.01"></div>
-                    <div class="form-group"><label>Offset Matte (MT) / 100 sqin (₹)</label><input type="number" id="adminLamOffMt" class="neumorphic-input" step="0.01"></div>
-                    <div class="form-group"><label>Offset Velvet (VL) / 100 sqin (₹)</label><input type="number" id="adminLamOffVl" class="neumorphic-input" step="0.01"></div>
+                    <div class="form-group"><label>Offset Gloss (GL) / 100 sqin (₹)</label><input type="text" inputmode="decimal" id="adminLamOffGl" class="neumorphic-input calc-capable"></div>
+                    <div class="form-group"><label>Offset Matte (MT) / 100 sqin (₹)</label><input type="text" inputmode="decimal" id="adminLamOffMt" class="neumorphic-input calc-capable"></div>
+                    <div class="form-group"><label>Offset Velvet (VL) / 100 sqin (₹)</label><input type="text" inputmode="decimal" id="adminLamOffVl" class="neumorphic-input calc-capable"></div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1164,9 +1177,30 @@
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">Digital Lamination Rates</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
-                    <div class="form-group"><label>Digital Gloss (GL) / Sheet (₹)</label><input type="number" id="adminLamDigGl" class="neumorphic-input" step="0.01"></div>
-                    <div class="form-group"><label>Digital Matte (MT) / Sheet (₹)</label><input type="number" id="adminLamDigMt" class="neumorphic-input" step="0.01"></div>
-                    <div class="form-group"><label>Digital Velvet (VL) / Sheet (₹)</label><input type="number" id="adminLamDigVl" class="neumorphic-input" step="0.01"></div>
+                    <div class="form-group"><label>Digital Gloss (GL) / Sheet (₹)</label><input type="text" inputmode="decimal" id="adminLamDigGl" class="neumorphic-input calc-capable"></div>
+                    <div class="form-group"><label>Digital Matte (MT) / Sheet (₹)</label><input type="text" inputmode="decimal" id="adminLamDigMt" class="neumorphic-input calc-capable"></div>
+                    <div class="form-group"><label>Digital Velvet (VL) / Sheet (₹)</label><input type="text" inputmode="decimal" id="adminLamDigVl" class="neumorphic-input calc-capable"></div>
+                </div>
+            </div>
+
+            <div id="admin-sect-clients" class="space-y-6 hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin: 0;">Customer Management</h3>
+                    <button class="neumorphic-btn" onclick="addAdminClientRow()" style="font-size:0.8em; padding: 6px 12px;">+ Add Client</button>
+                </div>
+                <div class="neumorphic-panel" style="padding: 15px; overflow-x: auto; margin-top: 10px;">
+                    <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 600px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(0,0,0,0.1); color: var(--text-light); font-size: 0.85em;">
+                                <th style="padding: 8px;">Client Name</th>
+                                <th style="padding: 8px;">Mobile Phone</th>
+                                <th style="padding: 8px;">Company / Office</th>
+                                <th style="padding: 8px; width: 60px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminClientRows">
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -1256,6 +1290,37 @@
         var trackerStateBreakdown = [];
         var trackerStateUnexpected = [];
 
+        // --- MATH PARSER FOR INLINE CALCULATORS ---
+        function parseCalc(val) {
+            if (typeof val === 'number') return val;
+            if (!val && val !== 0) return 0;
+            let str = val.toString().trim();
+            if (/^[0-9+\-*/. ()]+$/.test(str)) {
+                try {
+                    let result = new Function('return ' + str)();
+                    if (isFinite(result)) return result;
+                } catch(e) {}
+            }
+            return parseFloat(str) || 0;
+        }
+
+        document.addEventListener('blur', function(e) {
+            if(e.target && e.target.classList.contains('calc-capable')) {
+                let val = e.target.value;
+                if (/^[0-9+\-*/. ()]+$/.test(val) && /[+\-*/]/.test(val)) {
+                    try {
+                        let res = new Function('return ' + val)();
+                        if(isFinite(res)) {
+                            e.target.value = (Math.round(res * 1000) / 1000).toString();
+                            if (e.target.oninput) e.target.oninput({target: e.target});
+                            triggerLiveItemTotal();
+                            updateGlobalState();
+                        }
+                    } catch(err) {}
+                }
+            }
+        }, true); // Capture phase
+
         window.addEventListener('beforeunload', function (e) {
             if (isDirty) {
                 e.preventDefault();
@@ -1264,7 +1329,6 @@
         });
 
         document.addEventListener('keydown', function(e) {
-            // Avoid triggering shortcuts when user is typing in an input field
             const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
             const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
@@ -1295,6 +1359,8 @@
         }
 
         const defaultSettings = {
+            clients: [],
+            auth: { user: 'admin', pass: 'admin' },
             paperPriceKg: 85,
             cardCuttingCharge: 40,
             masterPapers: [
@@ -1362,6 +1428,8 @@
 
         function sanitizeSettings(settings) {
             if (!settings) return JSON.parse(JSON.stringify(defaultSettings));
+            if (!settings.clients) settings.clients = [];
+            if (!settings.auth) settings.auth = JSON.parse(JSON.stringify(defaultSettings.auth));
             if (!settings.masterPapers || settings.masterPapers.length === 0) settings.masterPapers = JSON.parse(JSON.stringify(defaultSettings.masterPapers));
             if (!settings.foilingConfig) settings.foilingConfig = JSON.parse(JSON.stringify(defaultSettings.foilingConfig));
             if (!settings.singleColorRates) settings.singleColorRates = JSON.parse(JSON.stringify(defaultSettings.singleColorRates));
@@ -1378,12 +1446,23 @@
         var state = {
             id: generateId(),
             orderDate: '', orderName: '', orderDesc: '', globalQty: 1000,
+            clientName: '', clientPhone: '', clientCompany: '', manualQuote: '',
             orderMarkup: 0,
             cards: [], expenses: [],
             detailedBreakdown: [],
             actuals: { unexpectedCosts: [] },
             savedRates: null // Freezes historical rates
         };
+
+        function checkLogin() {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.body.classList.remove('locked');
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+                document.body.classList.add('locked');
+            }
+        }
 
         // Core helper to retrieve the correct rates (historical vs global)
         function getRates() {
@@ -1492,14 +1571,14 @@
                 });
             }
 
-            let foilCost = Number(c.foil) || 0; 
+            let foilCost = parseCalc(c.foil) || 0; 
             if (c.foilRows && c.foilRows.length > 0) {
                 const selectedUnit = c.foilUnit || 'cm';
                 foilCost = recalculateFoilRowsTotal(c.foilRows, selectedUnit);
                 c.foil = foilCost; 
             }
 
-            let otherExp = c.otherExp || 0;
+            let otherExp = parseCalc(c.otherExp) || 0;
             let cuttingCharge = (c.itemType !== 'book') ? getRates().cardCuttingCharge : 0;
 
             let totalActual = paperCost + printCost + lamCost + postPressCost + foilCost + otherExp + cuttingCharge;
@@ -1512,40 +1591,40 @@
 
         function triggerLiveItemTotal() {
             if (currentModalType === 'exp') {
-                const flatCost = Number(document.getElementById('mExpCost').value) || 0;
-                const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
+                const flatCost = parseCalc(document.getElementById('mExpCost').value) || 0;
+                const markupPercent = parseCalc(document.getElementById('orderMarkup').value) || 0;
                 const markupFactor = 1 + (markupPercent / 100);
                 const finalFlat = roundUpToTen(flatCost * markupFactor);
                 document.getElementById('modalItemLiveTotal').innerText = `₹${finalFlat.toFixed(2)}`;
                 return;
             }
 
-            const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            const markupPercent = parseCalc(document.getElementById('orderMarkup').value) || 0;
             const markupFactor = 1 + (markupPercent / 100);
 
             let dummyCard = {
                 itemType: currentModalType,
-                qty: Number(document.getElementById(currentModalType === 'book' ? 'mBookQty' : 'mCardQty').value) || 0,
+                qty: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookQty' : 'mCardQty').value) || 0,
                 printMethod: document.getElementById('mCardPrintMethod') ? document.getElementById('mCardPrintMethod').value : 'offset',
                 colorMode: document.getElementById(currentModalType === 'book' ? 'mBookColorMode' : 'mCardColorMode').value,
-                gsm: Number(document.getElementById(currentModalType === 'book' ? 'mBookGSM' : 'mCardGSM').value) || 130,
+                gsm: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookGSM' : 'mCardGSM').value) || 130,
                 jobSize: document.getElementById(currentModalType === 'book' ? 'mBookJobSize' : 'mCardJobSize').value || 'custom',
                 masterSheet: document.getElementById(currentModalType === 'book' ? 'mBookMasterSheet' : 'mCardMasterSheet').value,
-                customL: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomL' : 'mCardCustomL').value) || 0,
-                customB: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomB' : 'mCardCustomB').value) || 0,
-                pages: Number(document.getElementById('mBookPages') ? document.getElementById('mBookPages').value : 8),
+                customL: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookCustomL' : 'mCardCustomL').value) || 0,
+                customB: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookCustomB' : 'mCardCustomB').value) || 0,
+                pages: parseCalc(document.getElementById('mBookPages') ? document.getElementById('mBookPages').value : 8),
                 commonPages: document.getElementById('mBookCommonPages') ? document.getElementById('mBookCommonPages').checked : false,
-                sides: Number(document.getElementById(currentModalType === 'book' ? 'mBookSides' : 'mCardSidesOffset').value) || 2,
-                sets: Number(document.getElementById('mCardSets') ? document.getElementById('mCardSets').value : 1),
-                ups: Number(document.getElementById(currentModalType === 'book' ? 'mBookUps' : 'mCardUps').value) || 4,
-                waste: Number(document.getElementById('mBookWaste') ? document.getElementById('mBookWaste').value : 20),
+                sides: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookSides' : 'mCardSidesOffset').value) || 2,
+                sets: parseCalc(document.getElementById('mCardSets') ? document.getElementById('mCardSets').value : 1),
+                ups: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookUps' : 'mCardUps').value) || 4,
+                waste: parseCalc(document.getElementById('mBookWaste') ? document.getElementById('mBookWaste').value : 20),
                 paper: document.getElementById('mCardDigitalPaper') ? document.getElementById('mCardDigitalPaper').value : '',
                 lamination: document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination') ? document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination').value : 'None',
-                customPaperPrice: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomPaperPrice' : 'mCardCustomPaperPrice').value) || 0,
-                otherExp: Number(document.getElementById(currentModalType === 'book' ? 'mBookOtherExp' : 'mCardOtherExp').value) || 0,
+                customPaperPrice: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookCustomPaperPrice' : 'mCardCustomPaperPrice').value) || 0,
+                otherExp: parseCalc(document.getElementById(currentModalType === 'book' ? 'mBookOtherExp' : 'mCardOtherExp').value) || 0,
                 postPressRows: JSON.parse(JSON.stringify(activePostPressRows)),
                 foilRows: JSON.parse(JSON.stringify(activeFoilRows)),
-                foil: Number(document.getElementById('mCardFoil') ? document.getElementById('mCardFoil').value : 0)
+                foil: parseCalc(document.getElementById('mCardFoil') ? document.getElementById('mCardFoil').value : 0)
             };
 
             let data = computeItemActualCosts(dummyCard);
@@ -1570,9 +1649,24 @@
             state.orderDate = document.getElementById('orderDate').value;
             state.orderName = document.getElementById('orderName').value;
             state.orderDesc = document.getElementById('orderDesc').value;
-            state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            state.clientName = document.getElementById('clientName').value;
+            state.clientPhone = document.getElementById('clientPhone').value;
+            state.clientCompany = document.getElementById('clientCompany').value;
+            state.manualQuote = document.getElementById('manualQuote').value;
+            state.orderMarkup = parseCalc(document.getElementById('orderMarkup').value) || 0;
             isDirty = true;
             renderAll();
+        }
+
+        function autoFillClient() {
+            let name = document.getElementById('clientName').value.trim();
+            if (!name) return;
+            let client = appSettings.clients.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (client) {
+                document.getElementById('clientPhone').value = client.phone || '';
+                document.getElementById('clientCompany').value = client.company || '';
+            }
+            updateGlobalState();
         }
 
         function toggleMarkupField() {
@@ -1591,7 +1685,7 @@
         }
         
         function syncMarginButtons() {
-            const currentMargin = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            const currentMargin = parseCalc(document.getElementById('orderMarkup').value) || 0;
             ['0', '30', '50'].forEach(val => {
                 const btn = document.getElementById('mBtn' + val);
                 if (btn) {
@@ -1607,7 +1701,7 @@
         }
 
         function handleGlobalQtyChange() {
-            let newQty = Number(document.getElementById('globalQty').value) || 0;
+            let newQty = parseCalc(document.getElementById('globalQty').value) || 0;
             state.globalQty = newQty;
             
             state.cards.forEach(c => { 
@@ -1724,8 +1818,8 @@
                             <div class="cost-label">↳ ${cost.label}</div>
                             <div class="cost-est">Est: ₹${(cost.est || 0).toFixed(2)}</div>
                             <div class="cost-act">
-                                <input type="number" class="neumorphic-input" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
-                                       placeholder="Actual ₹" value="${cost.act}" 
+                                <input type="text" inputmode="decimal" class="neumorphic-input calc-capable" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
+                                       placeholder="Est: ${(cost.est || 0).toFixed(2)}" value="${cost.act}" 
                                        oninput="updateTrackerCost(${bIndex}, ${cIndex}, this.value)">
                             </div>
                         </div>
@@ -1756,7 +1850,7 @@
                                        oninput="updateTrackerUnexpectedLabel(${uIndex}, this.value)">
                             </div>
                             <div class="cost-act" style="flex: 1.5; display:flex; gap:5px;">
-                                <input type="number" class="neumorphic-input" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
+                                <input type="text" inputmode="decimal" class="neumorphic-input calc-capable" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
                                        placeholder="Actual ₹" value="${unex.act}" 
                                        oninput="updateTrackerUnexpectedCost(${uIndex}, this.value)">
                                 <button onclick="removeTrackerUnexpected(${uIndex})" style="background:var(--danger); color:white; border:none; border-radius:6px; padding:0 10px; cursor:pointer;" title="Delete">✕</button>
@@ -1797,12 +1891,13 @@
             
             trackerStateBreakdown.forEach(block => {
                 block.costs.forEach(c => {
-                    if (c.act !== '') totalActual += parseFloat(c.act) || 0;
+                    let val = (c.act !== '' && c.act != null) ? parseCalc(c.act) : parseCalc(c.est);
+                    totalActual += val || 0;
                 });
             });
 
             trackerStateUnexpected.forEach(unex => {
-                if (unex.act !== '') totalActual += parseFloat(unex.act) || 0;
+                if (unex.act !== '') totalActual += parseCalc(unex.act) || 0;
             });
 
             document.getElementById('trackerTotalActualDisplay').innerText = `₹${totalActual.toFixed(2)}`;
@@ -1837,6 +1932,7 @@
                     <div>
                         <h3 style="margin:0; font-size:1.5em; color:var(--text-main);">${state.orderName || 'Unnamed Order'}</h3>
                         <p style="margin:5px 0 0 0; color:var(--text-light); font-size:0.9em; font-weight:bold;">Total Base Quantity: ${state.globalQty}</p>
+                        ${state.clientName ? `<p style="margin:2px 0 0 0; color:var(--info); font-size:0.85em; font-weight:bold;">Client: ${state.clientName}</p>` : ''}
                     </div>
                     <div style="text-align:right;">
                         <p style="margin:0; font-size:0.8em; color:var(--text-light); text-transform:uppercase; font-weight:bold;">Total Estimated Price</p>
@@ -1854,7 +1950,7 @@
                 let gsm = c.gsm ? c.gsm + ' GSM' : '-';
                 let upsStr = c.itemType === 'book' ? c.ups + ' pages / sheet' : c.ups + ' pcs / sheet';
                 
-                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
+                const markupFactor = 1 + ((parseCalc(document.getElementById('orderMarkup').value) || 0) / 100);
                 let itemData = computeItemActualCosts(c);
                 let exactItemClientTotal = itemData.paperCost + itemData.printCost + itemData.lamCost + itemData.postPressCost + itemData.foilCost + itemData.otherExp + itemData.cuttingCharge;
                 let itemClientTotal = roundUpToTen(exactItemClientTotal * markupFactor);
@@ -1877,7 +1973,7 @@
             });
             
             state.expenses.forEach(x => {
-                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
+                const markupFactor = 1 + ((parseCalc(document.getElementById('orderMarkup').value) || 0) / 100);
                 let clientCost = roundUpToTen(x.cost * markupFactor);
                 html += `
                     <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
@@ -1920,7 +2016,7 @@
                 state.orderDate = today;
                 document.getElementById('orderDate').value = today;
             }
-            state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            state.orderMarkup = parseCalc(document.getElementById('orderMarkup').value) || 0;
             
             if (!state.savedRates) {
                 state.savedRates = JSON.parse(JSON.stringify(appSettings));
@@ -1954,6 +2050,7 @@
                 id: generateId(),
                 orderDate: new Date().toISOString().split('T')[0],
                 orderName: '', orderDesc: '', globalQty: 1000,
+                clientName: '', clientPhone: '', clientCompany: '', manualQuote: '',
                 orderMarkup: 0,
                 cards: [], expenses: [],
                 detailedBreakdown: [],
@@ -1963,6 +2060,10 @@
             document.getElementById('orderDate').value = state.orderDate;
             document.getElementById('orderName').value = '';
             document.getElementById('orderDesc').value = '';
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('clientCompany').value = '';
+            document.getElementById('manualQuote').value = '';
             document.getElementById('globalQty').value = 1000;
             document.getElementById('orderMarkup').value = 0;
             isDirty = false;
@@ -2028,6 +2129,10 @@
                 document.getElementById('orderDate').value = state.orderDate || '';
                 document.getElementById('orderName').value = state.orderName || '';
                 document.getElementById('orderDesc').value = state.orderDesc || '';
+                document.getElementById('clientName').value = state.clientName || '';
+                document.getElementById('clientPhone').value = state.clientPhone || '';
+                document.getElementById('clientCompany').value = state.clientCompany || '';
+                document.getElementById('manualQuote').value = state.manualQuote || '';
                 document.getElementById('globalQty').value = state.globalQty || 1000;
                 document.getElementById('orderMarkup').value = state.orderMarkup || 0;
                 closeModal('modalHistory');
@@ -2111,7 +2216,10 @@
                         <div style="display:flex; justify-content:space-between;">
                             <div>
                                 <div><strong>Job Name:</strong> ${state.orderName || 'Unnamed Job'}</div>
-                                <div><strong>Base Quantity:</strong> ${state.globalQty}</div>
+                                <div><strong>Client:</strong> ${state.clientName || 'Walk-in Customer'}</div>
+                                ${state.clientCompany ? `<div><strong>Office:</strong> ${state.clientCompany}</div>` : ''}
+                                ${state.clientPhone ? `<div><strong>Mobile:</strong> ${state.clientPhone}</div>` : ''}
+                                <div style="margin-top:5px;"><strong>Base Quantity:</strong> ${state.globalQty}</div>
                             </div>
                             <div style="text-align:right;">
                                 <div><strong>Date:</strong> ${dateStr}</div>
@@ -2152,8 +2260,8 @@
         }
 
         function triggerCardUpsCalc() {
-            let l = parseFloat(document.getElementById('mCardLength').value) || 0;
-            let b = parseFloat(document.getElementById('mCardBreadth').value) || 0;
+            let l = parseCalc(document.getElementById('mCardLength').value) || 0;
+            let b = parseCalc(document.getElementById('mCardBreadth').value) || 0;
             const unit = document.getElementById('mCardUnit').value;
 
             document.getElementById('lblCardLength').innerText = `Length (${unit === 'inches' ? 'inches' : 'cm'})`;
@@ -2204,7 +2312,6 @@
                 const match = getRates().masterPapers.find(m => m.l === sl && m.b === sb);
                 if (match) return match.machClass;
             }
-            // Fallback for custom or unknown
             let maxD = Math.max(sheetL, sheetB);
             let minD = Math.min(sheetL, sheetB);
             if (maxD <= 25.5 && minD <= 18.5) return 'std';
@@ -2311,9 +2418,14 @@
             }
             const masterArea = sheetL * sheetB;
             
-            let signatures = Math.ceil(item.pages / item.ups);
-            let sheetsPerBook = item.pages / (item.ups * item.sides);
-            let totalSheets = Math.ceil(sheetsPerBook * item.qty) + (item.waste * signatures);
+            let pagesPerSheet = item.ups * item.sides;
+            let signatures = Math.ceil(item.pages / pagesPerSheet);
+            if (item.commonPages) {
+                signatures = 1;
+            }
+            
+            let sheetsPerBook = Math.ceil(item.pages / pagesPerSheet);
+            let totalSheets = (sheetsPerBook * item.qty) + (item.waste * signatures);
             
             let pricePerSheet = 0;
             if (item.customPaperPrice && item.customPaperPrice > 0) {
@@ -2324,42 +2436,31 @@
             let paperCost = totalSheets * pricePerSheet;
             
             let printCost = 0;
-            let thousandsForCommon = Math.ceil((item.qty * signatures) / 1000);
-            let normalThousands = Math.ceil(item.qty / 1000);
+            let impressionsPerSignature = item.qty;
+            if (item.commonPages) {
+                 impressionsPerSignature = item.qty * Math.ceil(item.pages / pagesPerSheet);
+            }
+
+            let thousands = Math.ceil(impressionsPerSignature / 1000);
 
             if (item.colorMode === 'single' || item.colorMode === 'two') {
                 let setupRate = getRates().singleColorRates.setup;
                 let runRate = getRates().singleColorRates.run;
                 
-                if (item.commonPages) {
-                    let costBase = (thousandsForCommon <= 1) ? setupRate : (setupRate + ((thousandsForCommon - 1) * runRate));
-                    if (item.colorMode === 'two') costBase *= 2;
-                    printCost = costBase;
-                } else {
-                    let costPerSig = (normalThousands <= 1) ? setupRate : (setupRate + ((normalThousands - 1) * runRate));
-                    if (item.colorMode === 'two') costPerSig *= 2;
-                    printCost = costPerSig * signatures;
-                }
+                let costPerSig = (thousands <= 1) ? setupRate : (setupRate + ((thousands - 1) * runRate));
+                if (item.colorMode === 'two') costPerSig *= 2;
+                printCost = costPerSig * signatures;
             } else {
                 let machClass = getMachineClass(item.masterSheet, sheetL, sheetB);
                 let machRates = getRates().offsetRates[machClass] || getRates().offsetRates.std;
                 
-                if (item.commonPages) {
-                    let costBase = (thousandsForCommon <= 1) ? machRates.setup : (machRates.setup + ((thousandsForCommon - 1) * machRates.run));
-                    printCost = costBase;
-                } else {
-                    let costPerSignature = machRates.setup;
-                    if (normalThousands > 1) {
-                        costPerSignature += ((normalThousands - 1) * machRates.run);
-                    }
-                    printCost = costPerSignature * signatures;
-                }
+                let costPerSignature = (thousands <= 1) ? machRates.setup : (machRates.setup + ((thousands - 1) * machRates.run));
+                printCost = costPerSignature * signatures;
             }
             
             let lamCost = 0;
             if (item.lamination && item.lamination !== 'None') {
                 const rate = getRates().lamRates.offset[item.lamination] || 0;
-                // Treat sides multiplicatively for inner pages if laminated
                 lamCost = (masterArea * rate * totalSheets * item.sides) / 100;
             }
 
@@ -2415,16 +2516,17 @@
             let receiptHTML = '';
             let itemsHTML = '';
 
-            const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            const markupPercent = parseCalc(document.getElementById('orderMarkup').value) || 0;
             const markupFactor = 1 + (markupPercent / 100);
 
-            if ((state.orderDate || state.orderName || state.orderDesc)) {
+            if ((state.orderDate || state.orderName || state.orderDesc || state.clientName)) {
                 if (state.orderDate && mode === 'screen') {
                     let dateObj = new Date(state.orderDate + 'T00:00:00');
                     let formattedDate = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
                     receiptHTML += `<div style="font-weight:600; color:var(--text-light); margin-bottom:3px; font-size:0.9em;">📅 ${formattedDate}</div>`;
                 }
                 if (mode === 'screen') {
+                    if(state.clientName) receiptHTML += `<div style="font-weight:bold; color:var(--info); font-size:0.9em; margin-bottom:2px;">👤 ${state.clientName} ${state.clientCompany ? `(${state.clientCompany})` : ''}</div>`;
                     receiptHTML += `<div style="font-weight:900; color:var(--text-main); margin-bottom:5px; text-transform:uppercase; font-size:1.1em; word-break: break-word;">${state.orderName || 'UNNAMED JOB'}</div>`;
                     if(state.orderDesc) {
                         receiptHTML += `<div style="color:var(--text-light); font-size:0.9em; margin-bottom:15px; font-style:italic;">${state.orderDesc}</div>`;
@@ -2568,17 +2670,30 @@
                 receiptHTML += `<div class="receipt-line" style="margin-top:10px;"><span><strong>+ ${x.desc}</strong></span><span>₹${displayCost.toFixed(2)}</span></div>`;
             });
 
+            let manualQ = parseCalc(state.manualQuote);
+            let isManualOverride = manualQ > 0;
+            if (isManualOverride) {
+                grandTotalClient = manualQ;
+            }
+
             if (state.cards.length === 0 && state.expenses.length === 0) {
                 receiptHTML = `<div style="text-align:center; color:var(--text-light); margin-top:20px;">No items configured. Click "Add Item" below to begin.</div>`;
             } else if (mode === 'office') {
                 let marginVal = grandTotalClient - grandTotalActual;
+                let overrideBadge = isManualOverride ? `<span style="font-size:0.6em; background:var(--accent); color:white; padding:3px 6px; border-radius:4px; margin-left:10px; vertical-align:middle;">MANUAL QUOTE</span>` : '';
                 receiptHTML += `
                     <div style="margin-top:15px; border-top:2px dashed rgba(163,177,198,0.5); padding-top:10px;">
                         <div class="receipt-line" style="color:var(--text-light);"><span><strong>Subtotal (Actuals)</strong></span><span>₹${grandTotalActual.toFixed(2)}</span></div>
-                        <div class="receipt-line" style="color:var(--accent);"><span><strong>Profit Margin (${markupPercent}%)</strong></span><span>+ ₹${marginVal.toFixed(2)}</span></div>
-                        <div class="receipt-line" style="font-size: 1.2em; border-top:1px solid rgba(163,177,198,0.3); padding-top:10px; margin-top:5px;"><span><strong>GRAND TOTAL</strong></span><span><strong>₹${grandTotalClient.toFixed(2)}</strong></span></div>
+                        <div class="receipt-line" style="color:var(--accent);"><span><strong>Expected Margin</strong></span><span>+ ₹${marginVal.toFixed(2)}</span></div>
+                        <div class="receipt-line" style="font-size: 1.2em; border-top:1px solid rgba(163,177,198,0.3); padding-top:10px; margin-top:5px;"><span><strong>GRAND TOTAL ${overrideBadge}</strong></span><span><strong>₹${grandTotalClient.toFixed(2)}</strong></span></div>
                     </div>
                 `;
+            } else if (mode === 'customer' && isManualOverride) {
+                 receiptHTML += `
+                    <div style="margin-top:15px; border-top:2px dashed rgba(163,177,198,0.5); padding-top:10px; text-align:right;">
+                        <span style="font-size:0.8em; color:var(--text-light); font-style:italic;">Subtotal adjustment applied.</span>
+                    </div>
+                 `;
             }
 
             return { receiptHTML, itemsHTML, grandTotalClient, grandTotalActual };
@@ -2641,9 +2756,9 @@
                 a4: { l: 11.69, b: 8.27 },
                 a5: { l: 8.27, b: 5.83 },
                 a6: { l: 5.83, b: 4.13 },
-                q4: { l: 11.02, b: 8.66 }, // 1/4th (22x28cm)
-                q8: { l: 8.66, b: 5.51 },  // 1/8th (22x14cm)
-                q5: { l: 9.92, b: 7.48 }   // 1/5th (25.2x19cm)
+                q4: { l: 11.02, b: 8.66 }, 
+                q8: { l: 8.66, b: 5.51 },  
+                q5: { l: 9.92, b: 7.48 }   
             };
             const target = sizes[sizeKey];
             if (!target) return;
@@ -2659,7 +2774,6 @@
                     const ups = autoCalcOffsetUps(target.l, target.b, masterStr);
                     if (ups > 0) {
                         const utilization = (target.l * target.b * ups) / (master.l * master.b);
-                        // Penalize area to bias towards small/medium signatures when utilization is close
                         const area = master.l * master.b;
                         const score = utilization - (area * 0.0001); 
                         
@@ -2773,11 +2887,11 @@
                         </div>
                         <div style="flex:1; display:flex; flex-direction:column;">
                             <label style="font-size: 0.6em; color: var(--text-light); text-transform:uppercase; margin-bottom: 4px;">Qty</label>
-                            <input type="number" id="ppRowQty_${row.id}" value="${row.qty}" class="neumorphic-input" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')">
+                            <input type="text" inputmode="decimal" id="ppRowQty_${row.id}" value="${row.qty}" class="neumorphic-input calc-capable" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')">
                         </div>
                         <div style="flex:1; display:flex; flex-direction:column;">
                             <label style="font-size: 0.6em; color: var(--text-light); text-transform:uppercase; margin-bottom: 4px;">Rate (₹)</label>
-                            <input type="number" id="ppRowRate_${row.id}" value="${row.rate}" class="neumorphic-input" style="padding:8px; font-size:0.85em;" step="0.01" oninput="updatePostPressRow('${row.id}')">
+                            <input type="text" inputmode="decimal" id="ppRowRate_${row.id}" value="${row.rate}" class="neumorphic-input calc-capable" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')">
                         </div>
                         <div id="ppRowTotal_${row.id}" style="flex:1.2; font-weight:bold; text-align:right; font-family:monospace; font-size: 1.1em; color: var(--text-main); padding-bottom: 8px;">
                             ₹${rowTotal.toFixed(2)}
@@ -2801,8 +2915,8 @@
             const proc = rates[firstKey];
             
             let currentQtyInput = state.globalQty;
-            if (currentModalType === 'book') currentQtyInput = Number(document.getElementById('mBookQty').value) || state.globalQty;
-            else if (currentModalType === 'card') currentQtyInput = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            if (currentModalType === 'book') currentQtyInput = parseCalc(document.getElementById('mBookQty').value) || state.globalQty;
+            else if (currentModalType === 'card') currentQtyInput = parseCalc(document.getElementById('mCardQty').value) || state.globalQty;
 
             activePostPressRows.push({
                 id: Date.now() + Math.random().toString(36).substr(2),
@@ -2832,8 +2946,8 @@
             if (!row) return;
 
             row.desc = document.getElementById(`ppRowDesc_${rowId}`).value;
-            row.qty = Number(document.getElementById(`ppRowQty_${rowId}`).value) || 0;
-            row.rate = parseFloat(document.getElementById(`ppRowRate_${rowId}`).value) || 0;
+            row.qty = parseCalc(document.getElementById(`ppRowQty_${rowId}`).value) || 0;
+            row.rate = parseCalc(document.getElementById(`ppRowRate_${rowId}`).value) || 0;
             
             const procConfig = getRates().postPressRates[row.processKey];
             row.setup = procConfig ? procConfig.setup : 0; 
@@ -3051,16 +3165,11 @@
             }, 100);
         }
 
-        document.querySelectorAll('#fields-card input, #fields-card select, #fields-book input, #fields-book select, #fields-exp input').forEach(elem => {
-            elem.addEventListener('input', triggerLiveItemTotal);
-            elem.addEventListener('change', triggerLiveItemTotal);
-        });
-
         // --- SUB-CALCULATOR MATHEMATIC TRANSACTIONS ---
         let lastFoilUnit = 'cm';
 
         function openFoilSubCalculator() {
-            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            const cardQtyInputVal = parseCalc(document.getElementById('mCardQty').value) || state.globalQty;
             const foilUnitSelect = document.getElementById('foilSizingUnit');
             let savedUnit = 'cm';
             const id = document.getElementById('itemEditId').value;
@@ -3097,15 +3206,15 @@
                 const qtyInp = document.getElementById(`foilInputQty_${row.id}`);
                 
                 if (widthInp && heightInp) {
-                    let w = parseFloat(widthInp.value) || 0;
-                    let h = parseFloat(heightInp.value) || 0;
+                    let w = parseCalc(widthInp.value) || 0;
+                    let h = parseCalc(heightInp.value) || 0;
                     if (nextUnit === 'inches') { w = w / 2.54; h = h / 2.54; } 
                     else { w = w * 2.54; h = h * 2.54; }
                     row.width = parseFloat(w.toFixed(2));
                     row.height = parseFloat(h.toFixed(2));
                 }
                 if (labelInp) row.label = labelInp.value;
-                if (qtyInp) row.qty = parseFloat(qtyInp.value) || 0;
+                if (qtyInp) row.qty = parseCalc(qtyInp.value) || 0;
             });
 
             lastFoilUnit = nextUnit;
@@ -3113,7 +3222,7 @@
         }
 
         function addFoilCalculatorRow() {
-            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            const cardQtyInputVal = parseCalc(document.getElementById('mCardQty').value) || state.globalQty;
             const currentUnit = document.getElementById('foilSizingUnit').value;
             activeFoilRows.push({
                 id: Date.now() + Math.random(),
@@ -3144,9 +3253,9 @@
             if (!row) return;
 
             row.label = document.getElementById(`foilInputLabel_${rowId}`).value;
-            row.width = parseFloat(document.getElementById(`foilInputWidth_${rowId}`).value) || 0;
-            row.height = parseFloat(document.getElementById(`foilInputHeight_${rowId}`).value) || 0;
-            row.qty = parseFloat(document.getElementById(`foilInputQty_${rowId}`).value) || 0;
+            row.width = parseCalc(document.getElementById(`foilInputWidth_${rowId}`).value) || 0;
+            row.height = parseCalc(document.getElementById(`foilInputHeight_${rowId}`).value) || 0;
+            row.qty = parseCalc(document.getElementById(`foilInputQty_${rowId}`).value) || 0;
 
             isDirty = true;
 
@@ -3198,17 +3307,17 @@
                         <td style="padding: 4px;"><input type="text" id="foilInputLabel_${row.id}" value="${row.label}" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; font-weight: bold; font-size: 0.9em;"></td>
                         <td style="padding: 4px;">
                             <div style="position: relative; display: flex; align-items: center;">
-                                <input type="number" id="foilInputWidth_${row.id}" value="${row.width}" step="0.1" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace; padding-right: 25px;">
+                                <input type="text" inputmode="decimal" id="foilInputWidth_${row.id}" value="${row.width}" class="neumorphic-input calc-capable" style="padding: 8px; text-align: center; font-family: monospace; padding-right: 25px;" oninput="updateFoilRowCalculations('${row.id}')">
                                 <span style="position: absolute; right: 8px; font-size: 0.75em; color: var(--text-light); font-weight: bold;">${selectedUnit}</span>
                             </div>
                         </td>
                         <td style="padding: 4px;">
                             <div style="position: relative; display: flex; align-items: center;">
-                                <input type="number" id="foilInputHeight_${row.id}" value="${row.height}" step="0.1" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace; padding-right: 25px;">
+                                <input type="text" inputmode="decimal" id="foilInputHeight_${row.id}" value="${row.height}" class="neumorphic-input calc-capable" style="padding: 8px; text-align: center; font-family: monospace; padding-right: 25px;" oninput="updateFoilRowCalculations('${row.id}')">
                                 <span style="position: absolute; right: 8px; font-size: 0.75em; color: var(--text-light); font-weight: bold;">${selectedUnit}</span>
                             </div>
                         </td>
-                        <td style="padding: 4px;"><input type="number" id="foilInputQty_${row.id}" value="${row.qty}" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace;"></td>
+                        <td style="padding: 4px;"><input type="text" inputmode="decimal" id="foilInputQty_${row.id}" value="${row.qty}" class="neumorphic-input calc-capable" style="padding: 8px; text-align: center; font-family: monospace;" oninput="updateFoilRowCalculations('${row.id}')"></td>
                         <td id="foilRowBlockCost_${row.id}" style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;">₹${results.blockCost.toFixed(2)}</td>
                         <td id="foilRowFoilCost_${row.id}" style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;">₹${results.foilCost.toFixed(2)}</td>
                         <td style="padding: 8px; text-align: center;"><button type="button" onclick="removeFoilCalculatorRow('${row.id}')" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Wipe Row">✕</button></td>
@@ -3227,9 +3336,9 @@
 
             activeFoilRows.forEach(r => {
                 r.label = document.getElementById(`foilInputLabel_${r.id}`).value;
-                r.width = parseFloat(document.getElementById(`foilInputWidth_${r.id}`).value) || 0;
-                r.height = parseFloat(document.getElementById(`foilInputHeight_${r.id}`).value) || 0;
-                r.qty = parseFloat(document.getElementById(`foilInputQty_${r.id}`).value) || 0;
+                r.width = parseCalc(document.getElementById(`foilInputWidth_${r.id}`).value) || 0;
+                r.height = parseCalc(document.getElementById(`foilInputHeight_${r.id}`).value) || 0;
+                r.qty = parseCalc(document.getElementById(`foilInputQty_${r.id}`).value) || 0;
 
                 const results = calculateSingleFoilRow(r, selectedUnit);
                 grandTotal += results.rowTotal;
@@ -3250,11 +3359,11 @@
 
         function saveCard(addAnother) {
             let id = document.getElementById('itemEditId').value || generateId();
-            let qty = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            let qty = parseCalc(document.getElementById('mCardQty').value) || state.globalQty;
 
             let sidesVal = 1;
-            if (document.getElementById('mCardPrintMethod').value === 'offset') sidesVal = Number(document.getElementById('mCardSidesOffset').value) || 1;
-            else sidesVal = Number(document.getElementById('mCardSidesDigital').value) || 1;
+            if (document.getElementById('mCardPrintMethod').value === 'offset') sidesVal = parseCalc(document.getElementById('mCardSidesOffset').value) || 1;
+            else sidesVal = parseCalc(document.getElementById('mCardSidesDigital').value) || 1;
 
             let cardData = {
                 id: id,
@@ -3265,21 +3374,21 @@
                 printMethod: document.getElementById('mCardPrintMethod').value,
                 jobSize: document.getElementById('mCardJobSize').value || 'custom',
                 colorMode: document.getElementById('mCardColorMode').value,
-                gsm: Number(document.getElementById('mCardGSM').value) || 130,
+                gsm: parseCalc(document.getElementById('mCardGSM').value) || 130,
                 masterSheet: document.getElementById('mCardMasterSheet').value,
-                customL: Number(document.getElementById('mCardCustomL').value) || '',
-                customB: Number(document.getElementById('mCardCustomB').value) || '',
+                customL: parseCalc(document.getElementById('mCardCustomL').value) || '',
+                customB: parseCalc(document.getElementById('mCardCustomB').value) || '',
                 paper: document.getElementById('mCardDigitalPaper').value,
                 unit: document.getElementById('mCardUnit').value,
-                length: parseFloat(document.getElementById('mCardLength').value) || 11,
-                breadth: parseFloat(document.getElementById('mCardBreadth').value) || 8.5,
+                length: parseCalc(document.getElementById('mCardLength').value) || 11,
+                breadth: parseCalc(document.getElementById('mCardBreadth').value) || 8.5,
                 sides: sidesVal,
-                sets: Number(document.getElementById('mCardSets').value) || 1,
+                sets: parseCalc(document.getElementById('mCardSets').value) || 1,
                 lamination: document.getElementById('mCardLamination').value,
-                customPaperPrice: Number(document.getElementById('mCardCustomPaperPrice').value) || 0,
-                ups: Number(document.getElementById('mCardUps').value) || 1,
-                foil: Number(document.getElementById('mCardFoil').value) || 0,
-                otherExp: Number(document.getElementById('mCardOtherExp').value) || 0,
+                customPaperPrice: parseCalc(document.getElementById('mCardCustomPaperPrice').value) || 0,
+                ups: parseCalc(document.getElementById('mCardUps').value) || 1,
+                foil: parseCalc(document.getElementById('mCardFoil').value) || 0,
+                otherExp: parseCalc(document.getElementById('mCardOtherExp').value) || 0,
                 postPressRows: JSON.parse(JSON.stringify(activePostPressRows)), 
                 foilRows: JSON.parse(JSON.stringify(activeFoilRows)), 
                 foilUnit: document.getElementById('foilSizingUnit').value 
@@ -3314,7 +3423,7 @@
 
         function saveBook(addAnother) {
             let id = document.getElementById('itemEditId').value || generateId();
-            let qty = Number(document.getElementById('mBookQty').value) || state.globalQty;
+            let qty = parseCalc(document.getElementById('mBookQty').value) || state.globalQty;
 
             let bookData = {
                 id: id,
@@ -3322,20 +3431,20 @@
                 name: document.getElementById('mBookName').value || 'Book Inner Pages',
                 qty: qty,
                 unlinked: qty !== state.globalQty,
-                pages: Number(document.getElementById('mBookPages').value) || 8,
+                pages: parseCalc(document.getElementById('mBookPages').value) || 8,
                 commonPages: document.getElementById('mBookCommonPages').checked,
                 jobSize: document.getElementById('mBookJobSize').value || 'custom',
                 colorMode: document.getElementById('mBookColorMode').value,
-                sides: Number(document.getElementById('mBookSides').value) || 2,
-                gsm: Number(document.getElementById('mBookGSM').value) || 130,
+                sides: parseCalc(document.getElementById('mBookSides').value) || 2,
+                gsm: parseCalc(document.getElementById('mBookGSM').value) || 130,
                 masterSheet: document.getElementById('mBookMasterSheet').value,
-                customL: Number(document.getElementById('mBookCustomL').value) || '',
-                customB: Number(document.getElementById('mBookCustomB').value) || '',
-                ups: Number(document.getElementById('mBookUps').value) || 4,
-                waste: Number(document.getElementById('mBookWaste').value) || 20,
+                customL: parseCalc(document.getElementById('mBookCustomL').value) || '',
+                customB: parseCalc(document.getElementById('mBookCustomB').value) || '',
+                ups: parseCalc(document.getElementById('mBookUps').value) || 4,
+                waste: parseCalc(document.getElementById('mBookWaste').value) || 20,
                 lamination: document.getElementById('mBookLamination').value,
-                customPaperPrice: Number(document.getElementById('mBookCustomPaperPrice').value) || 0,
-                otherExp: Number(document.getElementById('mBookOtherExp').value) || 0,
+                customPaperPrice: parseCalc(document.getElementById('mBookCustomPaperPrice').value) || 0,
+                otherExp: parseCalc(document.getElementById('mBookOtherExp').value) || 0,
                 postPressRows: JSON.parse(JSON.stringify(activePostPressRows))
             };
 
@@ -3369,7 +3478,7 @@
             let expData = {
                 id: id,
                 desc: document.getElementById('mExpDesc').value || 'Misc Item',
-                cost: Number(document.getElementById('mExpCost').value) || 0
+                cost: parseCalc(document.getElementById('mExpCost').value) || 0
             };
             let index = state.expenses.findIndex(x => x.id === id);
             if (index > -1) state.expenses[index] = expData;
@@ -3416,9 +3525,57 @@
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         // --- ADMIN CONFIGURATION ACTIONS ---
+        let adminClientCount = 0;
         let adminPaperCount = 0;
         let adminPostPressCount = 0;
         let adminMasterPaperCount = 0;
+
+        function renderAdminClients() {
+            const container = document.getElementById('adminClientRows');
+            container.innerHTML = '';
+            adminClientCount = 0;
+            if (appSettings.clients && appSettings.clients.length > 0) {
+                appSettings.clients.forEach(c => addAdminClientRow(c));
+            }
+        }
+
+        function addAdminClientRow(data = {name:'', phone:'', company:''}) {
+            adminClientCount++;
+            document.getElementById('adminClientRows').insertAdjacentHTML('beforeend', `
+                <tr id="adminClientRow_${adminClientCount}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                    <td style="padding: 6px 8px;">
+                        <input type="text" id="adminClientName_${adminClientCount}" value="${data.name}" class="neumorphic-input" style="padding: 8px;" placeholder="Name">
+                    </td>
+                    <td style="padding: 6px 8px;">
+                        <input type="text" id="adminClientPhone_${adminClientCount}" value="${data.phone}" class="neumorphic-input" style="padding: 8px;" placeholder="Phone">
+                    </td>
+                    <td style="padding: 6px 8px;">
+                        <input type="text" id="adminClientCompany_${adminClientCount}" value="${data.company}" class="neumorphic-input" style="padding: 8px;" placeholder="Company">
+                    </td>
+                    <td style="padding: 6px 8px; text-align: center;">
+                        <button type="button" onclick="removeAdminClientRow(${adminClientCount})" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Delete">✕</button>
+                    </td>
+                </tr>
+            `);
+        }
+
+        function removeAdminClientRow(id) {
+            const row = document.getElementById(`adminClientRow_${id}`);
+            if (row) row.remove();
+        }
+
+        function populateClientDatalist() {
+            const dl = document.getElementById('clientsList');
+            if (!dl) return;
+            dl.innerHTML = '';
+            if (appSettings.clients) {
+                appSettings.clients.forEach(c => {
+                    let opt = document.createElement('option');
+                    opt.value = c.name;
+                    dl.appendChild(opt);
+                });
+            }
+        }
 
         function setAdminTab(tab) {
             document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('btn-accent'));
@@ -3426,22 +3583,25 @@
 
             const sectGeneral = document.getElementById('admin-sect-general');
             const sectDigital = document.getElementById('admin-sect-digital');
+            const sectClients = document.getElementById('admin-sect-clients');
             const sectCloud = document.getElementById('admin-sect-cloud');
             const sectSecurity = document.getElementById('admin-sect-security');
 
             sectGeneral.classList.add('hidden');
             sectDigital.classList.add('hidden');
+            sectClients.classList.add('hidden');
             sectCloud.classList.add('hidden');
             sectSecurity.classList.add('hidden');
 
             if (tab === 'general') sectGeneral.classList.remove('hidden');
             else if (tab === 'digital') sectDigital.classList.remove('hidden');
+            else if (tab === 'clients') sectClients.classList.remove('hidden');
             else if (tab === 'cloud') sectCloud.classList.remove('hidden');
             else if (tab === 'security') sectSecurity.classList.remove('hidden');
         }
 
         function openAdmin() {
-            setAdminTab('general'); // Default to general settings
+            setAdminTab('general');
 
             document.getElementById('adminPaperPriceKg').value = appSettings.paperPriceKg;
             document.getElementById('adminCardCutting').value = appSettings.cardCuttingCharge;
@@ -3471,6 +3631,7 @@
             document.getElementById('adminLamDigVl').value = appSettings.lamRates.digital.VL;
             
             renderAdminMasterPapers();
+            renderAdminClients();
 
             adminPostPressCount = 0;
             document.getElementById('adminPostPressRows').innerHTML = '';
@@ -3510,10 +3671,10 @@
             document.getElementById('adminMasterPaperRows').insertAdjacentHTML('beforeend', `
                 <tr id="adminMasterPaperRow_${adminMasterPaperCount}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                     <td style="padding: 6px 8px;">
-                        <input type="number" id="adminMasterPaperL_${adminMasterPaperCount}" value="${data.l}" class="neumorphic-input" style="padding: 8px;" step="0.1">
+                        <input type="text" inputmode="decimal" id="adminMasterPaperL_${adminMasterPaperCount}" value="${data.l}" class="neumorphic-input calc-capable" style="padding: 8px;">
                     </td>
                     <td style="padding: 6px 8px;">
-                        <input type="number" id="adminMasterPaperB_${adminMasterPaperCount}" value="${data.b}" class="neumorphic-input" style="padding: 8px;" step="0.1">
+                        <input type="text" inputmode="decimal" id="adminMasterPaperB_${adminMasterPaperCount}" value="${data.b}" class="neumorphic-input calc-capable" style="padding: 8px;">
                     </td>
                     <td style="padding: 6px 8px;">
                         <select id="adminMasterPaperClass_${adminMasterPaperCount}" class="neumorphic-input" style="padding: 8px;">
@@ -3542,8 +3703,8 @@
                         <input type="text" id="adminPostPressName_${adminPostPressCount}" value="${data.name}" class="neumorphic-input" style="padding: 8px;">
                         <input type="hidden" id="adminPostPressKey_${adminPostPressCount}" value="${key}">
                     </td>
-                    <td style="padding: 6px 8px;"><input type="number" id="adminPostPressSetup_${adminPostPressCount}" value="${data.setup}" class="neumorphic-input" style="padding: 8px;"></td>
-                    <td style="padding: 6px 8px;"><input type="number" id="adminPostPressRate_${adminPostPressCount}" value="${data.rate}" class="neumorphic-input" style="padding: 8px;" step="0.01"></td>
+                    <td style="padding: 6px 8px;"><input type="text" inputmode="decimal" id="adminPostPressSetup_${adminPostPressCount}" value="${data.setup}" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
+                    <td style="padding: 6px 8px;"><input type="text" inputmode="decimal" id="adminPostPressRate_${adminPostPressCount}" value="${data.rate}" class="neumorphic-input calc-capable" style="padding: 8px;"></td>
                     <td style="padding: 6px 8px;">
                         <select id="adminPostPressType_${adminPostPressCount}" class="neumorphic-input" style="padding: 8px; width: 120px;">
                             <option value="perUnit" ${data.type === 'perUnit' ? 'selected' : ''}>Per Unit</option>
@@ -3582,10 +3743,10 @@
                     <option value="single" ${sides === 'single' ? 'selected' : ''}>Single</option>
                     <option value="double" ${sides === 'double' ? 'selected' : ''}>Double</option>
                 </select>
-                <input type="number" id="adminPaperTier0_${adminPaperCount}" value="${tiers[0]}" class="neumorphic-input" style="padding:8px;" step="0.01">
-                <input type="number" id="adminPaperTier1_${adminPaperCount}" value="${tiers[1]}" class="neumorphic-input" style="padding:8px;" step="0.01">
-                <input type="number" id="adminPaperTier2_${adminPaperCount}" value="${tiers[2]}" class="neumorphic-input" style="padding:8px;" step="0.01">
-                <input type="number" id="adminPaperTier3_${adminPaperCount}" value="${tiers[3]}" class="neumorphic-input" style="padding:8px;" step="0.01">
+                <input type="text" inputmode="decimal" id="adminPaperTier0_${adminPaperCount}" value="${tiers[0]}" class="neumorphic-input calc-capable" style="padding:8px;">
+                <input type="text" inputmode="decimal" id="adminPaperTier1_${adminPaperCount}" value="${tiers[1]}" class="neumorphic-input calc-capable" style="padding:8px;">
+                <input type="text" inputmode="decimal" id="adminPaperTier2_${adminPaperCount}" value="${tiers[2]}" class="neumorphic-input calc-capable" style="padding:8px;">
+                <input type="text" inputmode="decimal" id="adminPaperTier3_${adminPaperCount}" value="${tiers[3]}" class="neumorphic-input calc-capable" style="padding:8px;">
             `);
         }
 
@@ -3598,39 +3759,39 @@
         }
 
         function saveAdminSettings() {
-            appSettings.paperPriceKg = parseFloat(document.getElementById('adminPaperPriceKg').value) || 0;
-            appSettings.cardCuttingCharge = Number(document.getElementById('adminCardCutting').value) || 0;
+            appSettings.paperPriceKg = parseCalc(document.getElementById('adminPaperPriceKg').value) || 0;
+            appSettings.cardCuttingCharge = parseCalc(document.getElementById('adminCardCutting').value) || 0;
 
-            appSettings.foilingConfig.blockMargin = parseFloat(document.getElementById('adminBlockMargin').value) || 0;
-            appSettings.foilingConfig.blockRate = parseFloat(document.getElementById('adminBlockRate').value) || 0;
-            appSettings.foilingConfig.blockMinLimit = parseFloat(document.getElementById('adminBlockMin').value) || 0;
-            appSettings.foilingConfig.foilMargin = parseFloat(document.getElementById('adminFoilMargin').value) || 0;
-            appSettings.foilingConfig.foilRate = parseFloat(document.getElementById('adminFoilRate').value) || 0;
-            appSettings.foilingConfig.foilMinLimitPer1k = parseFloat(document.getElementById('adminFoilMin').value) || 0;
+            appSettings.foilingConfig.blockMargin = parseCalc(document.getElementById('adminBlockMargin').value) || 0;
+            appSettings.foilingConfig.blockRate = parseCalc(document.getElementById('adminBlockRate').value) || 0;
+            appSettings.foilingConfig.blockMinLimit = parseCalc(document.getElementById('adminBlockMin').value) || 0;
+            appSettings.foilingConfig.foilMargin = parseCalc(document.getElementById('adminFoilMargin').value) || 0;
+            appSettings.foilingConfig.foilRate = parseCalc(document.getElementById('adminFoilRate').value) || 0;
+            appSettings.foilingConfig.foilMinLimitPer1k = parseCalc(document.getElementById('adminFoilMin').value) || 0;
 
-            appSettings.offsetRates.std.setup = parseFloat(document.getElementById('adminStdSetup').value) || 0;
-            appSettings.offsetRates.std.run = parseFloat(document.getElementById('adminStdRun').value) || 0;
-            appSettings.offsetRates.med.setup = parseFloat(document.getElementById('adminMedSetup').value) || 0;
-            appSettings.offsetRates.med.run = parseFloat(document.getElementById('adminMedRun').value) || 0;
-            appSettings.offsetRates.lrg.setup = parseFloat(document.getElementById('adminLrgSetup').value) || 0;
-            appSettings.offsetRates.lrg.run = parseFloat(document.getElementById('adminLrgRun').value) || 0;
+            appSettings.offsetRates.std.setup = parseCalc(document.getElementById('adminStdSetup').value) || 0;
+            appSettings.offsetRates.std.run = parseCalc(document.getElementById('adminStdRun').value) || 0;
+            appSettings.offsetRates.med.setup = parseCalc(document.getElementById('adminMedSetup').value) || 0;
+            appSettings.offsetRates.med.run = parseCalc(document.getElementById('adminMedRun').value) || 0;
+            appSettings.offsetRates.lrg.setup = parseCalc(document.getElementById('adminLrgSetup').value) || 0;
+            appSettings.offsetRates.lrg.run = parseCalc(document.getElementById('adminLrgRun').value) || 0;
 
-            appSettings.singleColorRates.setup = parseFloat(document.getElementById('adminSingleSetup').value) || 0;
-            appSettings.singleColorRates.run = parseFloat(document.getElementById('adminSingleRun').value) || 0;
+            appSettings.singleColorRates.setup = parseCalc(document.getElementById('adminSingleSetup').value) || 0;
+            appSettings.singleColorRates.run = parseCalc(document.getElementById('adminSingleRun').value) || 0;
 
-            appSettings.lamRates.offset.GL = parseFloat(document.getElementById('adminLamOffGl').value) || 0;
-            appSettings.lamRates.offset.MT = parseFloat(document.getElementById('adminLamOffMt').value) || 0;
-            appSettings.lamRates.offset.VL = parseFloat(document.getElementById('adminLamOffVl').value) || 0;
-            appSettings.lamRates.digital.GL = parseFloat(document.getElementById('adminLamDigGl').value) || 0;
-            appSettings.lamRates.digital.MT = parseFloat(document.getElementById('adminLamDigMt').value) || 0;
-            appSettings.lamRates.digital.VL = parseFloat(document.getElementById('adminLamDigVl').value) || 0;
+            appSettings.lamRates.offset.GL = parseCalc(document.getElementById('adminLamOffGl').value) || 0;
+            appSettings.lamRates.offset.MT = parseCalc(document.getElementById('adminLamOffMt').value) || 0;
+            appSettings.lamRates.offset.VL = parseCalc(document.getElementById('adminLamOffVl').value) || 0;
+            appSettings.lamRates.digital.GL = parseCalc(document.getElementById('adminLamDigGl').value) || 0;
+            appSettings.lamRates.digital.MT = parseCalc(document.getElementById('adminLamDigMt').value) || 0;
+            appSettings.lamRates.digital.VL = parseCalc(document.getElementById('adminLamDigVl').value) || 0;
             
             let newMasterPapers = [];
             for (let i = 1; i <= adminMasterPaperCount; i++) {
                 let lInp = document.getElementById(`adminMasterPaperL_${i}`);
                 if (!lInp) continue;
-                let l = parseFloat(lInp.value) || 0;
-                let b = parseFloat(document.getElementById(`adminMasterPaperB_${i}`).value) || 0;
+                let l = parseCalc(lInp.value) || 0;
+                let b = parseCalc(document.getElementById(`adminMasterPaperB_${i}`).value) || 0;
                 let machClass = document.getElementById(`adminMasterPaperClass_${i}`).value;
                 if (l > 0 && b > 0) {
                     newMasterPapers.push({ l, b, machClass });
@@ -3638,14 +3799,27 @@
             }
             appSettings.masterPapers = newMasterPapers;
 
+            appSettings.clients = [];
+            for (let i = 1; i <= adminClientCount; i++) {
+                let n = document.getElementById(`adminClientName_${i}`);
+                if (n && n.value.trim() !== '') {
+                    appSettings.clients.push({
+                        name: n.value.trim(),
+                        phone: document.getElementById(`adminClientPhone_${i}`).value.trim(),
+                        company: document.getElementById(`adminClientCompany_${i}`).value.trim()
+                    });
+                }
+            }
+            populateClientDatalist();
+
             let nextPostPressRates = {};
             for (let i = 1; i <= adminPostPressCount; i++) {
                 const keyElem = document.getElementById(`adminPostPressKey_${i}`);
                 if (!keyElem) continue;
                 const key = keyElem.value;
                 const name = document.getElementById(`adminPostPressName_${i}`).value.trim();
-                const setup = parseFloat(document.getElementById(`adminPostPressSetup_${i}`).value) || 0;
-                const rate = parseFloat(document.getElementById(`adminPostPressRate_${i}`).value) || 0;
+                const setup = parseCalc(document.getElementById(`adminPostPressSetup_${i}`).value) || 0;
+                const rate = parseCalc(document.getElementById(`adminPostPressRate_${i}`).value) || 0;
                 const type = document.getElementById(`adminPostPressType_${i}`).value;
                 
                 if (name) {
@@ -3663,10 +3837,10 @@
                 if (!name) continue; 
                 let key = `${name}_${sides}`;
                 newMatrix[key] = [
-                    Number(document.getElementById(`adminPaperTier0_${i}`).value) || 0,
-                    Number(document.getElementById(`adminPaperTier1_${i}`).value) || 0,
-                    Number(document.getElementById(`adminPaperTier2_${i}`).value) || 0,
-                    Number(document.getElementById(`adminPaperTier3_${i}`).value) || 0
+                    parseCalc(document.getElementById(`adminPaperTier0_${i}`).value) || 0,
+                    parseCalc(document.getElementById(`adminPaperTier1_${i}`).value) || 0,
+                    parseCalc(document.getElementById(`adminPaperTier2_${i}`).value) || 0,
+                    parseCalc(document.getElementById(`adminPaperTier3_${i}`).value) || 0
                 ];
             }
             appSettings.pricingMatrix = newMatrix;
@@ -3776,9 +3950,13 @@
         window.removeAdminMasterPaperRow = removeAdminMasterPaperRow;
         window.handleJobSizeChange = handleJobSizeChange;
         window.handleMasterSheetChange = handleMasterSheetChange;
+        window.addAdminClientRow = addAdminClientRow;
+        window.removeAdminClientRow = removeAdminClientRow;
+        window.autoFillClient = autoFillClient;
 
         // INIT Configuration 
         window.onload = () => {
+            checkLogin();
             let today = new Date().toISOString().split('T')[0];
             document.getElementById('orderDate').value = today;
             state.orderDate = today;
@@ -3796,6 +3974,7 @@
             if (configInput) {
                 configInput.value = localStorage.getItem('printEstimatorFirebaseConfig') || defaultFirebaseJSON;
             }
+            populateClientDatalist();
             renderAll();
         };
     </script>
@@ -3951,7 +4130,6 @@
 
                 const initAuth = async () => {
                     try {
-                        // Allow isolated AI test canvas to work without password block if provided a secure token
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             try {
                                 await signInWithCustomToken(auth, __initial_auth_token);
@@ -3976,7 +4154,6 @@
                     const txt = document.getElementById('cloudStatusText');
 
                     if (user && !user.isAnonymous) {
-                        // User is securely authenticated -> Unlock App
                         document.getElementById('loginOverlay').style.display = 'none';
                         document.body.classList.remove('locked');
                         
@@ -3993,6 +4170,7 @@
                             if (docSnap.exists()) {
                                 appSettings = sanitizeSettings(docSnap.data());
                                 localStorage.setItem('printEstimatorSettings_v9', JSON.stringify(appSettings));
+                                populateClientDatalist();
                                 renderAll();
                             }
                         }, (error) => {
@@ -4017,7 +4195,6 @@
                             console.error("Sync backup histories failed: ", err);
                         });
                     } else {
-                        // Logged out, anonymous, or unverified -> Force Hard Login Block
                         document.getElementById('loginOverlay').style.display = 'flex';
                         document.body.classList.add('locked');
                         
