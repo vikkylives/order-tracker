@@ -2418,14 +2418,10 @@
             }
             const masterArea = sheetL * sheetB;
             
-            let pagesPerSheet = item.ups * item.sides;
-            let signatures = Math.ceil(item.pages / pagesPerSheet);
-            if (item.commonPages) {
-                signatures = 1;
-            }
-            
-            let sheetsPerBook = Math.ceil(item.pages / pagesPerSheet);
-            let totalSheets = (sheetsPerBook * item.qty) + (item.waste * signatures);
+            let signatures = Math.ceil(item.pages / item.ups);
+            let sheetsPerBook = item.pages / (item.ups * item.sides);
+            let baseSheets = Math.ceil(sheetsPerBook * item.qty);
+            let totalSheets = baseSheets + (item.waste * signatures);
             
             let pricePerSheet = 0;
             if (item.customPaperPrice && item.customPaperPrice > 0) {
@@ -2436,26 +2432,36 @@
             let paperCost = totalSheets * pricePerSheet;
             
             let printCost = 0;
-            let impressionsPerSignature = item.qty;
-            if (item.commonPages) {
-                 impressionsPerSignature = item.qty * Math.ceil(item.pages / pagesPerSheet);
-            }
-
-            let thousands = Math.ceil(impressionsPerSignature / 1000);
+            let thousandsForCommon = Math.ceil(baseSheets / 1000);
+            let normalThousands = Math.ceil(item.qty / 1000);
 
             if (item.colorMode === 'single' || item.colorMode === 'two') {
                 let setupRate = getRates().singleColorRates.setup;
                 let runRate = getRates().singleColorRates.run;
                 
-                let costPerSig = (thousands <= 1) ? setupRate : (setupRate + ((thousands - 1) * runRate));
-                if (item.colorMode === 'two') costPerSig *= 2;
-                printCost = costPerSig * signatures;
+                if (item.commonPages) {
+                    let costBase = (thousandsForCommon <= 1) ? setupRate : (setupRate + ((thousandsForCommon - 1) * runRate));
+                    if (item.colorMode === 'two') costBase *= 2;
+                    printCost = costBase;
+                } else {
+                    let costPerSig = (normalThousands <= 1) ? setupRate : (setupRate + ((normalThousands - 1) * runRate));
+                    if (item.colorMode === 'two') costPerSig *= 2;
+                    printCost = costPerSig * signatures;
+                }
             } else {
                 let machClass = getMachineClass(item.masterSheet, sheetL, sheetB);
                 let machRates = getRates().offsetRates[machClass] || getRates().offsetRates.std;
                 
-                let costPerSignature = (thousands <= 1) ? machRates.setup : (machRates.setup + ((thousands - 1) * machRates.run));
-                printCost = costPerSignature * signatures;
+                if (item.commonPages) {
+                    let costBase = (thousandsForCommon <= 1) ? machRates.setup : (machRates.setup + ((thousandsForCommon - 1) * machRates.run));
+                    printCost = costBase;
+                } else {
+                    let costPerSignature = machRates.setup;
+                    if (normalThousands > 1) {
+                        costPerSignature += ((normalThousands - 1) * machRates.run);
+                    }
+                    printCost = costPerSignature * signatures;
+                }
             }
             
             let lamCost = 0;
@@ -2464,7 +2470,7 @@
                 lamCost = (masterArea * rate * totalSheets * item.sides) / 100;
             }
 
-            return { paperCost, printCost, lamCost, sheetsNeeded: totalSheets, signatures: signatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet, commonPages: item.commonPages };
+            return { paperCost, printCost, lamCost: 0, sheetsNeeded: totalSheets, baseSheets: baseSheets, signatures: signatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet, commonPages: item.commonPages };
         }
 
         function calculateSingleFoilRow(row, unit = 'cm') {
@@ -2588,7 +2594,7 @@
                     descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
                     
-                    let impText = c.commonPages ? `${Math.ceil((c.qty * data.calcResult.signatures) / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
+                    let impText = c.commonPages ? `${Math.ceil(data.calcResult.baseSheets / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
                     printDescOffice = `↳ Print Cost (${impText})`;
                 } else if (c.printMethod === 'offset') {
                     descCustomer = `Offset Print [${displaySheet}]${colorStr}`;
