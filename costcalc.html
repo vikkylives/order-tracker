@@ -1286,6 +1286,65 @@
                 }
             }
         });
+// --- GLOBAL INLINE CALCULATOR ---
+        
+        // 1. Automatically convert number inputs to text so the browser allows math symbols (+, *, /)
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.type = 'text';
+                input.inputMode = 'decimal'; // Keeps the handy number pad open on mobile devices
+            });
+        });
+
+        // 2. The Calculation Engine
+        function evaluateInlineMath(input) {
+            if (!input || input.tagName !== 'INPUT') return;
+
+            // EXCLUSION LIST: Ignore text fields meant for names or descriptions
+            const inputId = (input.id || '').toLowerCase();
+            const isExcluded = inputId.includes('name') || 
+                               inputId.includes('desc') || 
+                               inputId.includes('label') ||
+                               inputId.includes('search') ||
+                               input.type === 'password' || 
+                               input.type === 'email';
+
+            if (isExcluded) return;
+
+            const expression = String(input.value);
+            
+            // Only calculate if a math operator is present
+            if (/[\+\-\*\/]/.test(expression)) {
+                try {
+                    // Sanitize the input for safety
+                    const sanitized = expression.replace(/[^0-9+\-*/(). ]/g, '');
+                    if (sanitized) {
+                        // Calculate the result
+                        const result = new Function('return (' + sanitized + ')')();
+                        // Round to 2 decimal places if necessary, or keep whole
+                        input.value = Number.isInteger(result) ? result : parseFloat(result.toFixed(2));
+                        
+                        // Force the app to recalculate totals
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                } catch (error) {
+                    console.warn("Incomplete math expression entered.");
+                }
+            }
+        }
+
+        // 3. Trigger calculation when pressing Enter
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                evaluateInlineMath(document.activeElement);
+            }
+        });
+
+        // 4. Trigger calculation when Tabbing out or clicking away
+        document.addEventListener('focusout', function(event) {
+            evaluateInlineMath(event.target);
+        });
 
         function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
 
@@ -2311,8 +2370,12 @@
             }
             const masterArea = sheetL * sheetB;
             
-           let pagesPerSheet = item.ups * item.sides;
-            let signatures = Math.ceil(item.pages / pagesPerSheet);
+         let pagesPerSheet = item.ups * item.sides;
+            
+            // Store the real number of plates/passes before we override it
+            let rawSignatures = Math.ceil(item.pages / item.ups);
+            let signatures = rawSignatures;
+            
             let sheetsPerBook = item.pages / pagesPerSheet;
             let baseSheets = Math.ceil(sheetsPerBook * item.qty);
 
@@ -2331,7 +2394,8 @@
             let paperCost = totalSheets * pricePerSheet;
             
             let printCost = 0;
-            let thousandsForCommon = Math.ceil(baseSheets / 1000);
+            // Use the true impression formula: Qty * (Pages / Ups)
+            let thousandsForCommon = Math.ceil((item.qty * rawSignatures) / 1000);
             let normalThousands = Math.ceil(item.qty / 1000);
 
             if (item.colorMode === 'single' || item.colorMode === 'two') {
@@ -2370,7 +2434,7 @@
                 lamCost = (masterArea * rate * totalSheets * item.sides) / 100;
             }
 
-           return { paperCost, printCost, lamCost, sheetsNeeded: totalSheets, baseSheets: baseSheets, signatures: signatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet, commonPages: item.commonPages };
+         return { paperCost, printCost, lamCost, sheetsNeeded: totalSheets, baseSheets: baseSheets, signatures: signatures, rawSignatures: rawSignatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet, commonPages: item.commonPages };
         }
 
         function calculateSingleFoilRow(row, unit = 'cm') {
@@ -2435,7 +2499,9 @@
                     receiptHTML += `<div style="font-weight:900; color:var(--text-main); margin-bottom:5px; text-transform:uppercase; font-size:1.1em; word-break: break-word;">${state.orderName || 'UNNAMED JOB'}</div>`;
                     if(state.orderDesc) {
                         receiptHTML += `<div style="color:var(--text-light); font-size:0.9em; margin-bottom:15px; font-style:italic;">${state.orderDesc}</div>`;
-                    } else {
+                    } 
+else 
+{
                         receiptHTML += `<div style="margin-bottom:15px;"></div>`;
                     }
                 }
@@ -2493,7 +2559,8 @@
                     descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
                     
-                    let impText = c.commonPages ? `${Math.ceil(data.calcResult.baseSheets / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
+                    let impText = c.commonPages ? `${Math.ceil((c.qty * data.calcResult.rawSignatures) / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
+
                     printDescOffice = `↳ Print Cost (${impText})`;
                 } else if (c.printMethod === 'offset') {
                     descCustomer = `Offset Print [${displaySheet}]${colorStr}`;
