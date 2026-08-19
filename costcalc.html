@@ -179,13 +179,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 20px;
+            padding: 20px 20px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             position: sticky;
             top: 20px;
             height: calc(100vh - 40px);
             box-sizing: border-box;
-            overflow-y: auto;
         }
         .hud-title {
             font-size: 1.3em; font-weight: 800; letter-spacing: 1px;
@@ -226,9 +225,8 @@
             font-size: 0.95em; 
             padding: 15px; border-radius: 10px;
             box-shadow: var(--shadow-pressed);
-            overflow-y: auto; min-height: 250px;
+            overflow-y: auto; min-height: 150px;
             box-sizing: border-box;
-            margin-bottom: 20px;
         }
         .receipt-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(163,177,198,0.2); }
         .receipt-subline { display: flex; justify-content: space-between; padding: 3px 0 3px 15px; font-size: 0.85em; color: var(--text-light); }
@@ -357,28 +355,6 @@
             height: 32px;
             stroke-width: 3.5;
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
-        }
-
-        /* --- AUTOMATIC AUTOCOMPLETE STYLES --- */
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid #d4d4d4;
-            border-bottom: none;
-            border-top: none;
-            z-index: 99;
-            top: 100%;
-            left: 0;
-            right: 0;
-        }
-        .autocomplete-items div {
-            padding: 10px;
-            cursor: pointer;
-            background-color: var(--bg);
-            border-bottom: 1px solid #d4d4d4;
-            font-weight: bold;
-        }
-        .autocomplete-items div:hover {
-            background-color: #e9e9e9;
         }
 
         /* --- MOBILE RESPONSIVENESS --- */
@@ -519,7 +495,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
                     <div class="hud-title" style="margin-bottom: 0;">
-                        <span class="status-dot" onclick="toggleMarkupField()"></span> <span id="displayOrderId">ORDER DETAILS</span>
+                        <span class="status-dot" onclick="toggleMarkupField()"></span> ORDER DETAILS
                     </div>
                     
                     <div style="display: flex; align-items: center; gap: 4px; font-family: monospace; font-size: 1.2em; font-weight: bold; color: var(--text-light); user-select: none;">
@@ -536,30 +512,15 @@
                         <span style="font-weight:800; font-size:0.85em; color:var(--text-light); letter-spacing:1px; min-width:50px;">DATE</span>
                         <input type="date" id="orderDate" class="neumorphic-input" oninput="updateGlobalState()">
                     </div>
-                    
-                    <div style="position: relative;">
-                        <input type="text" id="clientName" class="neumorphic-input calc-input" placeholder="Client / Customer Name" oninput="autoFillClient(); updateGlobalState();">
-                        <div id="clientAutocomplete" class="autocomplete-items"></div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="text" id="clientPhone" class="neumorphic-input calc-input" placeholder="Phone Number" oninput="updateGlobalState()">
-                        <input type="text" id="clientCompany" class="neumorphic-input calc-input" placeholder="Company" oninput="updateGlobalState()">
-                    </div>
-
-                    <input type="text" id="orderName" class="neumorphic-input calc-input" placeholder="Job Title / Order Name" oninput="updateGlobalState()">
-                    <input type="text" id="orderDesc" class="neumorphic-input calc-input" placeholder="Order Notes & Details" oninput="updateGlobalState()">
+                    <input type="text" id="orderName" class="neumorphic-input" placeholder="Order Name" oninput="updateGlobalState()">
+                    <input type="text" id="orderDesc" class="neumorphic-input" placeholder="Order Notes & Details" oninput="updateGlobalState()">
                     <div class="qty-wrapper">
                         <span style="font-weight:800; font-size:0.85em; color:var(--text-light); letter-spacing:1px; min-width:50px;">QTY</span>
-                        <input type="text" id="globalQty" class="neumorphic-input calc-input" value="1000" oninput="handleGlobalQtyChange()" onblur="evaluateMath(this); handleGlobalQtyChange()">
+                        <input type="number" id="globalQty" class="neumorphic-input" value="1000" min="1" oninput="handleGlobalQtyChange()">
                     </div>
                     <div class="qty-wrapper hidden" id="markupFieldContainer">
                         <span style="font-weight:800; font-size:0.85em; color:var(--accent); letter-spacing:1px; min-width:50px;">PROFIT %</span>
-                        <input type="text" id="orderMarkup" class="neumorphic-input calc-input" value="0" oninput="updateGlobalState()" onblur="evaluateMath(this); updateGlobalState()" placeholder="Margin % (e.g. 20)">
-                    </div>
-                    <div class="qty-wrapper hidden" id="manualQuoteContainer">
-                        <span style="font-weight:800; font-size:0.85em; color:var(--info); letter-spacing:1px; min-width:50px;">MANUAL QUOTE ₹</span>
-                        <input type="text" id="manualQuote" class="neumorphic-input calc-input" value="" oninput="updateGlobalState()" onblur="evaluateMath(this); updateGlobalState()" placeholder="Override Final Price">
+                        <input type="number" id="orderMarkup" class="neumorphic-input" value="0" min="0" max="500" oninput="updateGlobalState()" placeholder="Margin % (e.g. 20)">
                     </div>
                 </div>
 
@@ -567,7 +528,6 @@
                 
                 <div class="hud-actions">
                     <button class="neumorphic-btn btn-accent" onclick="saveProgress()">SAVE PROGRESS</button>
-                    <button class="neumorphic-btn" onclick="openWhatsAppModal()" style="background:#25D366; color:white;">WHATSAPP</button>
                     <button class="neumorphic-btn" onclick="saveAndNew()">SAVE & NEW</button>
                     <button class="neumorphic-btn" onclick="openPrintModal()" style="background:#2980b9; color:white;">PRINT QUOTE</button>
                     <button class="neumorphic-btn" style="color:var(--danger);" onclick="resetForm()">CLEAR JOB</button>
@@ -599,33 +559,6 @@
     <div id="printContainer" class="print-only"></div>
 
     <!-- Modals -->
-
-    <!-- WhatsApp Editor Modal -->
-    <div class="modal-overlay" id="modalWhatsApp" style="z-index: 10001;">
-        <div class="modal-content" style="max-width: 500px; padding: 0; display: flex; flex-direction: column;">
-            <div class="modal-header" style="padding: 20px 30px; margin-bottom: 0; border-bottom: 2px solid var(--shadow-pressed);">
-                <h2 style="font-size: 1.5em;"><span class="status-dot" style="background:#25D366; box-shadow:0 0 8px #25D366;"></span> Send WhatsApp Quote</h2>
-                <button class="close-btn" onclick="closeModal('modalWhatsApp')">×</button>
-            </div>
-            
-            <div style="padding: 20px 30px; display: flex; flex-direction: column; gap: 15px;">
-                <div class="form-group">
-                    <label>Client Phone Number</label>
-                    <input type="text" id="waPhoneNumber" class="neumorphic-input calc-input" placeholder="e.g. +919876543210" value="">
-                    <span style="font-size: 0.75em; color: var(--text-light);">Include country code (e.g. +91). Avoid spaces or dashes.</span>
-                </div>
-                <div class="form-group">
-                    <label>Message Content</label>
-                    <textarea id="waMessageBody" class="neumorphic-input calc-input" rows="8" style="font-family: monospace; font-size: 0.9em; resize: vertical;"></textarea>
-                </div>
-            </div>
-
-            <div class="modal-actions" style="padding: 20px 30px; border-top: 2px solid var(--shadow-pressed); margin-top: 0; background: var(--bg); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
-                <button class="neumorphic-btn" onclick="closeModal('modalWhatsApp')">Cancel</button>
-                <button class="neumorphic-btn" style="background:#25D366; color:white;" onclick="sendWhatsAppMessage()">Send Message 🚀</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Actuals Tracker Modal -->
     <div class="modal-overlay" id="modalActualsTracker" style="z-index: 1010;">
@@ -734,15 +667,15 @@
             <div class="form-grid" id="fields-card">
                 <div class="form-group full-width">
                     <label>Item Name</label>
-                    <input type="text" id="mCardName" class="neumorphic-input calc-input" placeholder="e.g., Main Card, Insert A" oninput="triggerLiveItemTotal()">
+                    <input type="text" id="mCardName" class="neumorphic-input" placeholder="e.g., Main Card, Insert A" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Quantity</label>
-                    <input type="text" id="mCardQty" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mCardQty" class="neumorphic-input" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Print Method</label>
-                    <select id="mCardPrintMethod" class="neumorphic-input calc-input" onchange="toggleMCardPrintMethod()">
+                    <select id="mCardPrintMethod" class="neumorphic-input" onchange="toggleMCardPrintMethod()">
                         <option value="offset">Offset Printing</option>
                         <option value="digital">Digital Printing</option>
                     </select>
@@ -750,7 +683,7 @@
                 
                 <div class="form-group full-width">
                     <label style="color: var(--accent);">Finishing Size (Auto Layout Optimizer)</label>
-                    <select id="mCardJobSize" class="neumorphic-input calc-input" onchange="handleJobSizeChange('card')">
+                    <select id="mCardJobSize" class="neumorphic-input" onchange="handleJobSizeChange('card')">
                         <option value="custom">Manual / Custom Setup</option>
                         <option value="a3">A3 (11.7" x 16.5")</option>
                         <option value="a4">A4 (8.3" x 11.7")</option>
@@ -764,7 +697,7 @@
 
                 <div class="form-group card-offset-only">
                     <label>Colour Mode</label>
-                    <select id="mCardColorMode" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()">
+                    <select id="mCardColorMode" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="multi">Multicolour</option>
                         <option value="single">Single Colour</option>
                         <option value="two">Double Colour (2 Colour)</option>
@@ -773,43 +706,43 @@
 
                 <div class="form-group card-offset-only">
                     <label>Paper GSM</label>
-                    <input type="text" id="mCardGSM" class="neumorphic-input calc-input" value="130" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mCardGSM" class="neumorphic-input" value="130" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group card-offset-only">
                     <label>Print / Paper Size</label>
-                    <select id="mCardMasterSheet" class="neumorphic-input calc-input" onchange="handleMasterSheetChange('card')">
+                    <select id="mCardMasterSheet" class="neumorphic-input" onchange="handleMasterSheetChange('card')">
                         <!-- Injected via JS -->
                     </select>
                 </div>
                 
                 <div class="form-group card-custom-size hidden">
                     <label>Custom Length (inch)</label>
-                    <input type="text" id="mCardCustomL" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mCardCustomL" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group card-custom-size hidden">
                     <label>Custom Breadth (inch)</label>
-                    <input type="text" id="mCardCustomB" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mCardCustomB" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
                 </div>
 
                 <div class="form-group card-offset-only">
                     <label>Print Sides (Offset)</label>
-                    <select id="mCardSidesOffset" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()">
+                    <select id="mCardSidesOffset" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="1">Single Sided</option>
                         <option value="2">Front & Back</option>
                     </select>
                 </div>
                 <div class="form-group card-offset-only">
                     <label>Number of Sets</label>
-                    <input type="text" id="mCardSets" class="neumorphic-input calc-input" value="1" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mCardSets" class="neumorphic-input" value="1" oninput="triggerLiveItemTotal()">
                 </div>
                 
                 <div class="form-group card-digital-only hidden">
                     <label>Digital Paper Type</label>
-                    <select id="mCardDigitalPaper" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()"></select>
+                    <select id="mCardDigitalPaper" class="neumorphic-input" onchange="triggerLiveItemTotal()"></select>
                 </div>
                 <div class="form-group card-digital-only hidden">
                     <label>Print Sides (Digital)</label>
-                    <select id="mCardSidesDigital" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal();">
+                    <select id="mCardSidesDigital" class="neumorphic-input" onchange="triggerLiveItemTotal();">
                         <option value="1">Single Sided</option>
                         <option value="2">Front & Back</option>
                     </select>
@@ -818,7 +751,7 @@
                 <div class="form-group card-printable">
                     <label>Pcs / Sheet (Ups)</label>
                     <div style="display:flex; gap:8px;">
-                        <input type="text" id="mCardUps" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                        <input type="number" id="mCardUps" class="neumorphic-input" oninput="triggerLiveItemTotal()">
                         <button type="button" class="neumorphic-btn animate-pulse" onclick="openUpsCalculator()" style="padding: 10px 15px; font-size: 0.8em; white-space: nowrap; font-weight: bold; background: var(--bg); color: var(--accent); box-shadow: var(--shadow-raised);" title="Calculate Pieces per Sheet based on dimensions">
                             📐 Calc
                         </button>
@@ -827,7 +760,7 @@
 
                 <div class="form-group card-printable">
                     <label>Lamination</label>
-                    <select id="mCardLamination" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()">
+                    <select id="mCardLamination" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="None">None</option>
                         <option value="GL">Gloss (GL)</option>
                         <option value="MT">Matte (MT)</option>
@@ -837,13 +770,13 @@
 
                 <div class="form-group card-printable">
                     <label>Custom Paper Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
-                    <input type="text" id="mCardCustomPaperPrice" class="neumorphic-input calc-input" value="0" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mCardCustomPaperPrice" class="neumorphic-input" value="0" step="0.01" oninput="triggerLiveItemTotal()">
                 </div>
 
                 <div class="form-group">
                     <label>Foiling Cost (₹)</label>
                     <div style="display:flex; gap: 5px;">
-                        <input type="text" id="mCardFoil" class="neumorphic-input calc-input" value="0" oninput="manualFoilEntry()" onblur="evaluateMath(this); manualFoilEntry()" style="flex:1; padding-left: 8px; padding-right: 8px;">
+                        <input type="number" id="mCardFoil" class="neumorphic-input" value="0" oninput="manualFoilEntry()" style="flex:1; padding-left: 8px; padding-right: 8px;">
                         <button type="button" class="neumorphic-btn animate-pulse" onclick="openFoilSubCalculator()" style="padding: 10px; font-size: 0.8em; font-weight: bold; background: var(--bg); color: var(--accent); box-shadow: var(--shadow-raised);" title="Dynamic Foiling Matrix Estimator">
                             📐 Calc
                         </button>
@@ -854,7 +787,7 @@
                 </div>
                 <div class="form-group">
                     <label>Other Expenses (₹)</label>
-                    <input type="text" id="mCardOtherExp" class="neumorphic-input calc-input" value="0" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()" placeholder="Manual extra cost">
+                    <input type="number" id="mCardOtherExp" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
                 </div>
             </div>
 
@@ -862,20 +795,20 @@
             <div class="form-grid" id="fields-book" style="display:none;">
                 <div class="form-group full-width">
                     <label>Book / Magazine Name</label>
-                    <input type="text" id="mBookName" class="neumorphic-input calc-input" placeholder="e.g., Monthly Magazine Inner" oninput="triggerLiveItemTotal()">
+                    <input type="text" id="mBookName" class="neumorphic-input" placeholder="e.g., Monthly Magazine Inner" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Quantity (Books)</label>
-                    <input type="text" id="mBookQty" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookQty" class="neumorphic-input" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Total Pages (Inner)</label>
-                    <input type="text" id="mBookPages" class="neumorphic-input calc-input" value="8" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookPages" class="neumorphic-input" value="8" oninput="triggerLiveItemTotal()">
                 </div>
                 
                 <div class="form-group full-width">
                     <label style="color: var(--accent);">Finishing Size (Auto Layout Optimizer)</label>
-                    <select id="mBookJobSize" class="neumorphic-input calc-input" onchange="handleJobSizeChange('book')">
+                    <select id="mBookJobSize" class="neumorphic-input" onchange="handleJobSizeChange('book')">
                         <option value="custom">Manual / Custom Setup</option>
                         <option value="a3">A3 (11.7" x 16.5")</option>
                         <option value="a4">A4 (8.3" x 11.7")</option>
@@ -893,7 +826,7 @@
                 </div>
                 <div class="form-group">
                     <label>Colour Mode</label>
-                    <select id="mBookColorMode" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()">
+                    <select id="mBookColorMode" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="multi">Multicolour</option>
                         <option value="single">Single Colour</option>
                         <option value="two">Double Colour (2 Colour)</option>
@@ -901,42 +834,42 @@
                 </div>
                 <div class="form-group">
                     <label>Print Sides (Magazine)</label>
-                    <select id="mBookSides" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()">
+                    <select id="mBookSides" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="2">Front & Back</option>
                         <option value="1">Single Sided</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Paper GSM</label>
-                    <input type="text" id="mBookGSM" class="neumorphic-input calc-input" value="130" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookGSM" class="neumorphic-input" value="130" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Print / Paper Size</label>
-                    <select id="mBookMasterSheet" class="neumorphic-input calc-input" onchange="handleMasterSheetChange('book')">
+                    <select id="mBookMasterSheet" class="neumorphic-input" onchange="handleMasterSheetChange('book')">
                         <!-- Injected via JS -->
                     </select>
                 </div>
                 
                 <div class="form-group book-custom-size hidden">
                     <label>Custom Length (inch)</label>
-                    <input type="text" id="mBookCustomL" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookCustomL" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group book-custom-size hidden">
                     <label>Custom Breadth (inch)</label>
-                    <input type="text" id="mBookCustomB" class="neumorphic-input calc-input" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookCustomB" class="neumorphic-input" step="0.1" oninput="triggerLiveItemTotal()">
                 </div>
 
                 <div class="form-group">
                     <label>Pages per Sheet Side (Ups)</label>
-                    <input type="text" id="mBookUps" class="neumorphic-input calc-input" value="4" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookUps" class="neumorphic-input" value="4" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Waste Sheets (Per Signature)</label>
-                    <input type="text" id="mBookWaste" class="neumorphic-input calc-input" value="20" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookWaste" class="neumorphic-input" value="20" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Lamination (Inner Pages)</label>
-                    <select id="mBookLamination" class="neumorphic-input calc-input" onchange="triggerLiveItemTotal()">
+                    <select id="mBookLamination" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="None">None</option>
                         <option value="GL">Gloss (GL)</option>
                         <option value="MT">Matte (MT)</option>
@@ -945,11 +878,11 @@
                 </div>
                 <div class="form-group">
                     <label>Custom Paper Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
-                    <input type="text" id="mBookCustomPaperPrice" class="neumorphic-input calc-input" value="0" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mBookCustomPaperPrice" class="neumorphic-input" value="0" step="0.01" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Other Expenses (₹)</label>
-                    <input type="text" id="mBookOtherExp" class="neumorphic-input calc-input" value="0" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()" placeholder="Manual extra cost">
+                    <input type="number" id="mBookOtherExp" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
                 </div>
             </div>
 
@@ -957,11 +890,11 @@
             <div class="form-grid" id="fields-exp" style="display:none; flex-direction:column;">
                 <div class="form-group">
                     <label>Description / Item Name</label>
-                    <input type="text" id="mExpDesc" class="neumorphic-input calc-input" placeholder="e.g., Silk Ribbon, Custom Envelopes, Box Make" oninput="triggerLiveItemTotal()">
+                    <input type="text" id="mExpDesc" class="neumorphic-input" placeholder="e.g., Silk Ribbon, Custom Envelopes, Box Make" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
                     <label>Cost (₹)</label>
-                    <input type="text" id="mExpCost" class="neumorphic-input calc-input" value="0" oninput="triggerLiveItemTotal()" onblur="evaluateMath(this); triggerLiveItemTotal()">
+                    <input type="number" id="mExpCost" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()">
                 </div>
             </div>
 
@@ -1009,18 +942,18 @@
             <div class="form-grid">
                 <div class="form-group full-width">
                     <label>Dimensions Unit</label>
-                    <select id="mCardUnit" class="neumorphic-input calc-input" onchange="changeUpsUnit()">
+                    <select id="mCardUnit" class="neumorphic-input" onchange="changeUpsUnit()">
                         <option value="inches">Inches (")</option>
                         <option value="cm">Centimeters (cm)</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label id="lblCardLength">Length (inches)</label>
-                    <input type="text" id="mCardLength" class="neumorphic-input calc-input" value="11" onblur="evaluateMath(this)">
+                    <input type="number" id="mCardLength" class="neumorphic-input" value="11" step="0.1">
                 </div>
                 <div class="form-group">
                     <label id="lblCardBreadth">Breadth (inches)</label>
-                    <input type="text" id="mCardBreadth" class="neumorphic-input calc-input" value="8.5" onblur="evaluateMath(this)">
+                    <input type="number" id="mCardBreadth" class="neumorphic-input" value="8.5" step="0.1">
                 </div>
             </div>
 
@@ -1044,7 +977,7 @@
                 </p>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 0.8em; font-weight: bold; color: var(--text-light);">UNIT:</span>
-                    <select id="foilSizingUnit" class="neumorphic-input calc-input" onchange="changeFoilSizingUnit()" style="padding: 6px 12px; width: 100px; font-size: 0.85em;">
+                    <select id="foilSizingUnit" class="neumorphic-input" onchange="changeFoilSizingUnit()" style="padding: 6px 12px; width: 100px; font-size: 0.85em;">
                         <option value="cm">cm</option>
                         <option value="inches">inches</option>
                     </select>
@@ -1098,42 +1031,41 @@
             <div style="display:flex; gap:10px; margin-bottom: 25px; border-bottom: 2px solid var(--shadow-pressed); padding-bottom: 15px; overflow-x: auto;">
                 <button class="neumorphic-btn admin-tab btn-accent" id="admin-tab-general" onclick="setAdminTab('general')" style="flex:1; min-width: 150px;">General & Offset</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-digital" onclick="setAdminTab('digital')" style="flex:1; min-width: 150px;">Digital Rates Matrix</button>
-                <button class="neumorphic-btn admin-tab" id="admin-tab-clients" onclick="setAdminTab('clients')" style="flex:1; min-width: 150px;">👥 Clients</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-cloud" onclick="setAdminTab('cloud')" style="flex:1; min-width: 150px;">☁️ Cloud Setup</button>
                 <button class="neumorphic-btn admin-tab" id="admin-tab-security" onclick="setAdminTab('security')" style="flex:1; min-width: 150px;">🔒 Security</button>
             </div>
 
             <div id="admin-sect-general" class="space-y-6">
                 <div class="form-grid">
-                    <div class="form-group"><label>Paper Price per Kg (₹)</label><input type="text" id="adminPaperPriceKg" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                    <div class="form-group"><label>Card Base Cutting Charge (₹)</label><input type="text" id="adminCardCutting" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
+                    <div class="form-group"><label>Paper Price per Kg (₹)</label><input type="number" id="adminPaperPriceKg" class="neumorphic-input" step="0.1"></div>
+                    <div class="form-group"><label>Card Base Cutting Charge (₹)</label><input type="number" id="adminCardCutting" class="neumorphic-input"></div>
                 </div>
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase;">Metallic Foiling & Block Die Settings</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
                     <div class="form-group">
                         <label>Die Margin Buffer (cm)</label>
-                        <input type="text" id="adminBlockMargin" class="neumorphic-input calc-input" onblur="evaluateMath(this)">
+                        <input type="number" id="adminBlockMargin" class="neumorphic-input" step="0.1">
                     </div>
                     <div class="form-group">
                         <label>Die Rate per cm² (₹)</label>
-                        <input type="text" id="adminBlockRate" class="neumorphic-input calc-input" onblur="evaluateMath(this)">
+                        <input type="number" id="adminBlockRate" class="neumorphic-input" step="0.01">
                     </div>
                     <div class="form-group">
                         <label>Min Block Die Cost (₹)</label>
-                        <input type="text" id="adminBlockMin" class="neumorphic-input calc-input" onblur="evaluateMath(this)">
+                        <input type="number" id="adminBlockMin" class="neumorphic-input" step="1">
                     </div>
                     <div class="form-group">
                         <label>Foil Margin Buffer (inch)</label>
-                        <input type="text" id="adminFoilMargin" class="neumorphic-input calc-input" onblur="evaluateMath(this)">
+                        <input type="number" id="adminFoilMargin" class="neumorphic-input" step="0.01">
                     </div>
                     <div class="form-group">
                         <label>Foil Rate per sq in (₹)</label>
-                        <input type="text" id="adminFoilRate" class="neumorphic-input calc-input" onblur="evaluateMath(this)">
+                        <input type="number" id="adminFoilRate" class="neumorphic-input" step="0.001">
                     </div>
                     <div class="form-group">
                         <label>Min Foil Cost / 1k (₹)</label>
-                        <input type="text" id="adminFoilMin" class="neumorphic-input calc-input" onblur="evaluateMath(this)">
+                        <input type="number" id="adminFoilMin" class="neumorphic-input" step="1">
                     </div>
                 </div>
 
@@ -1169,18 +1101,18 @@
                         <tbody>
                             <tr>
                                 <td style="padding: 8px; font-weight: bold;">Standard (23x18, 25x18)</td>
-                                <td style="padding: 8px;"><input type="text" id="adminStdSetup" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
-                                <td style="padding: 8px;"><input type="text" id="adminStdRun" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
+                                <td style="padding: 8px;"><input type="number" id="adminStdSetup" class="neumorphic-input" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="number" id="adminStdRun" class="neumorphic-input" style="padding: 8px;"></td>
                             </tr>
                             <tr>
                                 <td style="padding: 8px; font-weight: bold;">Medium (20x30)</td>
-                                <td style="padding: 8px;"><input type="text" id="adminMedSetup" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
-                                <td style="padding: 8px;"><input type="text" id="adminMedRun" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
+                                <td style="padding: 8px;"><input type="number" id="adminMedSetup" class="neumorphic-input" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="number" id="adminMedRun" class="neumorphic-input" style="padding: 8px;"></td>
                             </tr>
                             <tr>
                                 <td style="padding: 8px; font-weight: bold;">Large (23x36, 25x36)</td>
-                                <td style="padding: 8px;"><input type="text" id="adminLrgSetup" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
-                                <td style="padding: 8px;"><input type="text" id="adminLrgRun" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
+                                <td style="padding: 8px;"><input type="number" id="adminLrgSetup" class="neumorphic-input" style="padding: 8px;"></td>
+                                <td style="padding: 8px;"><input type="number" id="adminLrgRun" class="neumorphic-input" style="padding: 8px;"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -1188,15 +1120,15 @@
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">Single / Double Colour Rates (Max 25x18)</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
-                    <div class="form-group"><label>1st 1000 Pcs (₹)</label><input type="text" id="adminSingleSetup" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                    <div class="form-group"><label>Next 1000 Pcs (₹)</label><input type="text" id="adminSingleRun" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
+                    <div class="form-group"><label>1st 1000 Pcs (₹)</label><input type="number" id="adminSingleSetup" class="neumorphic-input" step="1"></div>
+                    <div class="form-group"><label>Next 1000 Pcs (₹)</label><input type="number" id="adminSingleRun" class="neumorphic-input" step="1"></div>
                 </div>
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">Offset Lamination Rates</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
-                    <div class="form-group"><label>Offset Gloss (GL) / 100 sqin (₹)</label><input type="text" id="adminLamOffGl" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                    <div class="form-group"><label>Offset Matte (MT) / 100 sqin (₹)</label><input type="text" id="adminLamOffMt" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                    <div class="form-group"><label>Offset Velvet (VL) / 100 sqin (₹)</label><input type="text" id="adminLamOffVl" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
+                    <div class="form-group"><label>Offset Gloss (GL) / 100 sqin (₹)</label><input type="number" id="adminLamOffGl" class="neumorphic-input" step="0.01"></div>
+                    <div class="form-group"><label>Offset Matte (MT) / 100 sqin (₹)</label><input type="number" id="adminLamOffMt" class="neumorphic-input" step="0.01"></div>
+                    <div class="form-group"><label>Offset Velvet (VL) / 100 sqin (₹)</label><input type="number" id="adminLamOffVl" class="neumorphic-input" step="0.01"></div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1232,30 +1164,9 @@
 
                 <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;">Digital Lamination Rates</h3>
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
-                    <div class="form-group"><label>Digital Gloss (GL) / Sheet (₹)</label><input type="text" id="adminLamDigGl" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                    <div class="form-group"><label>Digital Matte (MT) / Sheet (₹)</label><input type="text" id="adminLamDigMt" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                    <div class="form-group"><label>Digital Velvet (VL) / Sheet (₹)</label><input type="text" id="adminLamDigVl" class="neumorphic-input calc-input" onblur="evaluateMath(this)"></div>
-                </div>
-            </div>
-
-            <div id="admin-sect-clients" class="space-y-6 hidden">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                    <h3 style="font-size: 0.9em; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; margin: 0;">Client CRM Directory</h3>
-                    <button class="neumorphic-btn" onclick="addAdminClientRow()" style="font-size:0.8em; padding: 6px 12px;">+ Add Client</button>
-                </div>
-                <div class="neumorphic-panel" style="padding: 15px; overflow-x: auto;">
-                    <table style="width: 100%; text-align: left; border-collapse: collapse;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid rgba(0,0,0,0.1); color: var(--text-light); font-size: 0.85em;">
-                                <th style="padding: 8px;">Client / Contact Name</th>
-                                <th style="padding: 8px;">Phone Number</th>
-                                <th style="padding: 8px;">Company Name</th>
-                                <th style="padding: 8px; width: 60px;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminClientRows">
-                            </tbody>
-                    </table>
+                    <div class="form-group"><label>Digital Gloss (GL) / Sheet (₹)</label><input type="number" id="adminLamDigGl" class="neumorphic-input" step="0.01"></div>
+                    <div class="form-group"><label>Digital Matte (MT) / Sheet (₹)</label><input type="number" id="adminLamDigMt" class="neumorphic-input" step="0.01"></div>
+                    <div class="form-group"><label>Digital Velvet (VL) / Sheet (₹)</label><input type="number" id="adminLamDigVl" class="neumorphic-input" step="0.01"></div>
                 </div>
             </div>
 
@@ -1265,7 +1176,7 @@
                     <p style="font-size: 0.9em; color: var(--text-main); margin-bottom: 15px; line-height: 1.5;">
                         To route cloud storage backups, real-time synchronization, and shareable web links to another account, paste your new Web SDK Configuration JSON block below.
                     </p>
-                    <textarea id="adminFirebaseConfig" class="neumorphic-input calc-input" rows="10" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "your-app.firebaseapp.com",&#10;  "projectId": "your-app",&#10;  ...&#10;}' style="font-family: monospace; font-size: 0.85em;"></textarea>
+                    <textarea id="adminFirebaseConfig" class="neumorphic-input" rows="10" placeholder='{&#10;  "apiKey": "AIzaSy...",&#10;  "authDomain": "your-app.firebaseapp.com",&#10;  "projectId": "your-app",&#10;  ...&#10;}' style="font-family: monospace; font-size: 0.85em;"></textarea>
                     
                     <button class="neumorphic-btn btn-accent" style="margin-top: 15px; width: 100%;" onclick="applyFirebaseConfig()">Update & Connect Database</button>
                     
@@ -1281,11 +1192,11 @@
                 <div class="form-grid neumorphic-panel" style="padding: 15px; box-shadow: var(--shadow-pressed); gap: 15px;">
                     <div class="form-group full-width">
                         <label>Account Email</label>
-                        <input type="email" id="adminUsername" class="neumorphic-input calc-input" placeholder="admin@example.com">
+                        <input type="email" id="adminUsername" class="neumorphic-input" placeholder="admin@example.com">
                     </div>
                     <div class="form-group full-width">
                         <label>Change Password</label>
-                        <input type="password" id="adminPassword" class="neumorphic-input calc-input" placeholder="Enter new password (min 6 characters)">
+                        <input type="password" id="adminPassword" class="neumorphic-input" placeholder="Enter new password (min 6 characters)">
                     </div>
                     <div class="form-group full-width">
                         <button class="neumorphic-btn btn-accent" style="margin-top: 10px;" onclick="updateFirebaseCredentials()">Update Firebase Account</button>
@@ -1322,7 +1233,7 @@
             </div>
 
             <div style="margin-bottom: 20px;">
-                <input type="text" id="searchHistory" class="neumorphic-input calc-input" placeholder="🔍 Search orders by name or date..." oninput="filterHistory()">
+                <input type="text" id="searchHistory" class="neumorphic-input" placeholder="🔍 Search orders by name or date..." oninput="filterHistory()">
             </div>
 
             <div class="column-header">Saved Orders</div>
@@ -1336,12 +1247,12 @@
     </div>
 
     <script>
-        // --- 1. GLOBALS & STATE ---
         var isDirty = false;
         var currentModalType = 'card';
         var activeFoilRows = [];
         var activePostPressRows = [];
         
+        // Trackers to prevent memory leak and mutation issues in modal
         var trackerStateBreakdown = [];
         var trackerStateUnexpected = [];
 
@@ -1352,29 +1263,10 @@
             }
         });
 
-        // --- 2. UNIVERSAL INLINE CALCULATOR ---
-        function evaluateMath(element) {
-            if (!element || !element.value) return;
-            try {
-                if (/[+\-*/]/.test(element.value) && !/[a-zA-Z]/.test(element.value)) {
-                    const result = new Function('return ' + element.value)();
-                    if (isFinite(result) && !isNaN(result)) {
-                        element.value = Number.isInteger(result) ? result : parseFloat(result.toFixed(4));
-                    }
-                }
-            } catch (err) { }
-        }
-
         document.addEventListener('keydown', function(e) {
-            const activeElem = document.activeElement;
-            const isInput = activeElem && (activeElem.tagName.toLowerCase() === 'input' || activeElem.tagName.toLowerCase() === 'textarea');
-
-            if (isInput && activeElem.classList.contains('calc-input') && e.key === 'Enter') {
-                e.preventDefault();
-                evaluateMath(activeElem);
-                activeElem.dispatchEvent(new Event('input', { bubbles: true }));
-                activeElem.blur(); 
-            }
+            // Avoid triggering shortcuts when user is typing in an input field
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
             if (e.shiftKey && (e.key === '+' || e.key === '=')) {
                 e.preventDefault();
@@ -1382,41 +1274,29 @@
             }
 
             if (!isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                if (e.key === '0') { e.preventDefault(); setQuickMargin(0); } 
-                else if (e.key === '3') { e.preventDefault(); setQuickMargin(30); } 
-                else if (e.key === '5') { e.preventDefault(); setQuickMargin(50); }
+                if (e.key === '0') {
+                    e.preventDefault();
+                    setQuickMargin(0);
+                } else if (e.key === '3') {
+                    e.preventDefault();
+                    setQuickMargin(30);
+                } else if (e.key === '5') {
+                    e.preventDefault();
+                    setQuickMargin(50);
+                }
             }
         });
 
-        // --- 3. UTILITIES ---
         function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
-        function generateOrderNumber() { return 'ORD-' + Math.random().toString(36).substr(2, 4).toUpperCase(); }
-        
-        function formatDateDDMMYYYY(dateString) {
-            if (!dateString) return '';
-            let d = new Date(dateString + 'T00:00:00');
-            let day = ("0" + d.getDate()).slice(-2);
-            let month = ("0" + (d.getMonth() + 1)).slice(-2);
-            let year = d.getFullYear();
-            return `${day}/${month}/${year}`;
+
+        function roundUpToTen(val) {
+            // Eliminated arbitrary rounding to guarantee perfect math accuracy
+            return val;
         }
 
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('systemToast');
-            toast.innerText = msg; 
-            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2500);
-        }
-
-        // --- 4. DATA MODELS & SETTINGS ---
         const defaultSettings = {
-            auth: { user: 'admin', pass: 'admin' },
             paperPriceKg: 85,
             cardCuttingCharge: 40,
-            clients: [],
             masterPapers: [
                 { l: 23, b: 18, machClass: 'std' },
                 { l: 25, b: 18, machClass: 'std' },
@@ -1434,7 +1314,32 @@
             digitalTiers: [7, 15, 25], 
             digitalRates: {
                 "300gsm_single": [12, 11, 10, 9],
-                "300gsm_double": [20, 18, 16, 15]
+                "300gsm_double": [20, 18, 16, 15],
+                "350gsm_single": [16, 15, 13, 12],
+                "350gsm_double": [22, 20, 19, 17],
+                "210 Gsm_single": [12, 9.5, 9, 8.5],
+                "210 Gsm_double": [20, 17, 15, 14],
+                "170gsm_single": [12, 9.5, 9, 8.25],
+                "170gsm_double": [20, 16, 14, 13.5],
+                "130gsm_single": [12, 9.5, 9, 7.75],
+                "130gsm_double": [18, 16, 14, 13],
+                "Maplitho/Bond_single": [12, 9.5, 9, 7.5],
+                "Maplitho/Bond_double": [17, 16, 13.5, 12.5],
+                "Sticker_single": [14, 13, 12, 11],
+                "Sticker_double": [28, 26, 24, 22], 
+                "Texture_single": [22, 21, 21, 18],
+                "Texture_double": [31, 29, 27, 23],
+                "Mettalic_single": [24, 23, 22, 20],
+                "Mettalic_double": [32, 30, 28, 25],
+                "Opaque sticker_single": [25, 24, 23, 21],
+                "Transparent_single": [25, 24, 23, 21],
+                "RSW_single": [25, 22, 21, 19],
+                "RSW_double": [31, 28, 26, 24],
+                "PVC Thin_single": [22, 21, 20, 18],
+                "PVC Thin_double": [31, 30, 28, 23],
+                "PVC 220_single": [28, 28, 28, 28],
+                "PVC 220_double": [35, 28, 35, 35],
+                "Tracing_single": [22, 22, 22, 22]
             },
             lamRates: {
                 offset: { None: 0, GL: 0.45, MT: 0.70, VL: 3.50 },
@@ -1457,8 +1362,6 @@
 
         function sanitizeSettings(settings) {
             if (!settings) return JSON.parse(JSON.stringify(defaultSettings));
-            if (!settings.auth) settings.auth = JSON.parse(JSON.stringify(defaultSettings.auth));
-            if (!settings.clients) settings.clients = [];
             if (!settings.masterPapers || settings.masterPapers.length === 0) settings.masterPapers = JSON.parse(JSON.stringify(defaultSettings.masterPapers));
             if (!settings.foilingConfig) settings.foilingConfig = JSON.parse(JSON.stringify(defaultSettings.foilingConfig));
             if (!settings.singleColorRates) settings.singleColorRates = JSON.parse(JSON.stringify(defaultSettings.singleColorRates));
@@ -1474,22 +1377,47 @@
 
         var state = {
             id: generateId(),
-            orderIdString: generateOrderNumber(),
             orderDate: '', orderName: '', orderDesc: '', globalQty: 1000,
-            clientName: '', clientPhone: '', clientCompany: '', manualQuote: '',
             orderMarkup: 0,
             cards: [], expenses: [],
             detailedBreakdown: [],
             actuals: { unexpectedCosts: [] },
-            savedRates: null
+            savedRates: null // Freezes historical rates
         };
 
+        // Core helper to retrieve the correct rates (historical vs global)
         function getRates() {
-            if (state.savedRates) return sanitizeSettings(state.savedRates);
+            if (state.savedRates) {
+                return sanitizeSettings(state.savedRates);
+            }
             return appSettings;
         }
 
-        // --- 5. MATH & COST ENGINE ---
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('systemToast');
+            toast.innerText = msg; 
+            toast.style.background = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        var confirmCallback = null;
+        function openConfirmModal(title, message, callback) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            confirmCallback = callback;
+            document.getElementById('modalConfirm').classList.add('active');
+        }
+        function closeConfirmModal() {
+            document.getElementById('modalConfirm').classList.remove('active');
+            confirmCallback = null;
+        }
+        document.getElementById('confirmActionBtn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            closeConfirmModal();
+        });
+
+        // --- CORE CALCULATION FUNCTIONS ---
         function computeItemActualCosts(c) {
             let paperCost = 0, printCost = 0, lamCost = 0;
             let sheets = 0;
@@ -1510,20 +1438,20 @@
                 sheets = calcResult.sheetsNeeded;
                 
                 let commonText = c.commonPages ? ' (Common Pages)' : '';
-                breakdownDesc = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
+                breakdownDesc = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText} • ${calcResult.signatures} Sig (${calcResult.machClass})`;
             } else if (c.printMethod === 'offset') {
                 calcResult = runOffsetCalculation(c);
                 paperCost = calcResult.paperCost;
                 printCost = calcResult.printCost;
                 lamCost = calcResult.lamCost;
                 sheets = calcResult.sheetsNeeded;
-                breakdownDesc = `Offset Print [${displaySheet}]${colorStr}`;
+                breakdownDesc = `Offset [${displaySheet}]${colorStr} • ${calcResult.roundupImpressions}k imp`;
             } else {
                 calcResult = runDigitalCalculation(c);
                 printCost = calcResult.printCost;
                 lamCost = calcResult.lamCost;
                 sheets = calcResult.sheetsNeeded;
-                breakdownDesc = `Digital Print [${c.paper.replace(/_/g, ' ')}]`;
+                breakdownDesc = `Digital [${c.paper.replace(/_/g, ' ')}]`;
             }
 
             let postPressCost = 0;
@@ -1547,6 +1475,21 @@
                     postPressCost += calculatedCost;
                     postPressBreakdowns.push({ name: displayDesc, cost: calculatedCost });
                 });
+            } else if (c.postPress && Array.isArray(c.postPress)) {
+                c.postPress.forEach(procKey => {
+                    const proc = getRates().postPressRates[procKey];
+                    if (proc) {
+                        let runCost = 0;
+                        if (proc.type === 'perUnit') {
+                            runCost = proc.rate * c.qty;
+                        } else if (proc.type === 'per1000') {
+                            runCost = proc.rate * Math.ceil(proc.qty / 1000);
+                        }
+                        let calculatedCost = Math.max(proc.setup, runCost);
+                        postPressCost += calculatedCost;
+                        postPressBreakdowns.push({ name: proc.name, cost: calculatedCost });
+                    }
+                });
             }
 
             let foilCost = Number(c.foil) || 0; 
@@ -1567,6 +1510,692 @@
             };
         }
 
+        function triggerLiveItemTotal() {
+            if (currentModalType === 'exp') {
+                const flatCost = Number(document.getElementById('mExpCost').value) || 0;
+                const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
+                const markupFactor = 1 + (markupPercent / 100);
+                const finalFlat = roundUpToTen(flatCost * markupFactor);
+                document.getElementById('modalItemLiveTotal').innerText = `₹${finalFlat.toFixed(2)}`;
+                return;
+            }
+
+            const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            const markupFactor = 1 + (markupPercent / 100);
+
+            let dummyCard = {
+                itemType: currentModalType,
+                qty: Number(document.getElementById(currentModalType === 'book' ? 'mBookQty' : 'mCardQty').value) || 0,
+                printMethod: document.getElementById('mCardPrintMethod') ? document.getElementById('mCardPrintMethod').value : 'offset',
+                colorMode: document.getElementById(currentModalType === 'book' ? 'mBookColorMode' : 'mCardColorMode').value,
+                gsm: Number(document.getElementById(currentModalType === 'book' ? 'mBookGSM' : 'mCardGSM').value) || 130,
+                jobSize: document.getElementById(currentModalType === 'book' ? 'mBookJobSize' : 'mCardJobSize').value || 'custom',
+                masterSheet: document.getElementById(currentModalType === 'book' ? 'mBookMasterSheet' : 'mCardMasterSheet').value,
+                customL: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomL' : 'mCardCustomL').value) || 0,
+                customB: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomB' : 'mCardCustomB').value) || 0,
+                pages: Number(document.getElementById('mBookPages') ? document.getElementById('mBookPages').value : 8),
+                commonPages: document.getElementById('mBookCommonPages') ? document.getElementById('mBookCommonPages').checked : false,
+                sides: Number(document.getElementById(currentModalType === 'book' ? 'mBookSides' : 'mCardSidesOffset').value) || 2,
+                sets: Number(document.getElementById('mCardSets') ? document.getElementById('mCardSets').value : 1),
+                ups: Number(document.getElementById(currentModalType === 'book' ? 'mBookUps' : 'mCardUps').value) || 4,
+                waste: Number(document.getElementById('mBookWaste') ? document.getElementById('mBookWaste').value : 20),
+                paper: document.getElementById('mCardDigitalPaper') ? document.getElementById('mCardDigitalPaper').value : '',
+                lamination: document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination') ? document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination').value : 'None',
+                customPaperPrice: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomPaperPrice' : 'mCardCustomPaperPrice').value) || 0,
+                otherExp: Number(document.getElementById(currentModalType === 'book' ? 'mBookOtherExp' : 'mCardOtherExp').value) || 0,
+                postPressRows: JSON.parse(JSON.stringify(activePostPressRows)),
+                foilRows: JSON.parse(JSON.stringify(activeFoilRows)),
+                foil: Number(document.getElementById('mCardFoil') ? document.getElementById('mCardFoil').value : 0)
+            };
+
+            let data = computeItemActualCosts(dummyCard);
+            let finalLive = roundUpToTen(data.totalActual * markupFactor);
+
+            document.getElementById('modalItemLiveTotal').innerText = `₹${finalLive.toFixed(2)}`;
+        }
+        
+        function manualFoilEntry() {
+            activeFoilRows = []; 
+            triggerLiveItemTotal();
+        }
+
+        function clearFoilCalc() {
+            activeFoilRows = [];
+            const inputField = document.getElementById('mCardFoil');
+            if (inputField) inputField.value = 0;
+            triggerLiveItemTotal();
+        }
+
+        function updateGlobalState() {
+            state.orderDate = document.getElementById('orderDate').value;
+            state.orderName = document.getElementById('orderName').value;
+            state.orderDesc = document.getElementById('orderDesc').value;
+            state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            isDirty = true;
+            renderAll();
+        }
+
+        function toggleMarkupField() {
+            const container = document.getElementById('markupFieldContainer');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                document.getElementById('orderMarkup').focus();
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function setQuickMargin(val) {
+            document.getElementById('orderMarkup').value = val;
+            updateGlobalState();
+        }
+        
+        function syncMarginButtons() {
+            const currentMargin = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            ['0', '30', '50'].forEach(val => {
+                const btn = document.getElementById('mBtn' + val);
+                if (btn) {
+                    if (currentMargin == val) {
+                        btn.style.color = 'var(--accent)';
+                        btn.style.textShadow = 'var(--shadow-glow)';
+                    } else {
+                        btn.style.color = 'var(--text-light)';
+                        btn.style.textShadow = 'none';
+                    }
+                }
+            });
+        }
+
+        function handleGlobalQtyChange() {
+            let newQty = Number(document.getElementById('globalQty').value) || 0;
+            state.globalQty = newQty;
+            
+            state.cards.forEach(c => { 
+                if(!c.unlinked) {
+                    c.qty = newQty;
+                    
+                    if (c.foilRows && c.foilRows.length > 0) {
+                        c.foilRows.forEach(row => { row.qty = newQty; });
+                        const selectedUnit = c.foilUnit || 'cm';
+                        c.foil = recalculateFoilRowsTotal(c.foilRows, selectedUnit);
+                    }
+                    
+                    if (c.postPressRows && c.postPressRows.length > 0) {
+                        c.postPressRows.forEach(row => { row.qty = newQty; });
+                    }
+                }
+            });
+            isDirty = true;
+            renderAll();
+        }
+
+        // --- ACTUALS TRACKER LOGIC ---
+        function rebuildDetailedBreakdown() {
+            let viewData = generateViewData('office');
+            state.estimatedActualCost = viewData.grandTotalActual;
+            state.estimatedClientQuote = viewData.grandTotalClient;
+            
+            let newBreakdown = [];
+            state.cards.forEach(c => {
+                let data = computeItemActualCosts(c);
+                let itemBreakdown = {
+                    id: c.id,
+                    name: c.name,
+                    qty: c.qty,
+                    costs: [
+                        { key: 'paper', label: 'Paper Cost', est: data.paperCost, act: '' },
+                        { key: 'print', label: 'Print/Plates Cost', est: data.printCost, act: '' },
+                        { key: 'cut', label: 'Cutting & Prep', est: data.cuttingCharge, act: '' }
+                    ]
+                };
+                if (data.lamCost > 0) itemBreakdown.costs.push({ key: 'lam', label: 'Lamination', est: data.lamCost, act: '' });
+                if (data.foilCost > 0) itemBreakdown.costs.push({ key: 'foil', label: 'Foiling Blocks & Surcharges', est: data.foilCost, act: '' });
+                if (data.otherExp > 0) itemBreakdown.costs.push({ key: 'other', label: 'Custom Item Expense', est: data.otherExp, act: '' });
+
+                data.postPressBreakdowns.forEach((pp, i) => {
+                     itemBreakdown.costs.push({ key: 'pp_'+i, label: pp.name, est: pp.cost, act: '' });
+                });
+                newBreakdown.push(itemBreakdown);
+            });
+
+            state.expenses.forEach(x => {
+                newBreakdown.push({
+                    id: x.id,
+                    name: x.desc,
+                    qty: 1,
+                    costs: [
+                        { key: 'exp', label: 'Direct Expense', est: x.cost, act: '' }
+                    ]
+                });
+            });
+
+            if (state.detailedBreakdown && state.detailedBreakdown.length > 0) {
+                newBreakdown.forEach(newBlock => {
+                    let oldBlock = state.detailedBreakdown.find(b => b.id === newBlock.id);
+                    if (oldBlock) {
+                        newBlock.costs.forEach(newCost => {
+                            let oldCost = oldBlock.costs.find(c => c.key === newCost.key && c.label === newCost.label);
+                            if (oldCost && oldCost.act !== '') newCost.act = oldCost.act;
+                        });
+                    }
+                });
+            }
+
+            state.detailedBreakdown = newBreakdown;
+            if (!state.actuals) state.actuals = { unexpectedCosts: [] };
+            if (!state.actuals.unexpectedCosts) state.actuals.unexpectedCosts = [];
+        }
+
+        function openActualsTracker() {
+            if(!state.orderName.trim()) {
+                showToast('Provide an Order Name and Save Progress first!', true);
+                return;
+            }
+            if(state.cards.length === 0 && state.expenses.length === 0) {
+                showToast('Order is empty. Add items first!', true);
+                return;
+            }
+
+            rebuildDetailedBreakdown(); 
+            
+            trackerStateBreakdown = JSON.parse(JSON.stringify(state.detailedBreakdown));
+            trackerStateUnexpected = JSON.parse(JSON.stringify(state.actuals.unexpectedCosts || []));
+
+            renderTrackerUI();
+            document.getElementById('modalActualsTracker').classList.add('active');
+        }
+
+        function renderTrackerUI() {
+            document.getElementById('trackerEstCost').innerText = `₹${(state.estimatedActualCost || 0).toFixed(2)}`;
+            document.getElementById('trackerEstQuote').innerText = `₹${(state.estimatedClientQuote || 0).toFixed(2)}`;
+
+            const container = document.getElementById('trackerBreakdownContainer');
+            container.innerHTML = '';
+
+            trackerStateBreakdown.forEach((block, bIndex) => {
+                let html = `
+                    <div class="item-breakdown-card">
+                        <h4>📄 ${block.name} <span style="font-size: 0.8em; color: var(--text-light); font-weight: normal;">(Qty: ${block.qty})</span></h4>
+                `;
+                
+                block.costs.forEach((cost, cIndex) => {
+                    html += `
+                        <div class="cost-row">
+                            <div class="cost-label">↳ ${cost.label}</div>
+                            <div class="cost-est">Est: ₹${(cost.est || 0).toFixed(2)}</div>
+                            <div class="cost-act">
+                                <input type="number" class="neumorphic-input" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
+                                       placeholder="Actual ₹" value="${cost.act}" 
+                                       oninput="updateTrackerCost(${bIndex}, ${cIndex}, this.value)">
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+
+            let unexpectedHTML = `
+                <div class="item-breakdown-card" style="border-color: rgba(231, 76, 60, 0.4); background: rgba(231, 76, 60, 0.02);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid rgba(163,177,198,0.2); padding-bottom: 8px; margin-bottom: 15px;">
+                        <h4 style="margin:0; border:none; padding:0; color: var(--danger);">⚠️ Unexpected / Extra Overhead Costs</h4>
+                        <button class="neumorphic-btn" onclick="addTrackerUnexpected()" style="padding: 4px 10px; font-size: 0.75em; color: var(--danger);">+ Add Extra</button>
+                    </div>
+            `;
+            
+            if (trackerStateUnexpected.length === 0) {
+                unexpectedHTML += `<div style="font-size: 0.85em; color: var(--text-light); font-style: italic; text-align: center;">No extra un-quoted costs added.</div>`;
+            } else {
+                trackerStateUnexpected.forEach((unex, uIndex) => {
+                    unexpectedHTML += `
+                        <div class="cost-row" style="background: rgba(255,255,255,0.5); padding: 8px; border-radius: 8px; margin-bottom: 5px;">
+                            <div class="cost-label" style="flex: 2;">
+                                <input type="text" class="neumorphic-input" style="padding: 6px; font-size: 0.9em; box-shadow: none; border: 1px solid rgba(0,0,0,0.1); background: transparent;" 
+                                       placeholder="Description (e.g. Rush Courier)" value="${unex.label}" 
+                                       oninput="updateTrackerUnexpectedLabel(${uIndex}, this.value)">
+                            </div>
+                            <div class="cost-act" style="flex: 1.5; display:flex; gap:5px;">
+                                <input type="number" class="neumorphic-input" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
+                                       placeholder="Actual ₹" value="${unex.act}" 
+                                       oninput="updateTrackerUnexpectedCost(${uIndex}, this.value)">
+                                <button onclick="removeTrackerUnexpected(${uIndex})" style="background:var(--danger); color:white; border:none; border-radius:6px; padding:0 10px; cursor:pointer;" title="Delete">✕</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            unexpectedHTML += `</div>`;
+            container.insertAdjacentHTML('beforeend', unexpectedHTML);
+            calculateTrackerVariance();
+        }
+
+        window.updateTrackerCost = function(bIndex, cIndex, value) {
+            trackerStateBreakdown[bIndex].costs[cIndex].act = value;
+            calculateTrackerVariance();
+        };
+        window.addTrackerUnexpected = function() {
+            trackerStateUnexpected.push({ label: 'Unexpected Cost', act: '' });
+            renderTrackerUI();
+            calculateTrackerVariance();
+        };
+        window.updateTrackerUnexpectedLabel = function(uIndex, value) {
+            trackerStateUnexpected[uIndex].label = value;
+        };
+        window.updateTrackerUnexpectedCost = function(uIndex, value) {
+            trackerStateUnexpected[uIndex].act = value;
+            calculateTrackerVariance();
+        };
+        window.removeTrackerUnexpected = function(uIndex) {
+            trackerStateUnexpected.splice(uIndex, 1);
+            renderTrackerUI();
+            calculateTrackerVariance();
+        };
+
+        function calculateTrackerVariance() {
+            let totalActual = 0;
+            
+            trackerStateBreakdown.forEach(block => {
+                block.costs.forEach(c => {
+                    if (c.act !== '') totalActual += parseFloat(c.act) || 0;
+                });
+            });
+
+            trackerStateUnexpected.forEach(unex => {
+                if (unex.act !== '') totalActual += parseFloat(unex.act) || 0;
+            });
+
+            document.getElementById('trackerTotalActualDisplay').innerText = `₹${totalActual.toFixed(2)}`;
+
+            const quote = state.estimatedClientQuote || 0;
+            const realProfit = quote - totalActual;
+            
+            const varianceDisplay = document.getElementById('trackerVarianceDisplay');
+            varianceDisplay.innerText = `Final Realized Profit: ₹${realProfit.toFixed(2)}`;
+            varianceDisplay.className = realProfit >= 0 ? 'profit-positive' : 'profit-negative';
+        }
+
+        window.saveTrackerActuals = function() {
+            state.detailedBreakdown = JSON.parse(JSON.stringify(trackerStateBreakdown));
+            state.actuals.unexpectedCosts = JSON.parse(JSON.stringify(trackerStateUnexpected));
+            
+            saveProgress(); 
+            closeModal('modalActualsTracker');
+        };
+
+        function viewOrderDetails() {
+            closeModal('modalPrintOptions');
+            
+            const contentDiv = document.getElementById('viewOrderContent');
+            contentDiv.innerHTML = '';
+            
+            let data = generateViewData('customer'); 
+            let grandTotal = data.grandTotalClient;
+            
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--shadow-pressed); padding-bottom: 15px; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="margin:0; font-size:1.5em; color:var(--text-main);">${state.orderName || 'Unnamed Order'}</h3>
+                        <p style="margin:5px 0 0 0; color:var(--text-light); font-size:0.9em; font-weight:bold;">Total Base Quantity: ${state.globalQty}</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <p style="margin:0; font-size:0.8em; color:var(--text-light); text-transform:uppercase; font-weight:bold;">Total Estimated Price</p>
+                        <h2 style="margin:0; font-size:1.8em; color:var(--accent);">₹${grandTotal.toFixed(2)}</h2>
+                    </div>
+                </div>
+            `;
+            
+            if (state.cards.length === 0 && state.expenses.length === 0) {
+                html += `<p style="text-align:center; color:var(--text-light); font-style:italic;">No items in this order.</p>`;
+            }
+
+            state.cards.forEach(c => {
+                let printSides = c.sides == 2 ? 'Double Sided' : 'Single Sided';
+                let gsm = c.gsm ? c.gsm + ' GSM' : '-';
+                let upsStr = c.itemType === 'book' ? c.ups + ' pages / sheet' : c.ups + ' pcs / sheet';
+                
+                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
+                let itemData = computeItemActualCosts(c);
+                let exactItemClientTotal = itemData.paperCost + itemData.printCost + itemData.lamCost + itemData.postPressCost + itemData.foilCost + itemData.otherExp + itemData.cuttingCharge;
+                let itemClientTotal = roundUpToTen(exactItemClientTotal * markupFactor);
+                
+                html += `
+                    <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 10px; border-bottom: 1px dashed rgba(163,177,198,0.4); padding-bottom: 8px;">
+                            <strong style="color:var(--text-main); font-size: 1.1em;">${c.name}</strong>
+                            <strong style="color:var(--text-main); font-family: monospace; font-size: 1.1em;">₹${itemClientTotal.toFixed(2)}</strong>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: var(--text-light);">
+                            <div><strong>Type:</strong> ${c.itemType === 'book' ? 'Book Inner' : (c.printMethod === 'offset' ? 'Offset Print' : 'Digital Print')}</div>
+                            <div><strong>Quantity:</strong> ${c.qty}</div>
+                            <div><strong>Sides:</strong> ${printSides}</div>
+                            <div><strong>Paper:</strong> ${gsm}</div>
+                            <div><strong>Layout:</strong> ${upsStr}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            state.expenses.forEach(x => {
+                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
+                let clientCost = roundUpToTen(x.cost * markupFactor);
+                html += `
+                    <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong style="color:var(--text-main); font-size: 1.1em;">${x.desc} (Expense)</strong>
+                            <strong style="color:var(--text-main); font-family: monospace; font-size: 1.1em;">₹${clientCost.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                `;
+            });
+
+            contentDiv.innerHTML = html;
+            document.getElementById('modalViewOrder').classList.add('active');
+        }
+
+        window.updateToLatestRates = function() {
+            openConfirmModal('Update to Latest Rates?', 'This will recalculate all costs in this order using your current global settings. Proceed?', () => {
+                state.savedRates = JSON.parse(JSON.stringify(appSettings));
+                isDirty = true;
+                rebuildDetailedBreakdown(); 
+                renderAll();
+                showToast('Order updated to latest rates!');
+            });
+        };
+
+        function saveProgress() {
+            if(!document.getElementById('orderName').value.trim()) {
+                showToast('Warning: Please provide an Order Name!', true);
+                document.getElementById('orderName').focus();
+                return false;
+            }
+            if(state.cards.length === 0 && state.expenses.length === 0) {
+                showToast('Warning: Order is empty. Add items first!', true);
+                return false;
+            }
+            
+            state.orderName = document.getElementById('orderName').value;
+            if(!state.orderDate) {
+                let today = new Date().toISOString().split('T')[0];
+                state.orderDate = today;
+                document.getElementById('orderDate').value = today;
+            }
+            state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
+            
+            if (!state.savedRates) {
+                state.savedRates = JSON.parse(JSON.stringify(appSettings));
+            }
+
+            rebuildDetailedBreakdown();
+
+            let record = JSON.parse(JSON.stringify(state));
+            record.timestamp = Date.now();
+            
+            let existingIdx = orderHistory.findIndex(o => o.id === state.id);
+            if (existingIdx > -1) {
+                orderHistory[existingIdx] = record;
+            } else {
+                orderHistory.unshift(record);
+            }
+            localStorage.setItem('printEstimatorOrders_v9', JSON.stringify(orderHistory));
+
+            if (typeof window.cloudSaveOrder === 'function') {
+                window.cloudSaveOrder(record);
+            } else {
+                showToast('Progress Saved locally (Offline)');
+                isDirty = false;
+                renderAll();
+            }
+            return true;
+        }
+
+        function resetForm() {
+            state = {
+                id: generateId(),
+                orderDate: new Date().toISOString().split('T')[0],
+                orderName: '', orderDesc: '', globalQty: 1000,
+                orderMarkup: 0,
+                cards: [], expenses: [],
+                detailedBreakdown: [],
+                actuals: { unexpectedCosts: [] },
+                savedRates: null
+            };
+            document.getElementById('orderDate').value = state.orderDate;
+            document.getElementById('orderName').value = '';
+            document.getElementById('orderDesc').value = '';
+            document.getElementById('globalQty').value = 1000;
+            document.getElementById('orderMarkup').value = 0;
+            isDirty = false;
+            renderAll();
+            showToast('Workspace Cleared');
+        }
+
+        function saveAndNew() {
+            if (saveProgress()) {
+                resetForm();
+            }
+        }
+
+        function renderHistoryList(ordersToRender) {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            if (ordersToRender.length === 0) {
+                list.innerHTML = '<div style="color:var(--text-light); text-align:center; padding: 20px; font-style: italic;">No saved orders found.</div>';
+            } else {
+                ordersToRender.forEach(order => {
+                    const dateStr = order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'No Date';
+                    
+                    let hasActuals = false;
+                    if (order.detailedBreakdown) hasActuals = order.detailedBreakdown.some(block => block.costs.some(c => c.act !== ''));
+                    if (order.actuals && order.actuals.unexpectedCosts && order.actuals.unexpectedCosts.length > 0) hasActuals = true;
+                    const actInd = hasActuals ? '<span style="color:var(--success); font-weight:bold; margin-left:10px;">✓ Tracked</span>' : '';
+
+                    list.innerHTML += `
+                        <div class="data-slot" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div onclick="loadOrder('${order.id}')" style="flex-grow:1;">
+                                <div class="data-slot-title">${order.orderName || 'Unnamed Order'}</div>
+                                <div class="data-slot-meta"><span>${dateStr}</span><span>Items: ${order.cards.length + order.expenses.length} ${actInd}</span></div>
+                            </div>
+                            <button class="slot-delete-btn" style="position:relative; opacity:1; right:0; top:0;" onclick="deleteOrder('${order.id}')" title="Delete">✕</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function filterHistory() {
+            const searchTerm = document.getElementById('searchHistory').value.toLowerCase();
+            const filteredOrders = orderHistory.filter(o => 
+                (o.orderName && o.orderName.toLowerCase().includes(searchTerm)) || 
+                (o.orderDate && o.orderDate.includes(searchTerm))
+            );
+            renderHistoryList(filteredOrders);
+        }
+
+        function openHistoryModal() {
+            document.getElementById('searchHistory').value = '';
+            renderHistoryList(orderHistory);
+            document.getElementById('modalHistory').classList.add('active');
+        }
+
+        function loadOrder(id) {
+            const order = orderHistory.find(o => o.id === id);
+            if (order) {
+                state = JSON.parse(JSON.stringify(order));
+                if (!state.actuals) state.actuals = { unexpectedCosts: [] };
+                if (!state.detailedBreakdown) state.detailedBreakdown = [];
+                
+                document.getElementById('orderDate').value = state.orderDate || '';
+                document.getElementById('orderName').value = state.orderName || '';
+                document.getElementById('orderDesc').value = state.orderDesc || '';
+                document.getElementById('globalQty').value = state.globalQty || 1000;
+                document.getElementById('orderMarkup').value = state.orderMarkup || 0;
+                closeModal('modalHistory');
+                renderAll();
+                showToast('Order Loaded');
+            }
+        }
+
+        function deleteOrder(id) {
+            openConfirmModal('Delete Order', 'Are you sure you want to permanently delete this order?', () => {
+                orderHistory = orderHistory.filter(o => o.id !== id);
+                localStorage.setItem('printEstimatorOrders_v9', JSON.stringify(orderHistory));
+                if (typeof window.cloudDeleteOrder === 'function') {
+                    window.cloudDeleteOrder(id);
+                }
+                filterHistory(); 
+                showToast('Order Deleted');
+            });
+        }
+
+        function exportBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(orderHistory));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "print_estimator_backup_" + new Date().toISOString().split('T')[0] + ".json");
+            dlAnchorElem.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (Array.isArray(imported)) {
+                            const merged = [...orderHistory, ...imported];
+                            const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
+                            orderHistory = unique;
+                            localStorage.setItem('printEstimatorOrders_v9', JSON.stringify(orderHistory));
+                            if (typeof window.cloudBatchMigrateOrders === 'function') {
+                                window.cloudBatchMigrateOrders(imported);
+                            }
+                            filterHistory();
+                            showToast('Backup Imported Successfully!');
+                        }
+                    } catch (err) {
+                        showToast('Invalid Backup File', true);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function openPrintModal() {
+            if(!document.getElementById('orderName').value.trim()) {
+                showToast('Warning: Please provide an Order Name!', true);
+                document.getElementById('orderName').focus();
+                return;
+            }
+            if(state.cards.length === 0 && state.expenses.length === 0) {
+                showToast('Warning: Order is empty. Add items first!', true);
+                return;
+            }
+            document.getElementById('modalPrintOptions').classList.add('active');
+        }
+
+        function printEstimate(type) {
+            closeModal('modalPrintOptions');
+
+            const printContainer = document.getElementById('printContainer');
+            const data = generateViewData(type);
+            const total = data.grandTotalClient;
+            
+            let dateStr = state.orderDate ? new Date(state.orderDate).toLocaleDateString() : '';
+
+            printContainer.innerHTML = `
+                <div class="print-invoice-box" style="padding: 20px; font-family: sans-serif; color: black;">
+                    <div class="print-invoice-header" style="border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h2 style="margin:0 0 10px 0;">${type === 'office' ? 'Internal Work Order' : 'Estimate / Quotation'}</h2>
+                        <div style="display:flex; justify-content:space-between;">
+                            <div>
+                                <div><strong>Job Name:</strong> ${state.orderName || 'Unnamed Job'}</div>
+                                <div><strong>Base Quantity:</strong> ${state.globalQty}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div><strong>Date:</strong> ${dateStr}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        ${data.receiptHTML}
+                    </div>
+                    ${type === 'customer' ? `
+                    <div style="text-align: right; border-top: 2px solid #ccc; padding-top: 15px;">
+                        <h2 style="margin:0;">Total: ₹${total.toFixed(2)}</h2>
+                    </div>` : ''}
+                </div>
+            `;
+            window.print();
+        }
+
+        function autoCalcOffsetUps(l, b, masterSheetVal) {
+            const masterVal = masterSheetVal.split('x');
+            const masterL = parseFloat(masterVal[0]);
+            const masterB = parseFloat(masterVal[1]);
+            if (l > 0 && b > 0) {
+                const fit1 = Math.floor(masterL / l) * Math.floor(masterB / b);
+                const fit2 = Math.floor(masterL / b) * Math.floor(masterB / l);
+                return Math.max(fit1, fit2);
+            }
+            return 8; 
+        }
+
+        function autoCalcDigitalUps(l, b) {
+            if (l > 0 && b > 0) {
+                const fit1 = Math.floor(12.6 / l) * Math.floor(18.6 / b);
+                const fit2 = Math.floor(12.6 / b) * Math.floor(18.6 / l);
+                return Math.max(fit1, fit2);
+            }
+            return 4;
+        }
+
+        function triggerCardUpsCalc() {
+            let l = parseFloat(document.getElementById('mCardLength').value) || 0;
+            let b = parseFloat(document.getElementById('mCardBreadth').value) || 0;
+            const unit = document.getElementById('mCardUnit').value;
+
+            document.getElementById('lblCardLength').innerText = `Length (${unit === 'inches' ? 'inches' : 'cm'})`;
+            document.getElementById('lblCardBreadth').innerText = `Breadth (${unit === 'inches' ? 'inches' : 'cm'})`;
+
+            if (unit === 'cm') {
+                l = l / 2.54;
+                b = b / 2.54;
+            }
+
+            const printMethod = document.getElementById('mCardPrintMethod').value;
+            let ups = 0;
+            if (printMethod === 'offset') {
+                const sheet = document.getElementById('mCardMasterSheet').value;
+                if(sheet === 'custom') {
+                    showToast('Auto calc unavailable for custom sheets.', true);
+                    return;
+                }
+                ups = autoCalcOffsetUps(l, b, sheet);
+            } else {
+                ups = autoCalcDigitalUps(l, b);
+            }
+            document.getElementById('mCardUps').value = ups || 1;
+        }
+
+        function getPaperPrice(paper, sheets) {
+            let matrixRow = getRates().digitalRates[paper];
+            if (!matrixRow) return 0;
+            let tier = sheets > 25 ? 3 : sheets > 15 ? 2 : sheets > 7 ? 1 : 0;
+            return matrixRow[tier] || 0;
+        }
+
+        function getUniqueDigitalPaperNames() {
+            const keys = Object.keys(getRates().digitalRates);
+            const baseNames = new Set();
+            keys.forEach(k => {
+                const base = k.replace(/_(single|double)$/, '');
+                baseNames.add(base);
+            });
+            return Array.from(baseNames);
+        }
+
         function getMachineClass(sheetStr, sheetL = 0, sheetB = 0) {
             if (sheetStr !== 'custom') {
                 const parts = sheetStr.split('x');
@@ -1575,6 +2204,7 @@
                 const match = getRates().masterPapers.find(m => m.l === sl && m.b === sb);
                 if (match) return match.machClass;
             }
+            // Fallback for custom or unknown
             let maxD = Math.max(sheetL, sheetB);
             let minD = Math.min(sheetL, sheetB);
             if (maxD <= 25.5 && minD <= 18.5) return 'std';
@@ -1681,28 +2311,16 @@
             }
             const masterArea = sheetL * sheetB;
             
-            let signatures = 1;
-            let baseSheets = 0;
-            let totalSheets = 0;
-            let totalImpressions = 0;
-            let normalThousands = 0;
-            let printCost = 0;
+           let pagesPerSheet = item.ups * item.sides;
+            let signatures = Math.ceil(item.pages / pagesPerSheet);
+            let sheetsPerBook = item.pages / pagesPerSheet;
+            let baseSheets = Math.ceil(sheetsPerBook * item.qty);
 
             if (item.commonPages) {
                 signatures = 1;
-                baseSheets = (item.pages * item.qty) / (item.ups * item.sides);
-                totalSheets = Math.ceil(baseSheets) + item.waste; // Waste added once
-                totalImpressions = Math.ceil(baseSheets) * item.sides;
-                normalThousands = Math.ceil(totalImpressions / 1000);
-            } else {
-                signatures = Math.ceil(item.pages / (item.ups * item.sides));
-                let sheetsPerBook = item.pages / (item.ups * item.sides);
-                baseSheets = sheetsPerBook * item.qty;
-                totalSheets = Math.ceil(baseSheets) + (item.waste * signatures); // Waste per signature
-                let impressionsPerSignature = item.qty * item.sides;
-                normalThousands = Math.ceil(impressionsPerSignature / 1000); 
-                totalImpressions = impressionsPerSignature * signatures;
             }
+            
+            let totalSheets = baseSheets + (item.waste * signatures);
             
             let pricePerSheet = 0;
             if (item.customPaperPrice && item.customPaperPrice > 0) {
@@ -1711,13 +2329,17 @@
                 pricePerSheet = (masterArea / 1550) * (item.gsm / 1000) * getRates().paperPriceKg;
             }
             let paperCost = totalSheets * pricePerSheet;
+            
+            let printCost = 0;
+            let thousandsForCommon = Math.ceil(baseSheets / 1000);
+            let normalThousands = Math.ceil(item.qty / 1000);
 
             if (item.colorMode === 'single' || item.colorMode === 'two') {
                 let setupRate = getRates().singleColorRates.setup;
                 let runRate = getRates().singleColorRates.run;
                 
                 if (item.commonPages) {
-                    let costBase = (normalThousands <= 1) ? setupRate : (setupRate + ((normalThousands - 1) * runRate));
+                    let costBase = (thousandsForCommon <= 1) ? setupRate : (setupRate + ((thousandsForCommon - 1) * runRate));
                     if (item.colorMode === 'two') costBase *= 2;
                     printCost = costBase;
                 } else {
@@ -1730,7 +2352,7 @@
                 let machRates = getRates().offsetRates[machClass] || getRates().offsetRates.std;
                 
                 if (item.commonPages) {
-                    let costBase = (normalThousands <= 1) ? machRates.setup : (machRates.setup + ((normalThousands - 1) * machRates.run));
+                    let costBase = (thousandsForCommon <= 1) ? machRates.setup : (machRates.setup + ((thousandsForCommon - 1) * machRates.run));
                     printCost = costBase;
                 } else {
                     let costPerSignature = machRates.setup;
@@ -1744,21 +2366,56 @@
             let lamCost = 0;
             if (item.lamination && item.lamination !== 'None') {
                 const rate = getRates().lamRates.offset[item.lamination] || 0;
+                // Treat sides multiplicatively for inner pages if laminated
                 lamCost = (masterArea * rate * totalSheets * item.sides) / 100;
             }
 
-            return { 
-                paperCost, printCost, lamCost, 
-                sheetsNeeded: totalSheets, 
-                signatures: signatures, 
-                roundupImpressions: normalThousands,
-                machClass: getMachineClass(item.masterSheet, sheetL, sheetB), 
-                pricePerSheet, 
-                commonPages: item.commonPages 
-            };
+           return { paperCost, printCost, lamCost, sheetsNeeded: totalSheets, baseSheets: baseSheets, signatures: signatures, machClass: getMachineClass(item.masterSheet, sheetL, sheetB), pricePerSheet, commonPages: item.commonPages };
         }
 
-        // --- 6. VIEW & HTML GENERATOR ---
+        function calculateSingleFoilRow(row, unit = 'cm') {
+            const fCfg = getRates().foilingConfig;
+            
+            let wCm = row.width;
+            let hCm = row.height;
+            let wIn = row.width;
+            let hIn = row.height;
+
+            if (unit === 'inches') {
+                wCm = row.width * 2.54;
+                hCm = row.height * 2.54;
+            } else {
+                wIn = row.width / 2.54;
+                hIn = row.height / 2.54;
+            }
+
+            const blockW = wCm + fCfg.blockMargin;
+            const blockH = hCm + fCfg.blockMargin;
+            const blockArea = Math.ceil(blockW * blockH);
+            const rawBlockCost = blockArea * fCfg.blockRate;
+            const blockCost = Math.max(fCfg.blockMinLimit, rawBlockCost);
+
+            const foilW = wIn + fCfg.foilMargin;
+            const foilH = hIn + fCfg.foilMargin;
+            const sqInArea = foilW * foilH;
+            const rawFoilCost = sqInArea * fCfg.foilRate * row.qty;
+
+            const thousands = Math.ceil(row.qty / 1000);
+            const minFoilThreshold = thousands * fCfg.foilMinLimitPer1k;
+            const foilCost = Math.max(minFoilThreshold, rawFoilCost);
+
+            return { blockCost, foilCost, rowTotal: blockCost + foilCost };
+        }
+
+        function recalculateFoilRowsTotal(rowsList, unit = 'cm') {
+            let grandTotal = 0;
+            rowsList.forEach(r => {
+                const out = calculateSingleFoilRow(r, unit);
+                grandTotal += out.rowTotal;
+            });
+            return grandTotal;
+        }
+
         function generateViewData(mode) {
             let grandTotalActual = 0;
             let grandTotalClient = 0;
@@ -1768,13 +2425,13 @@
             const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
             const markupFactor = 1 + (markupPercent / 100);
 
-            if ((state.orderDate || state.orderName || state.orderDesc || state.clientName)) {
+            if ((state.orderDate || state.orderName || state.orderDesc)) {
                 if (state.orderDate && mode === 'screen') {
-                    let formattedDate = formatDateDDMMYYYY(state.orderDate);
+                    let dateObj = new Date(state.orderDate + 'T00:00:00');
+                    let formattedDate = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
                     receiptHTML += `<div style="font-weight:600; color:var(--text-light); margin-bottom:3px; font-size:0.9em;">📅 ${formattedDate}</div>`;
                 }
                 if (mode === 'screen') {
-                    if(state.clientName) receiptHTML += `<div style="font-weight:bold; color:var(--info); font-size:0.9em; margin-bottom:2px;">👤 ${state.clientName} ${state.clientCompany ? `(${state.clientCompany})` : ''}</div>`;
                     receiptHTML += `<div style="font-weight:900; color:var(--text-main); margin-bottom:5px; text-transform:uppercase; font-size:1.1em; word-break: break-word;">${state.orderName || 'UNNAMED JOB'}</div>`;
                     if(state.orderDesc) {
                         receiptHTML += `<div style="color:var(--text-light); font-size:0.9em; margin-bottom:15px; font-style:italic;">${state.orderDesc}</div>`;
@@ -1802,7 +2459,8 @@
                 let markedUpCutting = data.cuttingCharge * markupFactor;
 
                 let exactItemClientTotal = markedUpPaper + markedUpPrint + markedUpLam + markedUpPostPressTotal + markedUpFoilTotal + markedUpOtherExp + markedUpCutting;
-                let itemClientTotal = exactItemClientTotal; 
+                
+                let itemClientTotal = roundUpToTen(exactItemClientTotal); 
                 
                 grandTotalActual += data.totalActual;
                 grandTotalClient += itemClientTotal;
@@ -1834,7 +2492,8 @@
                     let commonText = c.commonPages ? ' (Common Pages)' : '';
                     descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
-                    let impText = c.commonPages ? `${data.calcResult.roundupImpressions}k imp total` : `${data.calcResult.signatures} Sig`;
+                    
+                    let impText = c.commonPages ? `${Math.ceil(data.calcResult.baseSheets / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
                     printDescOffice = `↳ Print Cost (${impText})`;
                 } else if (c.printMethod === 'offset') {
                     descCustomer = `Offset Print [${displaySheet}]${colorStr}`;
@@ -1896,7 +2555,7 @@
 
             state.expenses.forEach(x => {
                 let actualCost = x.cost;
-                let clientCost = actualCost * markupFactor;
+                let clientCost = roundUpToTen(actualCost * markupFactor);
                 grandTotalActual += actualCost;
                 grandTotalClient += clientCost;
 
@@ -1916,11 +2575,6 @@
                 receiptHTML += `<div class="receipt-line" style="margin-top:10px;"><span><strong>+ ${x.desc}</strong></span><span>₹${displayCost.toFixed(2)}</span></div>`;
             });
 
-            // Override with manual quote if active and valid
-            if (state.manualQuote && !isNaN(parseFloat(state.manualQuote))) {
-                grandTotalClient = parseFloat(state.manualQuote);
-            }
-
             if (state.cards.length === 0 && state.expenses.length === 0) {
                 receiptHTML = `<div style="text-align:center; color:var(--text-light); margin-top:20px;">No items configured. Click "Add Item" below to begin.</div>`;
             } else if (mode === 'office') {
@@ -1929,14 +2583,7 @@
                     <div style="margin-top:15px; border-top:2px dashed rgba(163,177,198,0.5); padding-top:10px;">
                         <div class="receipt-line" style="color:var(--text-light);"><span><strong>Subtotal (Actuals)</strong></span><span>₹${grandTotalActual.toFixed(2)}</span></div>
                         <div class="receipt-line" style="color:var(--accent);"><span><strong>Profit Margin (${markupPercent}%)</strong></span><span>+ ₹${marginVal.toFixed(2)}</span></div>
-                        ${state.manualQuote ? `<div class="receipt-line" style="color:var(--info);"><span><strong>Manual Override Applied</strong></span><span>Fixed Price</span></div>` : ''}
                         <div class="receipt-line" style="font-size: 1.2em; border-top:1px solid rgba(163,177,198,0.3); padding-top:10px; margin-top:5px;"><span><strong>GRAND TOTAL</strong></span><span><strong>₹${grandTotalClient.toFixed(2)}</strong></span></div>
-                    </div>
-                `;
-            } else if (state.manualQuote) {
-                 receiptHTML += `
-                    <div style="margin-top:15px; border-top:2px dashed rgba(163,177,198,0.5); padding-top:10px;">
-                        <div class="receipt-line" style="color:var(--info); font-size: 0.8em; font-style: italic;"><span>* Discount / Override Applied *</span></div>
                     </div>
                 `;
             }
@@ -1954,490 +2601,12 @@
 
         function renderAll() { calculateAndRender(); }
 
-        // --- 7. WORKSPACE & UI ACTIONS ---
-        function triggerLiveItemTotal() {
-            if (currentModalType === 'exp') {
-                const flatCost = Number(document.getElementById('mExpCost').value) || 0;
-                const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
-                const markupFactor = 1 + (markupPercent / 100);
-                const finalFlat = flatCost * markupFactor;
-                document.getElementById('modalItemLiveTotal').innerText = `₹${finalFlat.toFixed(2)}`;
-                return;
-            }
-
-            const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
-            const markupFactor = 1 + (markupPercent / 100);
-
-            let dummyCard = {
-                itemType: currentModalType,
-                qty: Number(document.getElementById(currentModalType === 'book' ? 'mBookQty' : 'mCardQty').value) || 0,
-                printMethod: document.getElementById('mCardPrintMethod') ? document.getElementById('mCardPrintMethod').value : 'offset',
-                colorMode: document.getElementById(currentModalType === 'book' ? 'mBookColorMode' : 'mCardColorMode').value,
-                gsm: Number(document.getElementById(currentModalType === 'book' ? 'mBookGSM' : 'mCardGSM').value) || 130,
-                jobSize: document.getElementById(currentModalType === 'book' ? 'mBookJobSize' : 'mCardJobSize').value || 'custom',
-                masterSheet: document.getElementById(currentModalType === 'book' ? 'mBookMasterSheet' : 'mCardMasterSheet').value,
-                customL: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomL' : 'mCardCustomL').value) || 0,
-                customB: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomB' : 'mCardCustomB').value) || 0,
-                pages: Number(document.getElementById('mBookPages') ? document.getElementById('mBookPages').value : 8),
-                commonPages: document.getElementById('mBookCommonPages') ? document.getElementById('mBookCommonPages').checked : false,
-                sides: Number(document.getElementById(currentModalType === 'book' ? 'mBookSides' : 'mCardSidesOffset').value) || 2,
-                sets: Number(document.getElementById('mCardSets') ? document.getElementById('mCardSets').value : 1),
-                ups: Number(document.getElementById(currentModalType === 'book' ? 'mBookUps' : 'mCardUps').value) || 4,
-                waste: Number(document.getElementById('mBookWaste') ? document.getElementById('mBookWaste').value : 20),
-                paper: document.getElementById('mCardDigitalPaper') ? document.getElementById('mCardDigitalPaper').value : '',
-                lamination: document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination') ? document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination').value : 'None',
-                customPaperPrice: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomPaperPrice' : 'mCardCustomPaperPrice').value) || 0,
-                otherExp: Number(document.getElementById(currentModalType === 'book' ? 'mBookOtherExp' : 'mCardOtherExp').value) || 0,
-                postPressRows: JSON.parse(JSON.stringify(activePostPressRows)),
-                foilRows: JSON.parse(JSON.stringify(activeFoilRows)),
-                foil: Number(document.getElementById('mCardFoil') ? document.getElementById('mCardFoil').value : 0)
-            };
-
-            let data = computeItemActualCosts(dummyCard);
-            let finalLive = data.totalActual * markupFactor;
-
-            document.getElementById('modalItemLiveTotal').innerText = `₹${finalLive.toFixed(2)}`;
-        }
-
-        function updateGlobalState() {
-            state.orderDate = document.getElementById('orderDate').value;
-            state.orderName = document.getElementById('orderName').value;
-            state.orderDesc = document.getElementById('orderDesc').value;
-            state.clientName = document.getElementById('clientName').value;
-            state.clientPhone = document.getElementById('clientPhone').value;
-            state.clientCompany = document.getElementById('clientCompany').value;
-            state.manualQuote = document.getElementById('manualQuote').value;
-            state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
-            isDirty = true;
-            
-            if (!state.orderIdString) state.orderIdString = generateOrderNumber();
-            document.getElementById('displayOrderId').innerText = `ORDER #${state.orderIdString}`;
-            
-            renderAll();
-        }
-
-        function autoFillClient() {
-            const inputVal = document.getElementById('clientName').value;
-            const autocompleteBox = document.getElementById('clientAutocomplete');
-            autocompleteBox.innerHTML = '';
-            
-            if (!inputVal) return;
-
-            const matches = appSettings.clients.filter(c => c.name.toLowerCase().includes(inputVal.toLowerCase()));
-            
-            matches.forEach(client => {
-                let div = document.createElement('div');
-                div.innerHTML = `<strong>${client.name}</strong> <span style="font-size:0.8em; color:gray; font-weight:normal;">(${client.company || 'Individual'})</span>`;
-                div.addEventListener('click', function() {
-                    document.getElementById('clientName').value = client.name;
-                    document.getElementById('clientPhone').value = client.phone || '';
-                    document.getElementById('clientCompany').value = client.company || '';
-                    autocompleteBox.innerHTML = '';
-                    updateGlobalState();
-                });
-                autocompleteBox.appendChild(div);
-            });
-        }
-        
-        document.addEventListener('click', function (e) {
-            if (e.target.id !== 'clientName') {
-                const box = document.getElementById('clientAutocomplete');
-                if(box) box.innerHTML = '';
-            }
-        });
-
-        function toggleMarkupField() {
-            const container = document.getElementById('markupFieldContainer');
-            const mqContainer = document.getElementById('manualQuoteContainer');
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                mqContainer.classList.remove('hidden');
-                document.getElementById('orderMarkup').focus();
-            } else {
-                container.classList.add('hidden');
-                mqContainer.classList.add('hidden');
-            }
-        }
-
-        function setQuickMargin(val) {
-            document.getElementById('orderMarkup').value = val;
-            updateGlobalState();
-        }
-        
-        function syncMarginButtons() {
-            const currentMargin = parseFloat(document.getElementById('orderMarkup').value) || 0;
-            ['0', '30', '50'].forEach(val => {
-                const btn = document.getElementById('mBtn' + val);
-                if (btn) {
-                    if (currentMargin == val) {
-                        btn.style.color = 'var(--accent)';
-                        btn.style.textShadow = 'var(--shadow-glow)';
-                    } else {
-                        btn.style.color = 'var(--text-light)';
-                        btn.style.textShadow = 'none';
-                    }
-                }
-            });
-        }
-
-        function handleGlobalQtyChange() {
-            let newQty = Number(document.getElementById('globalQty').value) || 0;
-            state.globalQty = newQty;
-            
-            state.cards.forEach(c => { 
-                if(!c.unlinked) {
-                    c.qty = newQty;
-                    if (c.foilRows && c.foilRows.length > 0) {
-                        c.foilRows.forEach(row => { row.qty = newQty; });
-                        const selectedUnit = c.foilUnit || 'cm';
-                        c.foil = recalculateFoilRowsTotal(c.foilRows, selectedUnit);
-                    }
-                    if (c.postPressRows && c.postPressRows.length > 0) {
-                        c.postPressRows.forEach(row => { row.qty = newQty; });
-                    }
-                }
-            });
-            isDirty = true;
-            renderAll();
-        }
-
-        // --- ACTUALS TRACKER LOGIC ---
-        function rebuildDetailedBreakdown() {
-            let viewData = generateViewData('office');
-            state.estimatedActualCost = viewData.grandTotalActual;
-            state.estimatedClientQuote = viewData.grandTotalClient;
-            
-            let newBreakdown = [];
-            state.cards.forEach(c => {
-                let data = computeItemActualCosts(c);
-                let itemBreakdown = {
-                    id: c.id,
-                    name: c.name,
-                    qty: c.qty,
-                    costs: [
-                        { key: 'paper', label: 'Paper Cost', est: data.paperCost, act: '' },
-                        { key: 'print', label: 'Print/Plates Cost', est: data.printCost, act: '' },
-                        { key: 'cut', label: 'Cutting & Prep', est: data.cuttingCharge, act: '' }
-                    ]
-                };
-                if (data.lamCost > 0) itemBreakdown.costs.push({ key: 'lam', label: 'Lamination', est: data.lamCost, act: '' });
-                if (data.foilCost > 0) itemBreakdown.costs.push({ key: 'foil', label: 'Foiling Blocks & Surcharges', est: data.foilCost, act: '' });
-                if (data.otherExp > 0) itemBreakdown.costs.push({ key: 'other', label: 'Custom Item Expense', est: data.otherExp, act: '' });
-
-                data.postPressBreakdowns.forEach((pp, i) => {
-                     itemBreakdown.costs.push({ key: 'pp_'+i, label: pp.name, est: pp.cost, act: '' });
-                });
-                newBreakdown.push(itemBreakdown);
-            });
-
-            state.expenses.forEach(x => {
-                newBreakdown.push({
-                    id: x.id,
-                    name: x.desc,
-                    qty: 1,
-                    costs: [
-                        { key: 'exp', label: 'Direct Expense', est: x.cost, act: '' }
-                    ]
-                });
-            });
-
-            if (state.detailedBreakdown && state.detailedBreakdown.length > 0) {
-                newBreakdown.forEach(newBlock => {
-                    let oldBlock = state.detailedBreakdown.find(b => b.id === newBlock.id);
-                    if (oldBlock) {
-                        newBlock.costs.forEach(newCost => {
-                            let oldCost = oldBlock.costs.find(c => c.key === newCost.key && c.label === newCost.label);
-                            if (oldCost && oldCost.act !== '') newCost.act = oldCost.act;
-                        });
-                    }
-                });
-            }
-
-            state.detailedBreakdown = newBreakdown;
-            if (!state.actuals) state.actuals = { unexpectedCosts: [] };
-            if (!state.actuals.unexpectedCosts) state.actuals.unexpectedCosts = [];
-        }
-
-        function openActualsTracker() {
-            if(!state.orderName.trim()) {
-                showToast('Provide an Order Name and Save Progress first!', true);
-                return;
-            }
-            if(state.cards.length === 0 && state.expenses.length === 0) {
-                showToast('Order is empty. Add items first!', true);
-                return;
-            }
-
-            rebuildDetailedBreakdown(); 
-            trackerStateBreakdown = JSON.parse(JSON.stringify(state.detailedBreakdown));
-            trackerStateUnexpected = JSON.parse(JSON.stringify(state.actuals.unexpectedCosts || []));
-
-            renderTrackerUI();
-            document.getElementById('modalActualsTracker').classList.add('active');
-        }
-
-        function renderTrackerUI() {
-            document.getElementById('trackerEstCost').innerText = `₹${(state.estimatedActualCost || 0).toFixed(2)}`;
-            let quoteDisplay = state.manualQuote ? parseFloat(state.manualQuote) : state.estimatedClientQuote;
-            document.getElementById('trackerEstQuote').innerText = `₹${(quoteDisplay || 0).toFixed(2)}`;
-
-            const container = document.getElementById('trackerBreakdownContainer');
-            container.innerHTML = '';
-
-            trackerStateBreakdown.forEach((block, bIndex) => {
-                let html = `
-                    <div class="item-breakdown-card">
-                        <h4>📄 ${block.name} <span style="font-size: 0.8em; color: var(--text-light); font-weight: normal;">(Qty: ${block.qty})</span></h4>
-                `;
-                
-                block.costs.forEach((cost, cIndex) => {
-                    html += `
-                        <div class="cost-row">
-                            <div class="cost-label">↳ ${cost.label}</div>
-                            <div class="cost-est">Est: ₹${(cost.est || 0).toFixed(2)}</div>
-                            <div class="cost-act">
-                                <input type="text" class="neumorphic-input calc-input" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
-                                       placeholder="(Est: ₹${cost.est.toFixed(2)})" value="${cost.act}" 
-                                       oninput="updateTrackerCost(${bIndex}, ${cIndex}, this.value)" onblur="evaluateMath(this); updateTrackerCost(${bIndex}, ${cIndex}, this.value)">
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                html += `</div>`;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-
-            let unexpectedHTML = `
-                <div class="item-breakdown-card" style="border-color: rgba(231, 76, 60, 0.4); background: rgba(231, 76, 60, 0.02);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid rgba(163,177,198,0.2); padding-bottom: 8px; margin-bottom: 15px;">
-                        <h4 style="margin:0; border:none; padding:0; color: var(--danger);">⚠️ Unexpected / Extra Overhead Costs</h4>
-                        <button class="neumorphic-btn" onclick="addTrackerUnexpected()" style="padding: 4px 10px; font-size: 0.75em; color: var(--danger);">+ Add Extra</button>
-                    </div>
-            `;
-            
-            if (trackerStateUnexpected.length === 0) {
-                unexpectedHTML += `<div style="font-size: 0.85em; color: var(--text-light); font-style: italic; text-align: center;">No extra un-quoted costs added.</div>`;
-            } else {
-                trackerStateUnexpected.forEach((unex, uIndex) => {
-                    unexpectedHTML += `
-                        <div class="cost-row" style="background: rgba(255,255,255,0.5); padding: 8px; border-radius: 8px; margin-bottom: 5px;">
-                            <div class="cost-label" style="flex: 2;">
-                                <input type="text" class="neumorphic-input calc-input" style="padding: 6px; font-size: 0.9em; box-shadow: none; border: 1px solid rgba(0,0,0,0.1); background: transparent;" 
-                                       placeholder="Description (e.g. Rush Courier)" value="${unex.label}" 
-                                       oninput="updateTrackerUnexpectedLabel(${uIndex}, this.value)">
-                            </div>
-                            <div class="cost-act" style="flex: 1.5; display:flex; gap:5px;">
-                                <input type="text" class="neumorphic-input calc-input" style="padding: 6px 10px; font-size: 0.9em; text-align: right;" 
-                                       placeholder="Actual ₹" value="${unex.act}" 
-                                       oninput="updateTrackerUnexpectedCost(${uIndex}, this.value)" onblur="evaluateMath(this); updateTrackerUnexpectedCost(${uIndex}, this.value)">
-                                <button onclick="removeTrackerUnexpected(${uIndex})" style="background:var(--danger); color:white; border:none; border-radius:6px; padding:0 10px; cursor:pointer;" title="Delete">✕</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            unexpectedHTML += `</div>`;
-            container.insertAdjacentHTML('beforeend', unexpectedHTML);
-            calculateTrackerVariance();
-        }
-
-        function updateTrackerCost(bIndex, cIndex, value) {
-            trackerStateBreakdown[bIndex].costs[cIndex].act = value;
-            calculateTrackerVariance();
-        }
-        function addTrackerUnexpected() {
-            trackerStateUnexpected.push({ label: 'Unexpected Cost', act: '' });
-            renderTrackerUI();
-            calculateTrackerVariance();
-        }
-        function updateTrackerUnexpectedLabel(uIndex, value) {
-            trackerStateUnexpected[uIndex].label = value;
-        }
-        function updateTrackerUnexpectedCost(uIndex, value) {
-            trackerStateUnexpected[uIndex].act = value;
-            calculateTrackerVariance();
-        }
-        function removeTrackerUnexpected(uIndex) {
-            trackerStateUnexpected.splice(uIndex, 1);
-            renderTrackerUI();
-            calculateTrackerVariance();
-        }
-
-        function calculateTrackerVariance() {
-            let totalActual = 0;
-            trackerStateBreakdown.forEach(block => {
-                block.costs.forEach(c => {
-                    let actVal = c.act !== '' ? parseFloat(c.act) : parseFloat(c.est);
-                    totalActual += actVal || 0;
-                });
-            });
-
-            trackerStateUnexpected.forEach(unex => {
-                if (unex.act !== '') totalActual += parseFloat(unex.act) || 0;
-            });
-
-            document.getElementById('trackerTotalActualDisplay').innerText = `₹${totalActual.toFixed(2)}`;
-
-            let quote = state.estimatedClientQuote || 0;
-            if (state.manualQuote && !isNaN(parseFloat(state.manualQuote))) {
-                quote = parseFloat(state.manualQuote);
-            }
-            
-            const realProfit = quote - totalActual;
-            const varianceDisplay = document.getElementById('trackerVarianceDisplay');
-            varianceDisplay.innerText = `Final Realized Profit: ₹${realProfit.toFixed(2)}`;
-            varianceDisplay.className = realProfit >= 0 ? 'profit-positive' : 'profit-negative';
-        }
-
-        function saveTrackerActuals() {
-            state.detailedBreakdown = JSON.parse(JSON.stringify(trackerStateBreakdown));
-            state.actuals.unexpectedCosts = JSON.parse(JSON.stringify(trackerStateUnexpected));
-            saveProgress(); 
-            closeModal('modalActualsTracker');
-        }
-
-        function viewOrderDetails() {
-            closeModal('modalPrintOptions');
-            const contentDiv = document.getElementById('viewOrderContent');
-            contentDiv.innerHTML = '';
-            
-            let data = generateViewData('customer'); 
-            let grandTotal = data.grandTotalClient;
-            
-            let html = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--shadow-pressed); padding-bottom: 15px; margin-bottom: 15px;">
-                    <div>
-                        <h3 style="margin:0; font-size:1.5em; color:var(--text-main);">${state.orderName || 'Unnamed Order'}</h3>
-                        <p style="margin:5px 0 0 0; color:var(--text-light); font-size:0.9em; font-weight:bold;">Total Base Quantity: ${state.globalQty}</p>
-                        ${state.clientName ? `<p style="margin:2px 0 0 0; color:var(--info); font-size:0.85em; font-weight:bold;">Client: ${state.clientName}</p>` : ''}
-                        <p style="margin:2px 0 0 0; color:var(--text-light); font-size:0.85em; font-weight:bold;">Order #: ${state.orderIdString || 'Pending'}</p>
-                    </div>
-                    <div style="text-align:right;">
-                        <p style="margin:0; font-size:0.8em; color:var(--text-light); text-transform:uppercase; font-weight:bold;">Total Estimated Price</p>
-                        <h2 style="margin:0; font-size:1.8em; color:var(--accent);">₹${grandTotal.toFixed(2)}</h2>
-                    </div>
-                </div>
-            `;
-            
-            if (state.cards.length === 0 && state.expenses.length === 0) {
-                html += `<p style="text-align:center; color:var(--text-light); font-style:italic;">No items in this order.</p>`;
-            }
-
-            state.cards.forEach(c => {
-                let printSides = c.sides == 2 ? 'Double Sided' : 'Single Sided';
-                let gsm = c.gsm ? c.gsm + ' GSM' : '-';
-                let upsStr = c.itemType === 'book' ? c.ups + ' pages / sheet' : c.ups + ' pcs / sheet';
-                
-                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
-                let itemData = computeItemActualCosts(c);
-                let exactItemClientTotal = itemData.paperCost + itemData.printCost + itemData.lamCost + itemData.postPressCost + itemData.foilCost + itemData.otherExp + itemData.cuttingCharge;
-                let itemClientTotal = exactItemClientTotal * markupFactor;
-                
-                html += `
-                    <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 10px; border-bottom: 1px dashed rgba(163,177,198,0.4); padding-bottom: 8px;">
-                            <strong style="color:var(--text-main); font-size: 1.1em;">${c.name}</strong>
-                            <strong style="color:var(--text-main); font-family: monospace; font-size: 1.1em;">₹${itemClientTotal.toFixed(2)}</strong>
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: var(--text-light);">
-                            <div><strong>Type:</strong> ${c.itemType === 'book' ? 'Book Inner' : (c.printMethod === 'offset' ? 'Offset Print' : 'Digital Print')}</div>
-                            <div><strong>Quantity:</strong> ${c.qty}</div>
-                            <div><strong>Sides:</strong> ${printSides}</div>
-                            <div><strong>Paper:</strong> ${gsm}</div>
-                            <div><strong>Layout:</strong> ${upsStr}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            state.expenses.forEach(x => {
-                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
-                let clientCost = x.cost * markupFactor;
-                html += `
-                    <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
-                        <div style="display:flex; justify-content:space-between;">
-                            <strong style="color:var(--text-main); font-size: 1.1em;">${x.desc} (Expense)</strong>
-                            <strong style="color:var(--text-main); font-family: monospace; font-size: 1.1em;">₹${clientCost.toFixed(2)}</strong>
-                        </div>
-                    </div>
-                `;
-            });
-
-            contentDiv.innerHTML = html;
-            document.getElementById('modalViewOrder').classList.add('active');
-        }
-
-        function updateToLatestRates() {
-            openConfirmModal('Update to Latest Rates?', 'This will recalculate all costs in this order using your current global settings. Proceed?', () => {
-                state.savedRates = JSON.parse(JSON.stringify(appSettings));
-                isDirty = true;
-                rebuildDetailedBreakdown(); 
-                renderAll();
-                showToast('Order updated to latest rates!');
-            });
-        }
-
-        function openWhatsAppModal() {
-            if(!document.getElementById('orderName').value.trim() || (state.cards.length === 0 && state.expenses.length === 0)) {
-                showToast('Please add an order name and items first!', true);
-                return;
-            }
-
-            let data = generateViewData('customer'); 
-            let dateStr = formatDateDDMMYYYY(state.orderDate);
-            
-            let text = `*QUOTATION*\n`;
-            text += `*Job Name:* ${state.orderName || 'Unnamed Job'}\n`;
-            if (state.orderIdString) text += `*Order #:* ${state.orderIdString}\n`;
-            text += `*Client:* ${state.clientName || 'Walk-in Customer'}\n`;
-            text += `*Date:* ${dateStr}\n`;
-            text += `*Base Qty:* ${state.globalQty}\n\n`;
-            
-            text += `*Items:*\n`;
-            
-            state.cards.forEach(c => {
-                let cmnTxt = c.commonPages ? ' (Common Pages)' : '';
-                let typeTxt = c.itemType === 'book' ? `Magazine Inner • ${c.pages} pages${cmnTxt}` : (c.printMethod === 'offset' ? 'Offset Print' : 'Digital Print');
-                text += `- ${c.name} (Qty: ${c.qty}) [${typeTxt}]\n`;
-            });
-            
-            state.expenses.forEach(x => {
-                text += `- ${x.desc}\n`;
-            });
-
-            text += `\n*GRAND TOTAL:* ₹${data.grandTotalClient.toFixed(2)}\n`;
-
-            document.getElementById('waPhoneNumber').value = state.clientPhone || '';
-            document.getElementById('waMessageBody').value = text;
-            document.getElementById('modalWhatsApp').classList.add('active');
-        }
-
-        function sendWhatsAppMessage() {
-            let phone = document.getElementById('waPhoneNumber').value.replace(/[^0-9+]/g, '');
-            let message = encodeURIComponent(document.getElementById('waMessageBody').value);
-            
-            if (phone.length > 0 && !phone.startsWith('+')) phone = '+' + phone;
-            
-            let url = `https://wa.me/${phone}?text=${message}`;
-            window.open(url, '_blank');
-            closeModal('modalWhatsApp');
-            showToast('Opening WhatsApp...');
-        }
-
-        // --- 8. SUB-CALCULATORS & FORM POPULATORS ---
         function populateDigitalPaperDropdown(selected = '') {
             const select = document.getElementById('mCardDigitalPaper');
             if(!select) return;
             select.innerHTML = '';
-            const keys = Object.keys(getRates().digitalRates);
-            const baseNames = new Set();
-            keys.forEach(k => {
-                const base = k.replace(/_(single|double)$/, '');
-                baseNames.add(base);
-            });
-            
-            Array.from(baseNames).forEach(name => {
+            const baseNames = getUniqueDigitalPaperNames();
+            baseNames.forEach(name => {
                 let opt = document.createElement('option');
                 opt.value = name;
                 opt.text = name.replace(/_/g, ' ');
@@ -2479,9 +2648,9 @@
                 a4: { l: 11.69, b: 8.27 },
                 a5: { l: 8.27, b: 5.83 },
                 a6: { l: 5.83, b: 4.13 },
-                q4: { l: 11.02, b: 8.66 },
-                q8: { l: 8.66, b: 5.51 },
-                q5: { l: 9.92, b: 7.48 }
+                q4: { l: 11.02, b: 8.66 }, // 1/4th (22x28cm)
+                q8: { l: 8.66, b: 5.51 },  // 1/8th (22x14cm)
+                q5: { l: 9.92, b: 7.48 }   // 1/5th (25.2x19cm)
             };
             const target = sizes[sizeKey];
             if (!target) return;
@@ -2494,15 +2663,10 @@
 
                 getRates().masterPapers.filter(m => m.machClass === 'std').forEach(master => {
                     const masterStr = `${master.l}x${master.b}`;
-                    let l = target.l;
-                    let b = target.b;
-                    
-                    const fit1 = Math.floor(master.l / l) * Math.floor(master.b / b);
-                    const fit2 = Math.floor(master.l / b) * Math.floor(master.b / l);
-                    const ups = Math.max(fit1, fit2);
-
+                    const ups = autoCalcOffsetUps(target.l, target.b, masterStr);
                     if (ups > 0) {
                         const utilization = (target.l * target.b * ups) / (master.l * master.b);
+                        // Penalize area to bias towards small/medium signatures when utilization is close
                         const area = master.l * master.b;
                         const score = utilization - (area * 0.0001); 
                         
@@ -2523,9 +2687,7 @@
                     showToast(`Warning: Cannot cleanly fit this size on configured standard master sheets.`, true);
                 }
             } else {
-                const fit1 = Math.floor(12.6 / target.l) * Math.floor(18.6 / target.b);
-                const fit2 = Math.floor(12.6 / target.b) * Math.floor(18.6 / target.l);
-                const ups = Math.max(fit1, fit2);
+                const ups = autoCalcDigitalUps(target.l, target.b);
                 document.getElementById('mCardUps').value = ups || 1;
                 showToast(`Auto-Layout: ${ups} pieces per Digital Sheet`);
             }
@@ -2554,12 +2716,7 @@
                 if (target && masterSheetStr !== 'custom') {
                     const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
                     if (printMethod === 'offset') {
-                        const masterVal = masterSheetStr.split('x');
-                        const masterL = parseFloat(masterVal[0]);
-                        const masterB = parseFloat(masterVal[1]);
-                        const fit1 = Math.floor(masterL / target.l) * Math.floor(masterB / target.b);
-                        const fit2 = Math.floor(masterL / target.b) * Math.floor(masterB / target.l);
-                        const ups = Math.max(fit1, fit2);
+                        const ups = autoCalcOffsetUps(target.l, target.b, masterSheetStr);
                         document.getElementById(type === 'book' ? 'mBookUps' : 'mCardUps').value = ups || 1;
                     }
                 }
@@ -2577,7 +2734,7 @@
             document.querySelectorAll('.book-custom-size').forEach(el => el.classList.toggle('hidden', !isCustom));
         }
 
-        // --- POST PRESS SUB-MODULE ---
+        // --- POST PRESS MODULE ---
         function renderPostPressSubGrid() {
             const container = document.getElementById('modalPostPressContainer');
             container.innerHTML = '';
@@ -2613,21 +2770,21 @@
                     <div style="display:flex; gap: 15px; align-items:flex-end; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:12px; min-width: 650px;">
                         <div style="flex:2; display:flex; flex-direction:column;">
                             <label style="font-size: 0.6em; color: var(--text-light); text-transform:uppercase; margin-bottom: 4px;">Process</label>
-                            <select id="ppRowKey_${row.id}" class="neumorphic-input calc-input" style="padding:8px; font-size:0.85em;" onchange="changePostPressProcess('${row.id}')">
+                            <select id="ppRowKey_${row.id}" class="neumorphic-input" style="padding:8px; font-size:0.85em;" onchange="changePostPressProcess('${row.id}')">
                                 ${optionsHtml}
                             </select>
                         </div>
                         <div style="flex:2; display:flex; flex-direction:column;">
                             <label style="font-size: 0.6em; color: var(--text-light); text-transform:uppercase; margin-bottom: 4px;">Description</label>
-                            <input type="text" id="ppRowDesc_${row.id}" value="${row.desc}" placeholder="Optional details..." class="neumorphic-input calc-input" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')">
+                            <input type="text" id="ppRowDesc_${row.id}" value="${row.desc}" placeholder="Optional details..." class="neumorphic-input" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')">
                         </div>
                         <div style="flex:1; display:flex; flex-direction:column;">
                             <label style="font-size: 0.6em; color: var(--text-light); text-transform:uppercase; margin-bottom: 4px;">Qty</label>
-                            <input type="text" id="ppRowQty_${row.id}" value="${row.qty}" class="neumorphic-input calc-input" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')" onblur="evaluateMath(this); updatePostPressRow('${row.id}')">
+                            <input type="number" id="ppRowQty_${row.id}" value="${row.qty}" class="neumorphic-input" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')">
                         </div>
                         <div style="flex:1; display:flex; flex-direction:column;">
                             <label style="font-size: 0.6em; color: var(--text-light); text-transform:uppercase; margin-bottom: 4px;">Rate (₹)</label>
-                            <input type="text" id="ppRowRate_${row.id}" value="${row.rate}" class="neumorphic-input calc-input" style="padding:8px; font-size:0.85em;" oninput="updatePostPressRow('${row.id}')" onblur="evaluateMath(this); updatePostPressRow('${row.id}')">
+                            <input type="number" id="ppRowRate_${row.id}" value="${row.rate}" class="neumorphic-input" style="padding:8px; font-size:0.85em;" step="0.01" oninput="updatePostPressRow('${row.id}')">
                         </div>
                         <div id="ppRowTotal_${row.id}" style="flex:1.2; font-weight:bold; text-align:right; font-family:monospace; font-size: 1.1em; color: var(--text-main); padding-bottom: 8px;">
                             ₹${rowTotal.toFixed(2)}
@@ -2665,6 +2822,7 @@
         function changePostPressProcess(rowId) {
             const row = activePostPressRows.find(r => r.id === rowId);
             if (!row) return;
+            
             const newKey = document.getElementById(`ppRowKey_${rowId}`).value;
             const proc = getRates().postPressRates[newKey];
             if (proc) {
@@ -2679,6 +2837,7 @@
         function updatePostPressRow(rowId) {
             const row = activePostPressRows.find(r => r.id === rowId);
             if (!row) return;
+
             row.desc = document.getElementById(`ppRowDesc_${rowId}`).value;
             row.qty = Number(document.getElementById(`ppRowQty_${rowId}`).value) || 0;
             row.rate = parseFloat(document.getElementById(`ppRowRate_${rowId}`).value) || 0;
@@ -2721,179 +2880,7 @@
             document.getElementById('lblCardLength').innerText = `Length (${unit})`;
             document.getElementById('lblCardBreadth').innerText = `Breadth (${unit})`;
         }
-
-        function triggerCardUpsCalc() {
-            let l = parseFloat(document.getElementById('mCardLength').value) || 0;
-            let b = parseFloat(document.getElementById('mCardBreadth').value) || 0;
-            const unit = document.getElementById('mCardUnit').value;
-
-            document.getElementById('lblCardLength').innerText = `Length (${unit === 'inches' ? 'inches' : 'cm'})`;
-            document.getElementById('lblCardBreadth').innerText = `Breadth (${unit === 'inches' ? 'inches' : 'cm'})`;
-
-            if (unit === 'cm') { l = l / 2.54; b = b / 2.54; }
-
-            const printMethod = document.getElementById('mCardPrintMethod').value;
-            let ups = 0;
-            if (printMethod === 'offset') {
-                const sheet = document.getElementById('mCardMasterSheet').value;
-                if(sheet === 'custom') {
-                    showToast('Auto calc unavailable for custom sheets.', true);
-                    return;
-                }
-                const masterVal = sheet.split('x');
-                const masterL = parseFloat(masterVal[0]);
-                const masterB = parseFloat(masterVal[1]);
-                const fit1 = Math.floor(masterL / l) * Math.floor(masterB / b);
-                const fit2 = Math.floor(masterL / b) * Math.floor(masterB / l);
-                ups = Math.max(fit1, fit2);
-            } else {
-                const fit1 = Math.floor(12.6 / l) * Math.floor(18.6 / b);
-                const fit2 = Math.floor(12.6 / b) * Math.floor(18.6 / l);
-                ups = Math.max(fit1, fit2);
-            }
-            document.getElementById('mCardUps').value = ups || 1;
-        }
-
-        function manualFoilEntry() {
-            activeFoilRows = []; 
-            triggerLiveItemTotal();
-        }
-
-        function clearFoilCalc() {
-            activeFoilRows = [];
-            const inputField = document.getElementById('mCardFoil');
-            if (inputField) inputField.value = 0;
-            triggerLiveItemTotal();
-        }
-        
-        let lastFoilUnit = 'cm';
-        function openFoilSubCalculator() {
-            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
-            const foilUnitSelect = document.getElementById('foilSizingUnit');
-            let savedUnit = 'cm';
-            const id = document.getElementById('itemEditId').value;
-            if (id) {
-                let card = state.cards.find(c => c.id === id);
-                if (card && card.foilUnit) savedUnit = card.foilUnit;
-            }
-            foilUnitSelect.value = savedUnit;
-            lastFoilUnit = savedUnit;
-
-            if (activeFoilRows.length === 0) {
-                activeFoilRows.push({
-                    id: Date.now(),
-                    label: "Front Crest / Logo Block",
-                    width: savedUnit === 'cm' ? 6 : 2.36,
-                    height: savedUnit === 'cm' ? 20 : 7.87,
-                    qty: cardQtyInputVal
-                });
-            } else {
-                activeFoilRows.forEach(row => { if (row.qty <= 0) row.qty = cardQtyInputVal; });
-            }
-            document.getElementById('modalFoilCalculator').classList.add('active');
-            renderFoilSubCalculatorGrid();
-        }
-
-        function changeFoilSizingUnit() {
-            const nextUnit = document.getElementById('foilSizingUnit').value;
-            if (nextUnit === lastFoilUnit) return;
-
-            activeFoilRows.forEach(row => {
-                const widthInp = document.getElementById(`foilInputWidth_${row.id}`);
-                const heightInp = document.getElementById(`foilInputHeight_${row.id}`);
-                if (widthInp && heightInp) {
-                    let w = parseFloat(widthInp.value) || 0;
-                    let h = parseFloat(heightInp.value) || 0;
-                    if (nextUnit === 'inches') { w = w / 2.54; h = h / 2.54; } 
-                    else { w = w * 2.54; h = h * 2.54; }
-                    row.width = parseFloat(w.toFixed(2));
-                    row.height = parseFloat(h.toFixed(2));
-                }
-            });
-            lastFoilUnit = nextUnit;
-            renderFoilSubCalculatorGrid();
-        }
-
-        function addFoilCalculatorRow() {
-            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
-            const currentUnit = document.getElementById('foilSizingUnit').value;
-            activeFoilRows.push({
-                id: Date.now() + Math.random(),
-                label: `Size Variant ${activeFoilRows.length + 1}`,
-                width: currentUnit === 'cm' ? 6 : 2.36,
-                height: currentUnit === 'cm' ? 10 : 3.94,
-                qty: cardQtyInputVal
-            });
-            renderFoilSubCalculatorGrid();
-        }
-
-        function removeFoilCalculatorRow(rowId) {
-            activeFoilRows = activeFoilRows.filter(r => r.id.toString() !== rowId.toString());
-            renderFoilSubCalculatorGrid();
-            const selectedUnit = document.getElementById('foilSizingUnit').value;
-            let sumComposite = 0;
-            activeFoilRows.forEach(r => {
-                const out = calculateSingleFoilRow(r, selectedUnit);
-                sumComposite += out.rowTotal;
-            });
-            document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
-            triggerLiveItemTotal();
-        }
-
-        function updateFoilRowCalculations(rowId) {
-            const row = activeFoilRows.find(r => r.id.toString() === rowId.toString());
-            if (!row) return;
-            row.label = document.getElementById(`foilInputLabel_${rowId}`).value;
-            row.width = parseFloat(document.getElementById(`foilInputWidth_${rowId}`).value) || 0;
-            row.height = parseFloat(document.getElementById(`foilInputHeight_${rowId}`).value) || 0;
-            row.qty = parseFloat(document.getElementById(`foilInputQty_${rowId}`).value) || 0;
-            isDirty = true;
-            renderFoilSubCalculatorGrid();
-        }
-
-        function renderFoilSubCalculatorGrid() {
-            const container = document.getElementById('foilCalculatorRows');
-            container.innerHTML = '';
-            const selectedUnit = document.getElementById('foilSizingUnit').value;
-
-            if (activeFoilRows.length === 0) {
-                container.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: var(--text-light); font-style: italic;">No sizing rows.</td></tr>`;
-                document.getElementById('foilCalcCompositeSum').innerText = "₹0.00";
-                return;
-            }
-
-            let sumBlock = 0, sumFoil = 0, sumComposite = 0;
-            activeFoilRows.forEach((row, idx) => {
-                const results = calculateSingleFoilRow(row, selectedUnit);
-                sumBlock += results.blockCost;
-                sumFoil += results.foilCost;
-                sumComposite += results.rowTotal;
-
-                container.innerHTML += `
-                    <tr id="foilRow_${row.id}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                        <td style="padding: 8px 4px; text-align: center; color: var(--text-light); font-weight: bold;">${idx + 1}</td>
-                        <td style="padding: 4px;"><input type="text" id="foilInputLabel_${row.id}" value="${row.label}" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input calc-input" style="padding: 8px; font-weight: bold; font-size: 0.9em;"></td>
-                        <td style="padding: 4px;"><input type="text" id="foilInputWidth_${row.id}" value="${row.width}" oninput="updateFoilRowCalculations('${row.id}')" onblur="evaluateMath(this); updateFoilRowCalculations('${row.id}')" class="neumorphic-input calc-input" style="padding: 8px; text-align: center; font-family: monospace;"></td>
-                        <td style="padding: 4px;"><input type="text" id="foilInputHeight_${row.id}" value="${row.height}" oninput="updateFoilRowCalculations('${row.id}')" onblur="evaluateMath(this); updateFoilRowCalculations('${row.id}')" class="neumorphic-input calc-input" style="padding: 8px; text-align: center; font-family: monospace;"></td>
-                        <td style="padding: 4px;"><input type="text" id="foilInputQty_${row.id}" value="${row.qty}" oninput="updateFoilRowCalculations('${row.id}')" onblur="evaluateMath(this); updateFoilRowCalculations('${row.id}')" class="neumorphic-input calc-input" style="padding: 8px; text-align: center; font-family: monospace;"></td>
-                        <td style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main);">₹${results.blockCost.toFixed(2)}</td>
-                        <td style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main);">₹${results.foilCost.toFixed(2)}</td>
-                        <td style="padding: 8px; text-align: center;"><button type="button" onclick="removeFoilCalculatorRow('${row.id}')" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; cursor:pointer;">✕</button></td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('foilCalcBlockSum').innerText = `₹${sumBlock.toFixed(2)}`;
-            document.getElementById('foilCalcFoilSum').innerText = `₹${sumFoil.toFixed(2)}`;
-            document.getElementById('foilCalcCompositeSum').innerText = `₹${sumComposite.toFixed(2)}`;
-            document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
-        }
-
-        function applyFoilCalculatorValues() {
-            closeModal('modalFoilCalculator');
-            triggerLiveItemTotal();
-            showToast('Foil costs computed & applied!');
-        }
+        // --- END POST PRESS MODULE ---
 
         function setModalType(type) {
             currentModalType = type;
@@ -2910,8 +2897,10 @@
         function toggleMCardPrintMethod(skipUpsCalc) {
             const method = document.getElementById('mCardPrintMethod').value;
             const isOffset = method === 'offset';
+            
             document.querySelectorAll('.card-offset-only').forEach(el => el.classList.toggle('hidden', !isOffset));
             document.querySelectorAll('.card-digital-only').forEach(el => el.classList.toggle('hidden', isOffset));
+            
             if (skipUpsCalc !== true) triggerCardUpsCalc();
             triggerLiveItemTotal();
         }
@@ -2954,6 +2943,7 @@
                     document.getElementById('mBookLamination').value = item.lamination || 'None';
                     document.getElementById('mBookCustomPaperPrice').value = item.customPaperPrice || 0;
                     document.getElementById('mBookOtherExp').value = item.otherExp || 0;
+
                     toggleBookCustomSize();
                 } else if (loadedType === 'card') {
                     document.getElementById('mCardName').value = item.name;
@@ -2965,7 +2955,7 @@
                     document.getElementById('mCardMasterSheet').value = item.masterSheet || '23x18';
                     document.getElementById('mCardCustomL').value = item.customL || '';
                     document.getElementById('mCardCustomB').value = item.customB || '';
-                    populateDigitalPaperDropdown(item.paper || '300gsm_single');
+                    populateDigitalPaperDropdown(item.paper || '300gsm');
                     document.getElementById('mCardUnit').value = item.unit || 'inches';
                     document.getElementById('mCardLength').value = item.length || 11;
                     document.getElementById('mCardBreadth').value = item.breadth || 8.5;
@@ -2974,8 +2964,10 @@
                     document.getElementById('mCardUps').value = item.ups || 8;
                     document.getElementById('mCardFoil').value = item.foil || 0;
                     document.getElementById('mCardOtherExp').value = item.otherExp || 0;
+                    
                     if (item.printMethod === 'offset') document.getElementById('mCardSidesOffset').value = item.sides || 1;
                     else document.getElementById('mCardSidesDigital').value = item.sides || 1;
+                    
                     document.getElementById('mCardSets').value = item.sets || 1;
                     activeFoilRows = item.foilRows ? JSON.parse(JSON.stringify(item.foilRows)) : [];
                     toggleCardCustomSize();
@@ -2988,6 +2980,16 @@
                 if (loadedType !== 'exp') {
                     if (item.postPressRows && item.postPressRows.length > 0) {
                         activePostPressRows = JSON.parse(JSON.stringify(item.postPressRows));
+                    } else if (item.postPress && Array.isArray(item.postPress)) {
+                        item.postPress.forEach(key => {
+                            const proc = getRates().postPressRates[key];
+                            if (proc) {
+                                activePostPressRows.push({
+                                    id: Date.now() + Math.random().toString(36).substr(2),
+                                    processKey: key, desc: '', qty: item.qty, rate: proc.rate, setup: proc.setup
+                                });
+                            }
+                        });
                     }
                     renderPostPressSubGrid();
                 }
@@ -3048,6 +3050,12 @@
 
             document.getElementById('modalItem').classList.add('active');
             triggerLiveItemTotal();
+            
+            setTimeout(() => {
+                if (currentModalType === 'card') document.getElementById('mCardName').focus();
+                else if (currentModalType === 'book') document.getElementById('mBookName').focus();
+                else if (currentModalType === 'exp') document.getElementById('mExpDesc').focus();
+            }, 100);
         }
 
         document.querySelectorAll('#fields-card input, #fields-card select, #fields-book input, #fields-book select, #fields-exp input').forEach(elem => {
@@ -3055,6 +3063,192 @@
             elem.addEventListener('change', triggerLiveItemTotal);
         });
 
+        // --- SUB-CALCULATOR MATHEMATIC TRANSACTIONS ---
+        let lastFoilUnit = 'cm';
+
+        function openFoilSubCalculator() {
+            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            const foilUnitSelect = document.getElementById('foilSizingUnit');
+            let savedUnit = 'cm';
+            const id = document.getElementById('itemEditId').value;
+            if (id) {
+                let card = state.cards.find(c => c.id === id);
+                if (card && card.foilUnit) savedUnit = card.foilUnit;
+            }
+            foilUnitSelect.value = savedUnit;
+            lastFoilUnit = savedUnit;
+
+            if (activeFoilRows.length === 0) {
+                activeFoilRows.push({
+                    id: Date.now(),
+                    label: "Front Crest / Logo Block",
+                    width: savedUnit === 'cm' ? 6 : 2.36,
+                    height: savedUnit === 'cm' ? 20 : 7.87,
+                    qty: cardQtyInputVal
+                });
+            } else {
+                activeFoilRows.forEach(row => { if (row.qty <= 0) row.qty = cardQtyInputVal; });
+            }
+            document.getElementById('modalFoilCalculator').classList.add('active');
+            renderFoilSubCalculatorGrid();
+        }
+
+        function changeFoilSizingUnit() {
+            const nextUnit = document.getElementById('foilSizingUnit').value;
+            if (nextUnit === lastFoilUnit) return;
+
+            activeFoilRows.forEach(row => {
+                const widthInp = document.getElementById(`foilInputWidth_${row.id}`);
+                const heightInp = document.getElementById(`foilInputHeight_${row.id}`);
+                const labelInp = document.getElementById(`foilInputLabel_${row.id}`);
+                const qtyInp = document.getElementById(`foilInputQty_${row.id}`);
+                
+                if (widthInp && heightInp) {
+                    let w = parseFloat(widthInp.value) || 0;
+                    let h = parseFloat(heightInp.value) || 0;
+                    if (nextUnit === 'inches') { w = w / 2.54; h = h / 2.54; } 
+                    else { w = w * 2.54; h = h * 2.54; }
+                    row.width = parseFloat(w.toFixed(2));
+                    row.height = parseFloat(h.toFixed(2));
+                }
+                if (labelInp) row.label = labelInp.value;
+                if (qtyInp) row.qty = parseFloat(qtyInp.value) || 0;
+            });
+
+            lastFoilUnit = nextUnit;
+            renderFoilSubCalculatorGrid();
+        }
+
+        function addFoilCalculatorRow() {
+            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            const currentUnit = document.getElementById('foilSizingUnit').value;
+            activeFoilRows.push({
+                id: Date.now() + Math.random(),
+                label: `Size Variant ${activeFoilRows.length + 1}`,
+                width: currentUnit === 'cm' ? 6 : 2.36,
+                height: currentUnit === 'cm' ? 10 : 3.94,
+                qty: cardQtyInputVal
+            });
+            renderFoilSubCalculatorGrid();
+        }
+
+        function removeFoilCalculatorRow(rowId) {
+            activeFoilRows = activeFoilRows.filter(r => r.id.toString() !== rowId.toString());
+            renderFoilSubCalculatorGrid();
+            
+            const selectedUnit = document.getElementById('foilSizingUnit').value;
+            let sumComposite = 0;
+            activeFoilRows.forEach(r => {
+                const out = calculateSingleFoilRow(r, selectedUnit);
+                sumComposite += out.rowTotal;
+            });
+            document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
+            triggerLiveItemTotal();
+        }
+
+        function updateFoilRowCalculations(rowId) {
+            const row = activeFoilRows.find(r => r.id.toString() === rowId.toString());
+            if (!row) return;
+
+            row.label = document.getElementById(`foilInputLabel_${rowId}`).value;
+            row.width = parseFloat(document.getElementById(`foilInputWidth_${rowId}`).value) || 0;
+            row.height = parseFloat(document.getElementById(`foilInputHeight_${rowId}`).value) || 0;
+            row.qty = parseFloat(document.getElementById(`foilInputQty_${rowId}`).value) || 0;
+
+            isDirty = true;
+
+            const selectedUnit = document.getElementById('foilSizingUnit').value;
+            const results = calculateSingleFoilRow(row, selectedUnit);
+
+            document.getElementById(`foilRowBlockCost_${rowId}`).innerText = `₹${results.blockCost.toFixed(2)}`;
+            document.getElementById(`foilRowFoilCost_${rowId}`).innerText = `₹${results.foilCost.toFixed(2)}`;
+
+            let sumBlock = 0, sumFoil = 0, sumComposite = 0;
+            activeFoilRows.forEach(r => {
+                const out = calculateSingleFoilRow(r, selectedUnit);
+                sumBlock += out.blockCost;
+                sumFoil += out.foilCost;
+                sumComposite += out.rowTotal;
+            });
+
+            document.getElementById('foilCalcBlockSum').innerText = `₹${sumBlock.toFixed(2)}`;
+            document.getElementById('foilCalcFoilSum').innerText = `₹${sumFoil.toFixed(2)}`;
+            document.getElementById('foilCalcCompositeSum').innerText = `₹${sumComposite.toFixed(2)}`;
+            
+            document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
+            triggerLiveItemTotal();
+        }
+
+        function renderFoilSubCalculatorGrid() {
+            const container = document.getElementById('foilCalculatorRows');
+            container.innerHTML = '';
+            const selectedUnit = document.getElementById('foilSizingUnit').value;
+
+            if (activeFoilRows.length === 0) {
+                container.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: var(--text-light); font-style: italic;">No sizing rows. Click "+ Add Size Row" to begin.</td></tr>`;
+                document.getElementById('foilCalcBlockSum').innerText = "₹0.00";
+                document.getElementById('foilCalcFoilSum').innerText = "₹0.00";
+                document.getElementById('foilCalcCompositeSum').innerText = "₹0.00";
+                return;
+            }
+
+            let sumBlock = 0, sumFoil = 0, sumComposite = 0;
+            activeFoilRows.forEach((row, idx) => {
+                const results = calculateSingleFoilRow(row, selectedUnit);
+                sumBlock += results.blockCost;
+                sumFoil += results.foilCost;
+                sumComposite += results.rowTotal;
+
+                container.innerHTML += `
+                    <tr id="foilRow_${row.id}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                        <td style="padding: 8px 4px; text-align: center; color: var(--text-light); font-weight: bold;">${idx + 1}</td>
+                        <td style="padding: 4px;"><input type="text" id="foilInputLabel_${row.id}" value="${row.label}" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; font-weight: bold; font-size: 0.9em;"></td>
+                        <td style="padding: 4px;">
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="number" id="foilInputWidth_${row.id}" value="${row.width}" step="0.1" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace; padding-right: 25px;">
+                                <span style="position: absolute; right: 8px; font-size: 0.75em; color: var(--text-light); font-weight: bold;">${selectedUnit}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 4px;">
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="number" id="foilInputHeight_${row.id}" value="${row.height}" step="0.1" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace; padding-right: 25px;">
+                                <span style="position: absolute; right: 8px; font-size: 0.75em; color: var(--text-light); font-weight: bold;">${selectedUnit}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 4px;"><input type="number" id="foilInputQty_${row.id}" value="${row.qty}" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace;"></td>
+                        <td id="foilRowBlockCost_${row.id}" style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;">₹${results.blockCost.toFixed(2)}</td>
+                        <td id="foilRowFoilCost_${row.id}" style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;">₹${results.foilCost.toFixed(2)}</td>
+                        <td style="padding: 8px; text-align: center;"><button type="button" onclick="removeFoilCalculatorRow('${row.id}')" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Wipe Row">✕</button></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('foilCalcBlockSum').innerText = `₹${sumBlock.toFixed(2)}`;
+            document.getElementById('foilCalcFoilSum').innerText = `₹${sumFoil.toFixed(2)}`;
+            document.getElementById('foilCalcCompositeSum').innerText = `₹${sumComposite.toFixed(2)}`;
+        }
+
+        function applyFoilCalculatorValues() {
+            let grandTotal = 0;
+            const selectedUnit = document.getElementById('foilSizingUnit').value;
+
+            activeFoilRows.forEach(r => {
+                r.label = document.getElementById(`foilInputLabel_${r.id}`).value;
+                r.width = parseFloat(document.getElementById(`foilInputWidth_${r.id}`).value) || 0;
+                r.height = parseFloat(document.getElementById(`foilInputHeight_${r.id}`).value) || 0;
+                r.qty = parseFloat(document.getElementById(`foilInputQty_${r.id}`).value) || 0;
+
+                const results = calculateSingleFoilRow(r, selectedUnit);
+                grandTotal += results.rowTotal;
+            });
+
+            document.getElementById('mCardFoil').value = Math.ceil(grandTotal);
+            closeModal('modalFoilCalculator');
+            triggerLiveItemTotal();
+            showToast('Foil costs computed & applied!');
+        }
+
+        // --- SAVES AND EDITS TRANSACTIONS ---
         function saveItem(addAnother = false) {
             if (currentModalType === 'card') saveCard(addAnother);
             else if (currentModalType === 'book') saveBook(addAnother);
@@ -3064,6 +3258,7 @@
         function saveCard(addAnother) {
             let id = document.getElementById('itemEditId').value || generateId();
             let qty = Number(document.getElementById('mCardQty').value) || state.globalQty;
+
             let sidesVal = 1;
             if (document.getElementById('mCardPrintMethod').value === 'offset') sidesVal = Number(document.getElementById('mCardSidesOffset').value) || 1;
             else sidesVal = Number(document.getElementById('mCardSidesDigital').value) || 1;
@@ -3208,6 +3403,7 @@
             let id = document.getElementById('itemEditId').value;
             if(currentModalType === 'card' || currentModalType === 'book') state.cards = state.cards.filter(c => c.id !== id);
             else if(currentModalType === 'exp') state.expenses = state.expenses.filter(x => x.id !== id);
+            
             isDirty = true;
             closeModal('modalItem');
             renderAll();
@@ -3218,243 +3414,18 @@
             event.stopPropagation(); 
             if(type === 'card' || type === 'book') state.cards = state.cards.filter(c => c.id !== id);
             else if(type === 'exp') state.expenses = state.expenses.filter(x => x.id !== id);
+            
             isDirty = true;
             renderAll();
             showToast('Item Deleted');
         }
 
-        function saveProgress() {
-            if(!document.getElementById('orderName').value.trim()) {
-                showToast('Warning: Please provide an Order Name!', true);
-                document.getElementById('orderName').focus();
-                return false;
-            }
-            if(state.cards.length === 0 && state.expenses.length === 0) {
-                showToast('Warning: Order is empty. Add items first!', true);
-                return false;
-            }
-            
-            state.orderName = document.getElementById('orderName').value;
-            if(!state.orderDate) {
-                let today = new Date().toISOString().split('T')[0];
-                state.orderDate = today;
-                document.getElementById('orderDate').value = today;
-            }
-            state.orderMarkup = parseFloat(document.getElementById('orderMarkup').value) || 0;
-            
-            if (!state.savedRates) {
-                state.savedRates = JSON.parse(JSON.stringify(appSettings));
-            }
-            if (!state.orderIdString) state.orderIdString = generateOrderNumber();
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-            rebuildDetailedBreakdown();
-
-            let record = JSON.parse(JSON.stringify(state));
-            record.timestamp = Date.now();
-            
-            let existingIdx = orderHistory.findIndex(o => o.id === state.id);
-            if (existingIdx > -1) orderHistory[existingIdx] = record;
-            else orderHistory.unshift(record);
-            
-            localStorage.setItem('printEstimatorOrders_v9', JSON.stringify(orderHistory));
-
-            if (typeof window.cloudSaveOrder === 'function') {
-                window.cloudSaveOrder(record);
-            } else {
-                showToast('Progress Saved locally (Offline)');
-                isDirty = false;
-                renderAll();
-            }
-            return true;
-        }
-
-        function resetForm() {
-            state = {
-                id: generateId(),
-                orderIdString: generateOrderNumber(),
-                orderDate: new Date().toISOString().split('T')[0],
-                orderName: '', orderDesc: '', globalQty: 1000,
-                clientName: '', clientPhone: '', clientCompany: '', manualQuote: '',
-                orderMarkup: 0,
-                cards: [], expenses: [],
-                detailedBreakdown: [],
-                actuals: { unexpectedCosts: [] },
-                savedRates: null
-            };
-            document.getElementById('orderDate').value = state.orderDate;
-            document.getElementById('orderName').value = '';
-            document.getElementById('orderDesc').value = '';
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientPhone').value = '';
-            document.getElementById('clientCompany').value = '';
-            document.getElementById('manualQuote').value = '';
-            document.getElementById('globalQty').value = 1000;
-            document.getElementById('orderMarkup').value = 0;
-            isDirty = false;
-            renderAll();
-            showToast('Workspace Cleared');
-        }
-
-        function saveAndNew() { if (saveProgress()) resetForm(); }
-
-        function renderHistoryList(ordersToRender) {
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            if (ordersToRender.length === 0) {
-                list.innerHTML = '<div style="color:var(--text-light); text-align:center; padding: 20px; font-style: italic;">No saved orders found.</div>';
-            } else {
-                ordersToRender.forEach(order => {
-                    const dateStr = formatDateDDMMYYYY(order.orderDate);
-                    let hasActuals = false;
-                    if (order.detailedBreakdown) hasActuals = order.detailedBreakdown.some(block => block.costs.some(c => c.act !== ''));
-                    if (order.actuals && order.actuals.unexpectedCosts && order.actuals.unexpectedCosts.length > 0) hasActuals = true;
-                    const actInd = hasActuals ? '<span style="color:var(--success); font-weight:bold; margin-left:10px;">✓ Tracked</span>' : '';
-
-                    list.innerHTML += `
-                        <div class="data-slot" style="display:flex; justify-content:space-between; align-items:center;">
-                            <div onclick="loadOrder('${order.id}')" style="flex-grow:1;">
-                                <div class="data-slot-title">${order.orderName || 'Unnamed Order'} <span style="font-size: 0.8em; color: var(--text-light); font-weight:normal;">(${order.orderIdString || 'No ID'})</span></div>
-                                <div class="data-slot-meta"><span>${dateStr}</span><span>Items: ${order.cards.length + order.expenses.length} ${actInd}</span></div>
-                            </div>
-                            <button class="slot-delete-btn" style="position:relative; opacity:1; right:0; top:0;" onclick="deleteOrder('${order.id}')" title="Delete">✕</button>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        function filterHistory() {
-            const searchTerm = document.getElementById('searchHistory').value.toLowerCase();
-            const filteredOrders = orderHistory.filter(o => 
-                (o.orderName && o.orderName.toLowerCase().includes(searchTerm)) || 
-                (o.orderIdString && o.orderIdString.toLowerCase().includes(searchTerm))
-            );
-            renderHistoryList(filteredOrders);
-        }
-
-        function openHistoryModal() {
-            document.getElementById('searchHistory').value = '';
-            renderHistoryList(orderHistory);
-            document.getElementById('modalHistory').classList.add('active');
-        }
-
-        function loadOrder(id) {
-            const order = orderHistory.find(o => o.id === id);
-            if (order) {
-                state = JSON.parse(JSON.stringify(order));
-                if (!state.actuals) state.actuals = { unexpectedCosts: [] };
-                if (!state.detailedBreakdown) state.detailedBreakdown = [];
-                if (!state.orderIdString) state.orderIdString = generateOrderNumber();
-                
-                document.getElementById('orderDate').value = state.orderDate || '';
-                document.getElementById('orderName').value = state.orderName || '';
-                document.getElementById('orderDesc').value = state.orderDesc || '';
-                document.getElementById('globalQty').value = state.globalQty || 1000;
-                document.getElementById('orderMarkup').value = state.orderMarkup || 0;
-                document.getElementById('clientName').value = state.clientName || '';
-                document.getElementById('clientPhone').value = state.clientPhone || '';
-                document.getElementById('clientCompany').value = state.clientCompany || '';
-                document.getElementById('manualQuote').value = state.manualQuote || '';
-                
-                closeModal('modalHistory');
-                renderAll();
-                showToast('Order Loaded');
-            }
-        }
-
-        function deleteOrder(id) {
-            openConfirmModal('Delete Order', 'Are you sure you want to permanently delete this order?', () => {
-                orderHistory = orderHistory.filter(o => o.id !== id);
-                localStorage.setItem('printEstimatorOrders_v9', JSON.stringify(orderHistory));
-                if (typeof window.cloudDeleteOrder === 'function') {
-                    window.cloudDeleteOrder(id);
-                }
-                filterHistory(); 
-                showToast('Order Deleted');
-            });
-        }
-
-        function exportBackup() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(orderHistory));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", "print_estimator_backup_" + new Date().toISOString().split('T')[0] + ".json");
-            dlAnchorElem.click();
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        if (Array.isArray(imported)) {
-                            const merged = [...orderHistory, ...imported];
-                            const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
-                            orderHistory = unique;
-                            localStorage.setItem('printEstimatorOrders_v9', JSON.stringify(orderHistory));
-                            if (typeof window.cloudBatchMigrateOrders === 'function') {
-                                window.cloudBatchMigrateOrders(imported);
-                            }
-                            filterHistory();
-                            showToast('Backup Imported Successfully!');
-                        }
-                    } catch (err) {
-                        showToast('Invalid Backup File', true);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function openPrintModal() {
-            if(!document.getElementById('orderName').value.trim()) {
-                showToast('Warning: Please provide an Order Name!', true);
-                document.getElementById('orderName').focus();
-                return;
-            }
-            if(state.cards.length === 0 && state.expenses.length === 0) {
-                showToast('Warning: Order is empty. Add items first!', true);
-                return;
-            }
-            document.getElementById('modalPrintOptions').classList.add('active');
-        }
-
-        function printEstimate(type) {
-            closeModal('modalPrintOptions');
-            const printContainer = document.getElementById('printContainer');
-            const data = generateViewData(type);
-            const total = data.grandTotalClient;
-            let dateStr = formatDateDDMMYYYY(state.orderDate);
-
-            printContainer.innerHTML = `
-                <div class="print-invoice-box" style="padding: 20px; font-family: sans-serif; color: black;">
-                    <div class="print-invoice-header" style="border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">
-                        <h2 style="margin:0 0 10px 0;">${type === 'office' ? 'Internal Work Order' : 'Estimate / Quotation'}</h2>
-                        <div style="display:flex; justify-content:space-between;">
-                            <div>
-                                <div><strong>Job Name:</strong> ${state.orderName || 'Unnamed Job'}</div>
-                                <div><strong>Order #:</strong> ${state.orderIdString || 'N/A'}</div>
-                                <div><strong>Base Quantity:</strong> ${state.globalQty}</div>
-                                <div><strong>Client:</strong> ${state.clientName || 'Walk-in Customer'} ${state.clientCompany ? `(${state.clientCompany})` : ''}</div>
-                            </div>
-                            <div style="text-align:right;">
-                                <div><strong>Date:</strong> ${dateStr}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        ${data.receiptHTML}
-                    </div>
-                    ${type === 'customer' ? `
-                    <div style="text-align: right; border-top: 2px solid #ccc; padding-top: 15px;">
-                        <h2 style="margin:0;">Total: ₹${total.toFixed(2)}</h2>
-                    </div>` : ''}
-                </div>
-            `;
-            window.print();
-        }
+        // --- ADMIN CONFIGURATION ACTIONS ---
+        let adminPaperCount = 0;
+        let adminPostPressCount = 0;
+        let adminMasterPaperCount = 0;
 
         function setAdminTab(tab) {
             document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('btn-accent'));
@@ -3462,27 +3433,23 @@
 
             const sectGeneral = document.getElementById('admin-sect-general');
             const sectDigital = document.getElementById('admin-sect-digital');
-            const sectClients = document.getElementById('admin-sect-clients');
             const sectCloud = document.getElementById('admin-sect-cloud');
             const sectSecurity = document.getElementById('admin-sect-security');
 
             sectGeneral.classList.add('hidden');
             sectDigital.classList.add('hidden');
-            sectClients.classList.add('hidden');
             sectCloud.classList.add('hidden');
             sectSecurity.classList.add('hidden');
 
             if (tab === 'general') sectGeneral.classList.remove('hidden');
             else if (tab === 'digital') sectDigital.classList.remove('hidden');
-            else if (tab === 'clients') sectClients.classList.remove('hidden');
             else if (tab === 'cloud') sectCloud.classList.remove('hidden');
             else if (tab === 'security') sectSecurity.classList.remove('hidden');
         }
 
         function openAdmin() {
-            setAdminTab('general');
-            document.getElementById('adminUsername').value = appSettings.auth.user;
-            document.getElementById('adminPassword').value = appSettings.auth.pass;
+            setAdminTab('general'); // Default to general settings
+
             document.getElementById('adminPaperPriceKg').value = appSettings.paperPriceKg;
             document.getElementById('adminCardCutting').value = appSettings.cardCuttingCharge;
 
@@ -3511,7 +3478,6 @@
             document.getElementById('adminLamDigVl').value = appSettings.lamRates.digital.VL;
             
             renderAdminMasterPapers();
-            renderAdminClients();
 
             adminPostPressCount = 0;
             document.getElementById('adminPostPressRows').innerHTML = '';
@@ -3535,38 +3501,6 @@
             document.getElementById('adminModal').classList.add('active');
         }
 
-        function renderAdminClients() {
-            const container = document.getElementById('adminClientRows');
-            container.innerHTML = '';
-            if (appSettings.clients && appSettings.clients.length > 0) {
-                appSettings.clients.forEach((client, idx) => {
-                    container.innerHTML += `
-                        <tr id="adminClientRow_${idx}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                            <td style="padding: 6px 8px;"><input type="text" id="adminClientName_${idx}" value="${client.name}" class="neumorphic-input" style="padding: 8px;" placeholder="Full Name"></td>
-                            <td style="padding: 6px 8px;"><input type="text" id="adminClientPhone_${idx}" value="${client.phone}" class="neumorphic-input" style="padding: 8px;" placeholder="Phone (e.g. +91...)"></td>
-                            <td style="padding: 6px 8px;"><input type="text" id="adminClientCompany_${idx}" value="${client.company || ''}" class="neumorphic-input" style="padding: 8px;" placeholder="Company Name"></td>
-                            <td style="padding: 6px 8px; text-align: center;">
-                                <button type="button" onclick="removeAdminClientRow(${idx})" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Delete">✕</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                container.innerHTML = `<tr><td colspan="4" style="padding: 20px; text-align: center; color: var(--text-light); font-style: italic;">No clients saved.</td></tr>`;
-            }
-        }
-
-        function addAdminClientRow() {
-            if (!appSettings.clients) appSettings.clients = [];
-            appSettings.clients.push({ name: '', phone: '', company: '' });
-            renderAdminClients();
-        }
-
-        function removeAdminClientRow(idx) {
-            appSettings.clients.splice(idx, 1);
-            renderAdminClients();
-        }
-
         function renderAdminMasterPapers() {
             const container = document.getElementById('adminMasterPaperRows');
             container.innerHTML = '';
@@ -3582,8 +3516,12 @@
             adminMasterPaperCount++;
             document.getElementById('adminMasterPaperRows').insertAdjacentHTML('beforeend', `
                 <tr id="adminMasterPaperRow_${adminMasterPaperCount}" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                    <td style="padding: 6px 8px;"><input type="text" id="adminMasterPaperL_${adminMasterPaperCount}" value="${data.l}" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
-                    <td style="padding: 6px 8px;"><input type="text" id="adminMasterPaperB_${adminMasterPaperCount}" value="${data.b}" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
+                    <td style="padding: 6px 8px;">
+                        <input type="number" id="adminMasterPaperL_${adminMasterPaperCount}" value="${data.l}" class="neumorphic-input" style="padding: 8px;" step="0.1">
+                    </td>
+                    <td style="padding: 6px 8px;">
+                        <input type="number" id="adminMasterPaperB_${adminMasterPaperCount}" value="${data.b}" class="neumorphic-input" style="padding: 8px;" step="0.1">
+                    </td>
                     <td style="padding: 6px 8px;">
                         <select id="adminMasterPaperClass_${adminMasterPaperCount}" class="neumorphic-input" style="padding: 8px;">
                             <option value="std" ${data.machClass === 'std' ? 'selected' : ''}>Standard</option>
@@ -3591,7 +3529,9 @@
                             <option value="lrg" ${data.machClass === 'lrg' ? 'selected' : ''}>Large</option>
                         </select>
                     </td>
-                    <td style="padding: 6px 8px; text-align: center;"><button type="button" onclick="removeAdminMasterPaperRow(${adminMasterPaperCount})" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Delete">✕</button></td>
+                    <td style="padding: 6px 8px; text-align: center;">
+                        <button type="button" onclick="removeAdminMasterPaperRow(${adminMasterPaperCount})" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Delete">✕</button>
+                    </td>
                 </tr>
             `);
         }
@@ -3609,8 +3549,8 @@
                         <input type="text" id="adminPostPressName_${adminPostPressCount}" value="${data.name}" class="neumorphic-input" style="padding: 8px;">
                         <input type="hidden" id="adminPostPressKey_${adminPostPressCount}" value="${key}">
                     </td>
-                    <td style="padding: 6px 8px;"><input type="text" id="adminPostPressSetup_${adminPostPressCount}" value="${data.setup}" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
-                    <td style="padding: 6px 8px;"><input type="text" id="adminPostPressRate_${adminPostPressCount}" value="${data.rate}" class="neumorphic-input calc-input" style="padding: 8px;" onblur="evaluateMath(this)"></td>
+                    <td style="padding: 6px 8px;"><input type="number" id="adminPostPressSetup_${adminPostPressCount}" value="${data.setup}" class="neumorphic-input" style="padding: 8px;"></td>
+                    <td style="padding: 6px 8px;"><input type="number" id="adminPostPressRate_${adminPostPressCount}" value="${data.rate}" class="neumorphic-input" style="padding: 8px;" step="0.01"></td>
                     <td style="padding: 6px 8px;">
                         <select id="adminPostPressType_${adminPostPressCount}" class="neumorphic-input" style="padding: 8px; width: 120px;">
                             <option value="perUnit" ${data.type === 'perUnit' ? 'selected' : ''}>Per Unit</option>
@@ -3649,10 +3589,10 @@
                     <option value="single" ${sides === 'single' ? 'selected' : ''}>Single</option>
                     <option value="double" ${sides === 'double' ? 'selected' : ''}>Double</option>
                 </select>
-                <input type="text" id="adminPaperTier0_${adminPaperCount}" value="${tiers[0]}" class="neumorphic-input calc-input" style="padding:8px;" onblur="evaluateMath(this)">
-                <input type="text" id="adminPaperTier1_${adminPaperCount}" value="${tiers[1]}" class="neumorphic-input calc-input" style="padding:8px;" onblur="evaluateMath(this)">
-                <input type="text" id="adminPaperTier2_${adminPaperCount}" value="${tiers[2]}" class="neumorphic-input calc-input" style="padding:8px;" onblur="evaluateMath(this)">
-                <input type="text" id="adminPaperTier3_${adminPaperCount}" value="${tiers[3]}" class="neumorphic-input calc-input" style="padding:8px;" onblur="evaluateMath(this)">
+                <input type="number" id="adminPaperTier0_${adminPaperCount}" value="${tiers[0]}" class="neumorphic-input" style="padding:8px;" step="0.01">
+                <input type="number" id="adminPaperTier1_${adminPaperCount}" value="${tiers[1]}" class="neumorphic-input" style="padding:8px;" step="0.01">
+                <input type="number" id="adminPaperTier2_${adminPaperCount}" value="${tiers[2]}" class="neumorphic-input" style="padding:8px;" step="0.01">
+                <input type="number" id="adminPaperTier3_${adminPaperCount}" value="${tiers[3]}" class="neumorphic-input" style="padding:8px;" step="0.01">
             `);
         }
 
@@ -3665,9 +3605,6 @@
         }
 
         function saveAdminSettings() {
-            appSettings.auth.user = document.getElementById('adminUsername').value || 'admin';
-            appSettings.auth.pass = document.getElementById('adminPassword').value || 'admin';
-
             appSettings.paperPriceKg = parseFloat(document.getElementById('adminPaperPriceKg').value) || 0;
             appSettings.cardCuttingCharge = Number(document.getElementById('adminCardCutting').value) || 0;
 
@@ -3695,21 +3632,6 @@
             appSettings.lamRates.digital.MT = parseFloat(document.getElementById('adminLamDigMt').value) || 0;
             appSettings.lamRates.digital.VL = parseFloat(document.getElementById('adminLamDigVl').value) || 0;
             
-            let newClients = [];
-            if (appSettings.clients) {
-                appSettings.clients.forEach((_, idx) => {
-                    let n = document.getElementById(`adminClientName_${idx}`);
-                    if (n && n.value.trim() !== '') {
-                        newClients.push({
-                            name: n.value.trim(),
-                            phone: document.getElementById(`adminClientPhone_${idx}`).value.trim(),
-                            company: document.getElementById(`adminClientCompany_${idx}`).value.trim()
-                        });
-                    }
-                });
-            }
-            appSettings.clients = newClients;
-
             let newMasterPapers = [];
             for (let i = 1; i <= adminMasterPaperCount; i++) {
                 let lInp = document.getElementById(`adminMasterPaperL_${i}`);
@@ -3748,10 +3670,10 @@
                 if (!name) continue; 
                 let key = `${name}_${sides}`;
                 newMatrix[key] = [
-                    parseFloat(document.getElementById(`adminPaperTier0_${i}`).value) || 0,
-                    parseFloat(document.getElementById(`adminPaperTier1_${i}`).value) || 0,
-                    parseFloat(document.getElementById(`adminPaperTier2_${i}`).value) || 0,
-                    parseFloat(document.getElementById(`adminPaperTier3_${i}`).value) || 0
+                    Number(document.getElementById(`adminPaperTier0_${i}`).value) || 0,
+                    Number(document.getElementById(`adminPaperTier1_${i}`).value) || 0,
+                    Number(document.getElementById(`adminPaperTier2_${i}`).value) || 0,
+                    Number(document.getElementById(`adminPaperTier3_${i}`).value) || 0
                 ];
             }
             appSettings.pricingMatrix = newMatrix;
@@ -3774,14 +3696,39 @@
             openAdmin(); 
         }
 
-        // Add explicit window bindings for every function so they never detach
-        window.closeModal = closeModal;
+        window.applyFirebaseConfig = function() {
+            const configStr = document.getElementById('adminFirebaseConfig').value;
+            try {
+                if (configStr.trim() !== '') {
+                    JSON.parse(configStr); 
+                    localStorage.setItem('printEstimatorFirebaseConfig', configStr);
+                } else {
+                    localStorage.removeItem('printEstimatorFirebaseConfig');
+                }
+                window.location.reload(); 
+            } catch (e) {
+                showToast('Invalid Firebase JSON Configuration', true);
+            }
+        };
+
+        window.updateToLatestRates = function() {
+            openConfirmModal('Update to Latest Rates?', 'This will recalculate all costs in this order using your current global settings. Proceed?', () => {
+                state.savedRates = JSON.parse(JSON.stringify(appSettings));
+                isDirty = true;
+                rebuildDetailedBreakdown(); 
+                renderAll();
+                showToast('Order updated to latest rates!');
+            });
+        };
+
+        // Exposed global mappings
         window.openHistoryModal = openHistoryModal;
         window.openAdmin = openAdmin;
         window.saveProgress = saveProgress;
         window.saveAndNew = saveAndNew;
         window.resetForm = resetForm;
         window.openItemModal = openItemModal;
+        window.closeModal = closeModal;
         window.toggleMarkupField = toggleMarkupField;
         window.handleGlobalQtyChange = handleGlobalQtyChange;
         window.updateGlobalState = updateGlobalState;
@@ -3836,28 +3783,6 @@
         window.removeAdminMasterPaperRow = removeAdminMasterPaperRow;
         window.handleJobSizeChange = handleJobSizeChange;
         window.handleMasterSheetChange = handleMasterSheetChange;
-        window.autoFillClient = autoFillClient;
-        window.addAdminClientRow = addAdminClientRow;
-        window.removeAdminClientRow = removeAdminClientRow;
-        window.evaluateMath = evaluateMath;
-        window.openWhatsAppModal = openWhatsAppModal;
-        window.sendWhatsAppMessage = sendWhatsAppMessage;
-        window.updateToLatestRates = updateToLatestRates;
-
-        window.applyFirebaseConfig = function() {
-            const configStr = document.getElementById('adminFirebaseConfig').value;
-            try {
-                if (configStr.trim() !== '') {
-                    JSON.parse(configStr); 
-                    localStorage.setItem('printEstimatorFirebaseConfig', configStr);
-                } else {
-                    localStorage.removeItem('printEstimatorFirebaseConfig');
-                }
-                window.location.reload(); 
-            } catch (e) {
-                showToast('Invalid Firebase JSON Configuration', true);
-            }
-        };
 
         // INIT Configuration 
         window.onload = () => {
@@ -4033,6 +3958,7 @@
 
                 const initAuth = async () => {
                     try {
+                        // Allow isolated AI test canvas to work without password block if provided a secure token
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             try {
                                 await signInWithCustomToken(auth, __initial_auth_token);
@@ -4057,8 +3983,10 @@
                     const txt = document.getElementById('cloudStatusText');
 
                     if (user && !user.isAnonymous) {
+                        // User is securely authenticated -> Unlock App
                         document.getElementById('loginOverlay').style.display = 'none';
                         document.body.classList.remove('locked');
+                        
                         document.getElementById('adminUsername').value = user.email || '';
 
                         if (ind && txt) {
@@ -4096,8 +4024,10 @@
                             console.error("Sync backup histories failed: ", err);
                         });
                     } else {
+                        // Logged out, anonymous, or unverified -> Force Hard Login Block
                         document.getElementById('loginOverlay').style.display = 'flex';
                         document.body.classList.add('locked');
+                        
                         if (ind && txt) {
                             ind.style.background = 'var(--danger)';
                             ind.classList.remove('animate-pulse');
