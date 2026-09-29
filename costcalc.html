@@ -11,6 +11,25 @@
             darkMode: 'class',
         }
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const disableAutofill = (root) => {
+                if (root.matches && root.matches('input, select, textarea')) {
+                    root.setAttribute('autocomplete', 'off');
+                }
+                root.querySelectorAll?.('input, select, textarea').forEach(field => {
+                    field.setAttribute('autocomplete', 'off');
+                });
+            };
+
+            disableAutofill(document);
+            new MutationObserver(mutations => {
+                mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) disableAutofill(node);
+                }));
+            }).observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
     <style>
         :root {
             /* Neumorphic Color Palette (Light Mode Default) */
@@ -342,6 +361,23 @@
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 0.85em; font-weight: bold; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px;}
         .form-group.full-width { grid-column: span 2; }
+        .optional-cost-not-added {
+            border-left: 3px solid rgba(122, 138, 158, 0.35);
+            padding-left: 10px;
+        }
+        .optional-cost-not-added .neumorphic-input {
+            border: 1px solid rgba(122, 138, 158, 0.28);
+            background: rgba(122, 138, 158, 0.06);
+        }
+        .optional-cost-not-added label::after {
+            content: ' · not added';
+            color: var(--text-light);
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: 0;
+            opacity: 0.85;
+        }
         
         .modal-actions { margin-top: 30px; display: flex; justify-content: flex-end; gap: 15px; flex-wrap: wrap;}
 
@@ -515,6 +551,22 @@
                 margin-top: 20px !important;
                 padding-top: 10px !important;
             }
+            .print-receipt {
+                width: 92% !important;
+                margin: 0 auto !important;
+            }
+            .print-receipt .receipt-line,
+            .print-receipt .receipt-subline {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) 125px !important;
+                align-items: start !important;
+                column-gap: 18px !important;
+            }
+            .print-receipt .receipt-line > span:last-child,
+            .print-receipt .receipt-subline > span:last-child {
+                text-align: right !important;
+                white-space: nowrap !important;
+            }
         }
         .print-only {
             display: none;
@@ -584,7 +636,7 @@
                 
                 <div class="quotation-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
                     <div class="hud-title" style="margin-bottom: 0;">
-                        <span class="status-dot" onclick="toggleMarkupField()"></span> QUOTATION DETAILS
+                        <span class="status-dot" onclick="toggleMarkupField()" title="Toggle profit bar (press P)"></span> QUOTATION DETAILS
                     </div>
                     
                     <div class="margin-shortcuts" style="display: flex; align-items: center; gap: 4px; font-family: monospace; font-size: 1.2em; font-weight: bold; color: var(--text-light); user-select: none;">
@@ -643,7 +695,7 @@
                 </div>
                 
                 <div class="column-header" style="margin: 0 0 10px 0; width:100%; font-size: 0.8em; flex-shrink: 0;">Quotation Receipt</div>
-                <div class="receipt-container" id="hudReceipt">
+                <div class="receipt-container" id="hudReceipt" onclick="openReceiptPopup()" title="Open quotation receipt in a separate window" style="cursor: pointer;">
                     <div style="text-align:center; color:var(--text-light); margin-top:20px;">Awaiting Data...</div>
                 </div>
             </div>
@@ -745,25 +797,9 @@
             <p style="font-size: 0.85em; color: var(--text-light); margin-bottom: 25px;">Select the format you wish to print or view.</p>
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <button class="neumorphic-btn btn-accent" onclick="printEstimate('customer')">📄 Print for Customer Quote</button>
+                <button class="neumorphic-btn" onclick="exportCustomerQuoteExcel()" style="background:#217346; color:white;">📊 Export Customer Quote to Excel</button>
                 <button class="neumorphic-btn" onclick="printEstimate('office')" style="background:#2980b9; color:white;">🏢 Print Internal Work Order</button>
-                <button class="neumorphic-btn" onclick="viewOrderDetails()" style="background:#8e44ad; color:white;">👁️ View Details Summary</button>
                 <button class="neumorphic-btn" onclick="closeModal('modalPrintOptions')" style="margin-top: 10px;">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="modalViewOrder" style="z-index: 10001;">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2><span class="status-dot" style="background:#8e44ad; box-shadow:0 0 8px #8e44ad;"></span> Quotation Summary</h2>
-                <button class="close-btn" onclick="closeModal('modalViewOrder')">×</button>
-            </div>
-            <div id="viewOrderContent" style="display:flex; flex-direction:column; gap:15px;">
-                <!-- JS injected content -->
-            </div>
-            <div class="modal-actions" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid var(--shadow-pressed);">
-                <button class="neumorphic-btn btn-accent" onclick="closeModal('modalViewOrder'); openPrintModal();">Back to Print Options</button>
-                <button class="neumorphic-btn" onclick="closeModal('modalViewOrder')">Close</button>
             </div>
         </div>
     </div>
@@ -823,6 +859,7 @@
                 <button class="neumorphic-btn type-tab btn-accent" id="tab-card" onclick="setModalType('card')" style="flex:1; padding:10px 5px; font-size: 0.9em;">Card / Print</button>
                 <button class="neumorphic-btn type-tab" id="tab-book" onclick="setModalType('book')" style="flex:1; padding:10px 5px; font-size: 0.9em;">Book / Magazine Inner</button>
                 <button class="neumorphic-btn type-tab" id="tab-exp" onclick="setModalType('exp')" style="flex:1; padding:10px 5px; font-size: 0.9em;">Expense / Flat</button>
+                <button class="neumorphic-btn type-tab" id="tab-foil" onclick="setModalType('foil')" style="flex:1; padding:10px 5px; font-size: 0.9em;">Foiling Only</button>
             </div>
 
             <input type="hidden" id="itemEditId">
@@ -922,7 +959,7 @@
                     </div>
                 </div>
 
-                <div class="form-group card-printable">
+                <div class="form-group card-printable" data-optional-cost="lamination">
                     <label>Lamination</label>
                     <select id="mCardLamination" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="None">None</option>
@@ -950,7 +987,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" data-optional-cost="foiling">
                     <label>Foiling Cost (₹)</label>
                     <div style="display:flex; gap: 5px;">
                         <input type="text" inputmode="decimal" id="mCardFoil" class="neumorphic-input" value="0" oninput="manualFoilEntry()" style="flex:1; padding-left: 8px; padding-right: 8px;">
@@ -962,7 +999,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-optional-cost="other">
                     <label>Other Expenses (₹)</label>
                     <input type="text" inputmode="decimal" id="mCardOtherExp" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
                 </div>
@@ -1045,7 +1082,7 @@
                     <label>Waste Sheets (Per Signature)</label>
                     <input type="text" inputmode="decimal" id="mBookWaste" class="neumorphic-input" value="20" oninput="triggerLiveItemTotal()">
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-optional-cost="lamination">
                     <label>Lamination (Inner Pages)</label>
                     <select id="mBookLamination" class="neumorphic-input" onchange="triggerLiveItemTotal()">
                         <option value="None">None</option>
@@ -1070,7 +1107,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group" data-optional-cost="other">
                     <label>Other Expenses (₹)</label>
                     <input type="text" inputmode="decimal" id="mBookOtherExp" class="neumorphic-input" value="0" oninput="triggerLiveItemTotal()" placeholder="Manual extra cost">
                 </div>
@@ -1089,6 +1126,24 @@
                 </div>
             </div>
 
+            <div class="form-grid" id="fields-foil" style="display:none;">
+                <div class="form-group full-width">
+                    <label>Foiling Item Name</label>
+                    <input type="text" id="mFoilName" class="neumorphic-input" placeholder="e.g., Logo Foiling" oninput="triggerLiveItemTotal()">
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="text" inputmode="decimal" id="mFoilQty" class="neumorphic-input" oninput="triggerLiveItemTotal()">
+                </div>
+                <div class="form-group full-width">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                        <label style="margin:0;">Foil & Block Details</label>
+                        <button type="button" class="neumorphic-btn btn-accent" onclick="openFoilSubCalculator()" style="padding:8px 12px; font-size:0.85em;">Open Foiling Calculator</button>
+                    </div>
+                    <div id="foilItemSummary" style="margin-top:10px; color:var(--text-light); font-size:0.9em;">No foiling rows added.</div>
+                </div>
+            </div>
+
             <!-- SHARED TOTAL & POST PRESS FOR CARDS AND BOOKS -->
             <div id="sharedPostPressSection">
                 <div class="form-grid" style="margin-top: 10px;">
@@ -1098,7 +1153,7 @@
                             <span id="modalItemLiveTotal" style="font-size: 1.8em; font-weight: 900; color: var(--text-main); font-family: monospace;">₹0.00</span>
                         </div>
                     </div>
-                    <div class="form-group full-width" style="margin-top: 5px;">
+                    <div class="form-group full-width" id="postPressCostGroup" style="margin-top: 5px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
                             <label>Finishing & Post-Press / Binding</label>
                             <button type="button" class="neumorphic-btn" onclick="addPostPressRow()" style="padding: 4px 10px; font-size: 0.8em; color: var(--info);">+ Add Process</button>
@@ -1179,6 +1234,14 @@
                 <div class="form-group">
                     <label id="lblCardBreadth">Breadth (inches)</label>
                     <input type="text" inputmode="decimal" id="mCardBreadth" class="neumorphic-input" value="8.5">
+                </div>
+                <div class="form-group">
+                    <label>Horizontal Gap Between Pieces</label>
+                    <input type="text" inputmode="decimal" id="mCardGapX" class="neumorphic-input" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Vertical Gap Between Pieces</label>
+                    <input type="text" inputmode="decimal" id="mCardGapY" class="neumorphic-input" value="0">
                 </div>
             </div>
 
@@ -1600,7 +1663,10 @@
             }
 
             if (!isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                if (e.key === '0') {
+                if (e.key.toLowerCase() === 'p') {
+                    e.preventDefault();
+                    toggleMarkupField();
+                } else if (e.key === '0') {
                     e.preventDefault();
                     setQuickMargin(0);
                 } else if (e.key === '3') {
@@ -1903,7 +1969,9 @@
             else if (c.colorMode === 'two') colorStr = ' (Double Colour)';
             else if (c.colorMode === 'multi') colorStr = ' (Multicolour)';
             
-            if (c.itemType === 'book') {
+            if (c.itemType === 'foil') {
+                breakdownDesc = `Foiling Only • ${c.foilRows ? c.foilRows.length : 0} size row(s)`;
+            } else if (c.itemType === 'book') {
                 calcResult = runBookCalculation(c);
                 paperCost = calcResult.paperCost;
                 printCost = calcResult.printCost;
@@ -1965,15 +2033,15 @@
                 });
             }
 
-            let foilCost = Math.ceil(Number(c.foil) || 0); 
+            let foilCost = c.itemType === 'foil' ? 0 : Math.ceil(Number(c.foil) || 0); 
             if (c.foilRows && c.foilRows.length > 0) {
                 const selectedUnit = c.foilUnit || 'cm';
                 foilCost = recalculateFoilRowsTotal(c.foilRows, selectedUnit);
-                c.foil = foilCost; 
+                if (c.itemType !== 'foil') c.foil = foilCost; 
             }
 
             let otherExp = c.otherExp || 0;
-            let cuttingCharge = (c.itemType !== 'book') ? getRates().cardCuttingCharge : 0;
+            let cuttingCharge = (c.itemType !== 'book' && c.itemType !== 'foil') ? getRates().cardCuttingCharge : 0;
 
             let totalActual = paperCost + printCost + lamCost + postPressCost + foilCost + otherExp + cuttingCharge;
 
@@ -2136,6 +2204,7 @@
 
         function triggerLiveItemTotal() {
             syncCustomPaperRateField(false);
+            toggleLaminationSides();
 
             const preview = document.getElementById('modalReceiptPreview');
 
@@ -2160,6 +2229,22 @@
 
             const markupPercent = parseFloat(document.getElementById('orderMarkup').value) || 0;
             const markupFactor = 1 + (markupPercent / 100);
+
+            if (currentModalType === 'foil') {
+                const foilPreview = {
+                    id: document.getElementById('itemEditId').value || '__modal_preview__',
+                    itemType: 'foil',
+                    name: document.getElementById('mFoilName').value || 'Foiling Only',
+                    qty: Number(document.getElementById('mFoilQty').value) || 0,
+                    foilRows: JSON.parse(JSON.stringify(activeFoilRows)),
+                    foilUnit: document.getElementById('foilSizingUnit').value
+                };
+                const foilData = computeItemActualCosts(foilPreview);
+                document.getElementById('modalItemLiveTotal').innerText = `₹${roundUpToTen(foilData.totalActual * markupFactor).toFixed(2)}`;
+                updateFoilItemSummary();
+                clearModalCostBreakdown();
+                return;
+            }
 
             let dummyCard = {
                 itemType: currentModalType,
@@ -2194,9 +2279,35 @@
             let data = computeItemActualCosts(dummyCard);
             let finalLive = roundUpToTen(data.totalActual * markupFactor);
 
+            updateOptionalCostStates(data);
+
             document.getElementById('modalItemLiveTotal').innerText = `₹${finalLive.toFixed(2)}`;
             if (preview) preview.innerHTML = generateViewData('screen', dummyCard).receiptHTML;
             renderModalCostBreakdown(data, dummyCard, markupFactor);
+        }
+
+        function updateOptionalCostStates(data) {
+            const fields = document.querySelectorAll('[data-optional-cost]');
+            fields.forEach(field => field.classList.remove('optional-cost-not-added'));
+
+            if (currentModalType !== 'card' && currentModalType !== 'book') return;
+
+            const stateByCost = {
+                lamination: !(data.lamCost > 0),
+                foiling: currentModalType === 'card' && !(data.foilCost > 0),
+                other: !(data.otherExp > 0)
+            };
+
+            fields.forEach(field => {
+                const costType = field.dataset.optionalCost;
+                if (stateByCost[costType]) field.classList.add('optional-cost-not-added');
+            });
+
+            const postPressGroup = document.getElementById('postPressCostGroup');
+            if (postPressGroup) {
+                const hasPostPressCost = Array.isArray(data.postPressBreakdowns) && data.postPressBreakdowns.some(row => row.cost > 0);
+                postPressGroup.classList.toggle('optional-cost-not-added', !hasPostPressCost);
+            }
         }
         
         function manualFoilEntry() {
@@ -2229,7 +2340,6 @@
             const container = document.getElementById('markupFieldContainer');
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
-                document.getElementById('orderMarkup').focus();
             } else {
                 container.classList.add('hidden');
             }
@@ -2470,76 +2580,6 @@
             saveProgress(); 
             closeModal('modalActualsTracker');
         };
-
-        function viewOrderDetails() {
-            closeModal('modalPrintOptions');
-            
-            const contentDiv = document.getElementById('viewOrderContent');
-            contentDiv.innerHTML = '';
-            
-            let data = generateViewData('customer'); 
-            let grandTotal = data.grandTotalClient;
-            
-            let html = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid var(--shadow-pressed); padding-bottom: 15px; margin-bottom: 15px;">
-                    <div>
-                        <h3 style="margin:0; font-size:1.5em; color:var(--text-main);">${state.orderName || 'Unnamed Quotation'}</h3>
-                        <p style="margin:5px 0 0 0; color:var(--text-light); font-size:0.9em; font-weight:bold;">Total Base Quantity: ${state.globalQty}</p>
-                    </div>
-                    <div style="text-align:right;">
-                        <p style="margin:0; font-size:0.8em; color:var(--text-light); text-transform:uppercase; font-weight:bold;">Total Estimated Price</p>
-                        <h2 style="margin:0; font-size:1.8em; color:var(--accent);">₹${grandTotal.toFixed(2)}</h2>
-                    </div>
-                </div>
-            `;
-            
-            if (state.cards.length === 0 && state.expenses.length === 0) {
-                html += `<p style="text-align:center; color:var(--text-light); font-style:italic;">No items in this quotation.</p>`;
-            }
-
-            state.cards.forEach(c => {
-                let printSides = c.sides == 2 ? 'Double Sided' : 'Single Sided';
-                let paperDescription = getItemPaperDescription(c);
-                let upsStr = c.itemType === 'book' ? c.ups + ' pages / sheet' : c.ups + ' pcs / sheet';
-                
-                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
-                let itemData = computeItemActualCosts(c);
-                let exactItemClientTotal = itemData.totalActual;
-                let itemClientTotal = roundUpToTen(exactItemClientTotal * markupFactor);
-                
-                html += `
-                    <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
-                        <div style="display:flex; justify-content:space-between; margin-bottom: 10px; border-bottom: 1px dashed rgba(163,177,198,0.4); padding-bottom: 8px;">
-                            <strong style="color:var(--text-main); font-size: 1.1em;">${c.name}</strong>
-                            <strong style="color:var(--text-main); font-family: monospace; font-size: 1.1em;">₹${itemClientTotal.toFixed(2)}</strong>
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: var(--text-light);">
-                            <div><strong>Type:</strong> ${c.itemType === 'book' ? 'Book Inner' : (c.printMethod === 'offset' ? 'Offset Print' : 'Digital Print')}</div>
-                            <div><strong>Quantity:</strong> ${c.qty}</div>
-                            <div><strong>Sides:</strong> ${printSides}</div>
-                            <div><strong>Paper:</strong> ${paperDescription}</div>
-                            <div><strong>Layout:</strong> ${upsStr}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            state.expenses.forEach(x => {
-                const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
-                let clientCost = roundUpToTen(x.cost * markupFactor);
-                html += `
-                    <div class="neumorphic-panel" style="padding: 15px; margin-bottom: 15px; box-shadow: var(--shadow-pressed);">
-                        <div style="display:flex; justify-content:space-between;">
-                            <strong style="color:var(--text-main); font-size: 1.1em;">${x.desc} (Expense)</strong>
-                            <strong style="color:var(--text-main); font-family: monospace; font-size: 1.1em;">₹${clientCost.toFixed(2)}</strong>
-                        </div>
-                    </div>
-                `;
-            });
-
-            contentDiv.innerHTML = html;
-            document.getElementById('modalViewOrder').classList.add('active');
-        }
 
         window.updateToLatestRates = function() {
             openConfirmModal('Update to Latest Rates?', 'This will recalculate all costs in this quotation using your current global settings. Proceed?', () => {
@@ -2827,9 +2867,13 @@
                 text += `*${c.name}*\n`;
                 text += `- Quantity: ${c.qty}\n`;
                 text += `- Sides: ${printSides}\n`;
+                if (c.itemType === 'book') {
+                    text += `- Pages: ${c.pages}\n`;
+                }
                 text += `- Paper: ${paperDescription}\n`;
                 if (c.lamination && c.lamination !== 'None') {
-                    text += `- Lamination: ${c.lamination}\n`;
+                    const laminationSides = c.laminationSides === 'double' ? 'B/S' : 'S/S';
+                    text += `- Lamination: ${c.lamination} (${laminationSides})\n`;
                 }
                 text += `- Layout/Size: ${upsStr}\n\n`;
             });
@@ -2959,6 +3003,79 @@
             document.getElementById('modalPrintOptions').classList.add('active');
         }
 
+        function exportCustomerQuoteExcel() {
+            const quote = generateViewData('customer');
+            const escapeText = value => {
+                let text = String(value ?? '');
+                if (/^[=+\-@]/.test(text)) text = `'${text}`;
+                return text.replace(/[&<>"']/g, character => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[character]);
+            };
+            const numericCell = value => `<td class="numeric" x:num="${Number(value) || 0}">${Number(value) || 0}</td>`;
+            const markupFactor = 1 + ((parseFloat(document.getElementById('orderMarkup').value) || 0) / 100);
+            let itemRows = '';
+
+            state.cards.forEach(card => {
+                const itemData = computeItemActualCosts(card);
+                const amount = roundUpToTen(itemData.totalActual * markupFactor);
+                const quantity = Number(card.qty) || 0;
+                const type = card.itemType === 'book' ? 'Book Inner' : (card.itemType === 'foil' ? 'Foiling Only' : (card.printMethod === 'offset' ? 'Offset Print' : 'Digital Print'));
+                const details = [
+                    type,
+                    getItemPaperDescription(card),
+                    card.itemType === 'book' ? `${card.pages} pages` : (card.sides == 2 ? 'Double-sided' : 'Single-sided'),
+                    card.itemType === 'book' ? `${card.ups} pages / sheet` : `${card.ups} pcs / sheet`
+                ].filter(Boolean).join(' | ');
+                itemRows += `<tr><td>${escapeText(card.name)}</td><td>${escapeText(details)}</td>${numericCell(quantity)}${numericCell(quantity ? amount / quantity : amount)}${numericCell(amount)}</tr>`;
+            });
+
+            state.expenses.forEach(expense => {
+                const amount = roundUpToTen(expense.cost * markupFactor);
+                itemRows += `<tr><td>${escapeText(expense.desc)} (Expense)</td><td>Additional charge</td>${numericCell(1)}${numericCell(amount)}${numericCell(amount)}</tr>`;
+            });
+
+            const date = state.orderDate ? formatToDDMMYYYY(state.orderDate) : '';
+            const customer = state.client || {};
+            const workbook = `<!DOCTYPE html>
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+                <head><meta charset="UTF-8"><style>
+                    body { font-family: Calibri, Arial, sans-serif; color: #263238; }
+                    table { border-collapse: collapse; width: 100%; }
+                    td, th { border: 1px solid #cbd5d1; padding: 8px 10px; vertical-align: top; }
+                    .title { background: #217346; color: #fff; font-size: 18px; font-weight: bold; }
+                    .meta-label { background: #e8f1ec; font-weight: bold; width: 150px; }
+                    th { background: #d9e8df; color: #174d30; text-align: left; }
+                    .numeric { text-align: right; white-space: nowrap; mso-number-format: "#,##0.00"; }
+                    .total-label { background: #e8f1ec; font-weight: bold; text-align: right; }
+                    .total-value { background: #e8f1ec; font-weight: bold; text-align: right; mso-number-format: "#,##0.00"; }
+                </style></head><body><table>
+                    <tr><td class="title" colspan="5">CUSTOMER QUOTATION</td></tr>
+                    <tr><td class="meta-label">Quotation</td><td colspan="4">${escapeText(state.orderName || 'Unnamed Quotation')}</td></tr>
+                    <tr><td class="meta-label">Quotation No.</td><td colspan="4">${escapeText(state.orderNo || '')}</td></tr>
+                    <tr><td class="meta-label">Date</td><td colspan="4">${escapeText(date)}</td></tr>
+                    <tr><td class="meta-label">Customer</td><td colspan="4">${escapeText(customer.name || '')}</td></tr>
+                    <tr><td class="meta-label">Company</td><td colspan="4">${escapeText(customer.company || '')}</td></tr>
+                    <tr><td class="meta-label">Mobile</td><td colspan="4">${escapeText(customer.mobile || '')}</td></tr>
+                    <tr><td class="meta-label">Notes</td><td colspan="4">${escapeText(state.orderDesc || '')}</td></tr>
+                    <tr><td colspan="5"></td></tr>
+                    <tr><th>Item</th><th>Description</th><th>Quantity</th><th>Unit Price (₹)</th><th>Amount (₹)</th></tr>
+                    ${itemRows}
+                    <tr><td class="total-label" colspan="4">TOTAL QUOTED</td><td class="total-value" x:num="${quote.grandTotalClient}">${quote.grandTotalClient}</td></tr>
+                </table></body></html>`;
+
+            const safeName = (state.orderName || 'customer_quote').replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim() || 'customer_quote';
+            const blob = new Blob([workbook], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = `${safeName}.xls`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            window.setTimeout(() => URL.revokeObjectURL(downloadLink.href), 1000);
+            closeModal('modalPrintOptions');
+        }
+
         function printEstimate(type) {
             closeModal('modalPrintOptions');
 
@@ -2984,7 +3101,7 @@
                             </div>
                         </div>
                     </div>
-                    <div style="margin-bottom: 20px;">
+                    <div class="print-receipt" style="margin-bottom: 20px;">
                         ${data.receiptHTML}
                     </div>
                     ${type === 'customer' ? `
@@ -2996,25 +3113,91 @@
             window.print();
         }
 
-        function autoCalcOffsetUps(l, b, masterSheetVal) {
+        function openReceiptPopup() {
+            if (state.cards.length === 0 && state.expenses.length === 0) {
+                showToast('Quotation is empty. Add items first!', true);
+                return;
+            }
+
+            const data = generateViewData('screen');
+            const popup = window.open('', 'quotationReceipt', 'width=820,height=900,scrollbars=yes,resizable=yes');
+            if (!popup) {
+                showToast('Please allow pop-ups to open the quotation receipt.', true);
+                return;
+            }
+
+            const dateStr = state.orderDate ? formatToDDMMYYYY(state.orderDate) : '-';
+            popup.document.open();
+            popup.document.write(`
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Quotation Receipt - ${state.orderName || 'Quotation'}</title>
+                    <style>
+                        * { box-sizing: border-box; }
+                        :root { --text-main: #263238; --text-light: #607080; --accent: #d35400; }
+                        body { margin: 0; padding: 28px; background: #f4f6f8; color: #263238; font-family: Segoe UI, Arial, sans-serif; }
+                        .receipt { max-width: 760px; margin: 0 auto; padding: 28px; background: #fff; border: 1px solid #d9dee3; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+                        header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 2px solid #d9dee3; }
+                        h1 { margin: 0 0 8px; font-size: 24px; }
+                        .meta { color: #607080; font-size: 13px; line-height: 1.6; text-align: right; }
+                        .receipt-line, .receipt-subline { display: grid; grid-template-columns: minmax(0, 1fr) 125px; gap: 18px; align-items: start; }
+                        .receipt-line { padding: 10px 0; border-bottom: 1px solid #e3e7ea; }
+                        .receipt-subline { padding: 4px 0 4px 18px; color: #607080; font-size: 13px; }
+                        .receipt-line > span:last-child, .receipt-subline > span:last-child { text-align: right; white-space: nowrap; }
+                        .receipt-item-label { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+                        .receipt-item-label small { color: #607080; font-size: 12px; }
+                        .total { display: flex; justify-content: space-between; gap: 18px; margin-top: 22px; padding-top: 16px; border-top: 2px solid #263238; font-size: 20px; font-weight: 700; }
+                        .details { margin-top: 32px; padding-top: 20px; border-top: 2px solid #d9dee3; }
+                        .details h2 { margin: 0 0 12px; font-size: 18px; }
+                        @media (max-width: 600px) { body { padding: 10px; } .receipt { padding: 18px; } header { flex-direction: column; } .meta { text-align: left; } }
+                    </style>
+                </head>
+                <body>
+                    <main class="receipt">
+                        <header>
+                            <div><h1>Estimate / Quotation</h1><strong>${state.orderName || 'Unnamed Quotation'}</strong></div>
+                            <div class="meta">${state.orderNo || ''}<br>Date: ${dateStr}<br>Client: ${state.client.name || '-'}</div>
+                        </header>
+                        ${data.receiptHTML}
+                        <div class="total"><span>Quoted Total</span><span>₹${data.grandTotalClient.toFixed(2)}</span></div>
+                    </main>
+                </body>
+                </html>
+            `);
+            popup.document.close();
+            popup.focus();
+        }
+
+        function autoCalcOffsetUps(l, b, masterSheetVal, gapX = 0, gapY = 0) {
             const masterVal = masterSheetVal.split('x');
             const masterL = parseFloat(masterVal[0]);
             const masterB = parseFloat(masterVal[1]);
             if (l > 0 && b > 0) {
-                const fit1 = Math.floor(masterL / l) * Math.floor(masterB / b);
-                const fit2 = Math.floor(masterL / b) * Math.floor(masterB / l);
+                const fit1 = Math.floor((masterL + gapX) / (l + gapX)) * Math.floor((masterB + gapY) / (b + gapY));
+                const fit2 = Math.floor((masterL + gapX) / (b + gapX)) * Math.floor((masterB + gapY) / (l + gapY));
                 return Math.max(fit1, fit2);
             }
             return 8; 
         }
 
-        function autoCalcDigitalUps(l, b) {
+        function autoCalcDigitalUps(l, b, gapX = 0, gapY = 0) {
             if (l > 0 && b > 0) {
-                const fit1 = Math.floor(12.6 / l) * Math.floor(18.6 / b);
-                const fit2 = Math.floor(12.6 / b) * Math.floor(18.6 / l);
+                const fit1 = Math.floor((12.5 + gapX) / (l + gapX)) * Math.floor((18.5 + gapY) / (b + gapY));
+                const fit2 = Math.floor((12.5 + gapX) / (b + gapX)) * Math.floor((18.5 + gapY) / (l + gapY));
                 return Math.max(fit1, fit2);
             }
             return 4;
+        }
+
+        function getUpsSpacingInches() {
+            const unitFactor = document.getElementById('mCardUnit').value === 'cm' ? 1 / 2.54 : 1;
+            return {
+                gapX: (parseFloat(document.getElementById('mCardGapX').value) || 0) * unitFactor,
+                gapY: (parseFloat(document.getElementById('mCardGapY').value) || 0) * unitFactor
+            };
         }
 
         function triggerCardUpsCalc() {
@@ -3031,6 +3214,7 @@
             }
 
             const printMethod = document.getElementById('mCardPrintMethod').value;
+            const { gapX, gapY } = getUpsSpacingInches();
             let ups = 0;
             if (printMethod === 'offset') {
                 const sheet = document.getElementById('mCardMasterSheet').value;
@@ -3038,9 +3222,9 @@
                     showToast('Auto calc unavailable for custom sheets.', true);
                     return;
                 }
-                ups = autoCalcOffsetUps(l, b, sheet);
+                ups = autoCalcOffsetUps(l, b, sheet, gapX, gapY);
             } else {
-                ups = autoCalcDigitalUps(l, b);
+                ups = autoCalcDigitalUps(l, b, gapX, gapY);
             }
             document.getElementById('mCardUps').value = ups || 1;
         }
@@ -3266,7 +3450,7 @@
             const blockH = hCm + fCfg.blockMargin;
             const blockArea = Math.ceil(blockW * blockH);
             const rawBlockCost = blockArea * fCfg.blockRate;
-            const blockCost = Math.max(fCfg.blockMinLimit, rawBlockCost);
+            const blockCost = row.includeBlock === false ? 0 : Math.max(fCfg.blockMinLimit, rawBlockCost);
 
             const foilW = wIn + fCfg.foilMargin;
             const foilH = hIn + fCfg.foilMargin;
@@ -3297,7 +3481,7 @@
 
             const previewId = previewItem && previewItem.id;
             const cardsToRender = state.cards.filter(c => !previewId || c.id !== previewId);
-            if (previewItem && (previewItem.itemType === 'card' || previewItem.itemType === 'book')) cardsToRender.push(previewItem);
+            if (previewItem && (previewItem.itemType === 'card' || previewItem.itemType === 'book' || previewItem.itemType === 'foil')) cardsToRender.push(previewItem);
             const expensesToRender = state.expenses.filter(x => !previewId || x.id !== previewId);
             if (previewItem && previewItem.itemType === 'exp') expensesToRender.push(previewItem);
 
@@ -3349,7 +3533,7 @@
                         <button class="slot-delete-btn" onclick="directDelete(event, 'card', '${c.id}')" title="Delete">×</button>
                         <div class="data-slot-title" style="padding-right: 25px;">${c.name}</div>
                         <div class="data-slot-meta">
-                            <span>Qty: ${c.qty} (${c.itemType === 'book' ? 'Book Inner' : (c.printMethod === 'offset' ? 'Offset' : 'Digital')})</span>
+                            <span>Qty: ${c.qty} (${c.itemType === 'book' ? 'Book Inner' : (c.itemType === 'foil' ? 'Foiling Only' : (c.printMethod === 'offset' ? 'Offset' : 'Digital'))})</span>
                             <span style="color:var(--accent); font-weight:bold;">₹${itemClientTotal.toFixed(2)}</span>
                         </div>
                     </div>`;
@@ -3373,10 +3557,14 @@
                     
                     let impText = c.commonPages ? `${Math.ceil((c.qty * data.calcResult.rawSignatures) / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
                     printDescOffice = `↳ Print Cost (${impText})`;
+                } else if (c.itemType === 'foil') {
+                    descCustomer = 'Foiling Only';
                 } else if (c.printMethod === 'offset') {
                     descCustomer = `Offset Print [${displaySheet}]${colorStr}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
                     printDescOffice = `↳ Print Cost (${data.calcResult.roundupImpressions}k imp)`;
+                } else if (c.itemType === 'foil') {
+                    printDescOffice = '';
                 } else {
                     descCustomer = `Digital Print [${c.paper.replace(/_/g, ' ')}]`;
                     printDescOffice = `↳ Digital Print (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.ratePerSheet || 0).toFixed(2)}/sh)`;
@@ -3403,7 +3591,7 @@
                     <div class="receipt-subline"><span>↳ ${descCustomer}</span></div>`;
                     
                     if (paperDescOffice) receiptHTML += `<div class="receipt-subline"><span>${paperDescOffice}</span><span>₹${data.paperCost.toFixed(2)}</span></div>`;
-                    receiptHTML += `<div class="receipt-subline"><span>${printDescOffice}</span><span>₹${data.printCost.toFixed(2)}</span></div>`;
+                    if (printDescOffice) receiptHTML += `<div class="receipt-subline"><span>${printDescOffice}</span><span>₹${data.printCost.toFixed(2)}</span></div>`;
                     
                     if (data.lamCost > 0) receiptHTML += `<div class="receipt-subline"><span>↳ Lamination (${c.lamination})</span><span>₹${data.lamCost.toFixed(2)}</span></div>`;
                     if (data.foilCost > 0) {
@@ -3421,7 +3609,7 @@
                     <div class="receipt-subline"><span>↳ ${descCustomer}</span></div>`;
                     
                     if (paperDescOffice) receiptHTML += `<div class="receipt-subline"><span>${paperDescOffice}</span><span>₹${markedUpPaper.toFixed(2)}</span></div>`;
-                    receiptHTML += `<div class="receipt-subline"><span>${printDescOffice}</span><span>₹${markedUpPrint.toFixed(2)}</span></div>`;
+                    if (printDescOffice) receiptHTML += `<div class="receipt-subline"><span>${printDescOffice}</span><span>₹${markedUpPrint.toFixed(2)}</span></div>`;
                     
                     if (data.lamCost > 0) receiptHTML += `<div class="receipt-subline"><span>↳ Lamination (${c.lamination})</span><span>₹${markedUpLam.toFixed(2)}</span></div>`;
                     if (data.foilCost > 0) receiptHTML += `<div class="receipt-subline"><span>↳ Foiling Surcharges (Total)</span><span>₹${markedUpFoilTotal.toFixed(2)}</span></div>`;
@@ -3554,6 +3742,7 @@
             if (!target) return;
 
             const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
+            const { gapX, gapY } = getUpsSpacingInches();
             
             if (printMethod === 'offset') {
                 let bestFit = null;
@@ -3561,7 +3750,7 @@
 
                 getRates().masterPapers.filter(m => m.machClass === 'std').forEach(master => {
                     const masterStr = `${master.l}x${master.b}`;
-                    const ups = autoCalcOffsetUps(target.l, target.b, masterStr);
+                    const ups = autoCalcOffsetUps(target.l, target.b, masterStr, gapX, gapY);
                     if (ups > 0) {
                         const utilization = (target.l * target.b * ups) / (master.l * master.b);
                         // Penalize area to bias towards small/medium signatures when utilization is close
@@ -3585,7 +3774,7 @@
                     showToast(`Warning: Cannot cleanly fit this size on configured standard master sheets.`, true);
                 }
             } else {
-                const ups = autoCalcDigitalUps(target.l, target.b);
+                const ups = autoCalcDigitalUps(target.l, target.b, gapX, gapY);
                 document.getElementById('mCardUps').value = ups || 1;
                 showToast(`Auto-Layout: ${ups} pieces per Digital Sheet`);
             }
@@ -3614,7 +3803,8 @@
                 if (target && masterSheetStr !== 'custom') {
                     const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
                     if (printMethod === 'offset') {
-                        const ups = autoCalcOffsetUps(target.l, target.b, masterSheetStr);
+                        const { gapX, gapY } = getUpsSpacingInches();
+                        const ups = autoCalcOffsetUps(target.l, target.b, masterSheetStr, gapX, gapY);
                         document.getElementById(type === 'book' ? 'mBookUps' : 'mCardUps').value = ups || 1;
                     }
                 }
@@ -3788,7 +3978,8 @@
             document.getElementById('fields-card').style.display = type === 'card' ? 'grid' : 'none';
             document.getElementById('fields-book').style.display = type === 'book' ? 'grid' : 'none';
             document.getElementById('fields-exp').style.display = type === 'exp' ? 'flex' : 'none';
-            document.getElementById('sharedPostPressSection').style.display = type === 'exp' ? 'none' : 'block';
+            document.getElementById('fields-foil').style.display = type === 'foil' ? 'grid' : 'none';
+            document.getElementById('sharedPostPressSection').style.display = type === 'exp' || type === 'foil' ? 'none' : 'block';
             triggerLiveItemTotal();
         }
 
@@ -3810,6 +4001,16 @@
             if (!laminationField) return;
 
             laminationField.value = printSides > 1 ? 'double' : 'single';
+        }
+
+        function toggleLaminationSides() {
+            if (currentModalType !== 'card' && currentModalType !== 'book') return;
+
+            const laminationId = currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination';
+            const sidesId = currentModalType === 'book' ? 'mBookLaminationSides' : 'mCardLaminationSides';
+            const laminationField = document.getElementById(laminationId);
+            const sidesField = document.getElementById(sidesId);
+            if (laminationField && sidesField) sidesField.disabled = laminationField.value === 'None';
         }
 
         function toggleMCardPrintMethod(skipUpsCalc) {
@@ -3846,12 +4047,19 @@
                 if (!item) item = state.expenses.find(x => x.id === id);
                 
                 if (item && item.itemType === 'book') loadedType = 'book';
+                else if (item && item.itemType === 'foil') loadedType = 'foil';
                 else if (item && item.desc) loadedType = 'exp';
                 else loadedType = 'card';
 
                 setModalType(loadedType);
 
-                if (loadedType === 'book') {
+                if (loadedType === 'foil') {
+                    document.getElementById('mFoilName').value = item.name || 'Foiling Only';
+                    document.getElementById('mFoilQty').value = item.qty || state.globalQty;
+                    activeFoilRows = item.foilRows ? JSON.parse(JSON.stringify(item.foilRows)) : [];
+                    document.getElementById('foilSizingUnit').value = item.foilUnit || 'cm';
+                    updateFoilItemSummary();
+                } else if (loadedType === 'book') {
                     document.getElementById('mBookName').value = item.name;
                     document.getElementById('mBookQty').value = item.qty;
                     document.getElementById('mBookPages').value = item.pages || 8;
@@ -3983,6 +4191,9 @@
 
                 document.getElementById('mExpDesc').value = '';
                 document.getElementById('mExpCost').value = 0;
+                document.getElementById('mFoilName').value = `Foiling Only ${state.cards.length + 1}`;
+                document.getElementById('mFoilQty').value = state.globalQty;
+                document.getElementById('foilItemSummary').innerText = 'No foiling rows added.';
                 document.getElementById('mItemDeleteBtn').style.display = 'none';
             }
 
@@ -4005,7 +4216,8 @@
         let lastFoilUnit = 'cm';
 
         function openFoilSubCalculator() {
-            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            const qtyField = currentModalType === 'foil' ? 'mFoilQty' : 'mCardQty';
+            const cardQtyInputVal = Number(document.getElementById(qtyField).value) || state.globalQty;
             const foilUnitSelect = document.getElementById('foilSizingUnit');
             let savedUnit = 'cm';
             const id = document.getElementById('itemEditId').value;
@@ -4058,14 +4270,16 @@
         }
 
         function addFoilCalculatorRow() {
-            const cardQtyInputVal = Number(document.getElementById('mCardQty').value) || state.globalQty;
+            const qtyField = currentModalType === 'foil' ? 'mFoilQty' : 'mCardQty';
+            const cardQtyInputVal = Number(document.getElementById(qtyField).value) || state.globalQty;
             const currentUnit = document.getElementById('foilSizingUnit').value;
             activeFoilRows.push({
                 id: Date.now() + Math.random(),
                 label: `Size Variant ${activeFoilRows.length + 1}`,
                 width: currentUnit === 'cm' ? 6 : 2.36,
                 height: currentUnit === 'cm' ? 10 : 3.94,
-                qty: cardQtyInputVal
+                qty: cardQtyInputVal,
+                includeBlock: true
             });
             renderFoilSubCalculatorGrid();
         }
@@ -4080,7 +4294,8 @@
                 const out = calculateSingleFoilRow(r, selectedUnit);
                 sumComposite += out.rowTotal;
             });
-            document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
+            if (currentModalType !== 'foil') document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
+            updateFoilItemSummary();
             triggerLiveItemTotal();
         }
 
@@ -4092,6 +4307,7 @@
             row.width = parseFloat(document.getElementById(`foilInputWidth_${rowId}`).value) || 0;
             row.height = parseFloat(document.getElementById(`foilInputHeight_${rowId}`).value) || 0;
             row.qty = parseFloat(document.getElementById(`foilInputQty_${rowId}`).value) || 0;
+            row.includeBlock = document.getElementById(`foilInputBlock_${rowId}`).checked;
 
             isDirty = true;
 
@@ -4113,7 +4329,8 @@
             document.getElementById('foilCalcFoilSum').innerText = `₹${sumFoil.toFixed(2)}`;
             document.getElementById('foilCalcCompositeSum').innerText = `₹${sumComposite.toFixed(2)}`;
             
-            document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
+            if (currentModalType !== 'foil') document.getElementById('mCardFoil').value = Math.ceil(sumComposite);
+            updateFoilItemSummary();
             triggerLiveItemTotal();
         }
 
@@ -4154,7 +4371,7 @@
                             </div>
                         </td>
                         <td style="padding: 4px;"><input type="text" inputmode="decimal" id="foilInputQty_${row.id}" value="${row.qty}" oninput="updateFoilRowCalculations('${row.id}')" class="neumorphic-input" style="padding: 8px; text-align: center; font-family: monospace;"></td>
-                        <td id="foilRowBlockCost_${row.id}" style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;">₹${results.blockCost.toFixed(2)}</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;"><label style="display:flex; gap:5px; align-items:center; justify-content:flex-end; font-size:0.75em; margin-bottom:4px;"><input type="checkbox" id="foilInputBlock_${row.id}" ${row.includeBlock !== false ? 'checked' : ''} onchange="updateFoilRowCalculations('${row.id}')"> Block</label><span id="foilRowBlockCost_${row.id}">₹${results.blockCost.toFixed(2)}</span></td>
                         <td id="foilRowFoilCost_${row.id}" style="padding: 8px; text-align: right; font-weight: 600; color: var(--text-main); font-family: monospace;">₹${results.foilCost.toFixed(2)}</td>
                         <td style="padding: 8px; text-align: center;"><button type="button" onclick="removeFoilCalculatorRow('${row.id}')" style="padding: 6px 10px; background:var(--danger); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" title="Wipe Row">✕</button></td>
                     </tr>
@@ -4175,15 +4392,22 @@
                 r.width = parseFloat(document.getElementById(`foilInputWidth_${r.id}`).value) || 0;
                 r.height = parseFloat(document.getElementById(`foilInputHeight_${r.id}`).value) || 0;
                 r.qty = parseFloat(document.getElementById(`foilInputQty_${r.id}`).value) || 0;
+                r.includeBlock = document.getElementById(`foilInputBlock_${r.id}`).checked;
 
                 const results = calculateSingleFoilRow(r, selectedUnit);
                 grandTotal += results.rowTotal;
             });
 
-            document.getElementById('mCardFoil').value = Math.ceil(grandTotal);
+            if (currentModalType !== 'foil') document.getElementById('mCardFoil').value = Math.ceil(grandTotal);
+            updateFoilItemSummary();
             closeModal('modalFoilCalculator');
             triggerLiveItemTotal();
             showToast('Foil costs computed & applied!');
+        }
+
+        function updateFoilItemSummary() {
+            const summary = document.getElementById('foilItemSummary');
+            if (summary) summary.innerText = activeFoilRows.length ? `${activeFoilRows.length} foiling row(s) configured.` : 'No foiling rows added.';
         }
 
         // --- SAVES AND EDITS TRANSACTIONS ---
@@ -4191,6 +4415,34 @@
             if (currentModalType === 'card') saveCard(addAnother);
             else if (currentModalType === 'book') saveBook(addAnother);
             else if (currentModalType === 'exp') saveExpense(addAnother);
+            else if (currentModalType === 'foil') saveFoil(addAnother);
+        }
+
+        function saveFoil(addAnother) {
+            const id = document.getElementById('itemEditId').value || generateId();
+            const qty = Number(document.getElementById('mFoilQty').value) || state.globalQty;
+            const foilData = {
+                id,
+                itemType: 'foil',
+                name: document.getElementById('mFoilName').value || 'Foiling Only',
+                qty,
+                unlinked: qty !== state.globalQty,
+                foilRows: JSON.parse(JSON.stringify(activeFoilRows)),
+                foilUnit: document.getElementById('foilSizingUnit').value
+            };
+            const index = state.cards.findIndex(c => c.id === id);
+            if (index > -1) state.cards[index] = foilData;
+            else state.cards.push(foilData);
+            isDirty = true;
+            renderAll();
+            if (addAnother) {
+                document.getElementById('itemEditId').value = '';
+                document.getElementById('mFoilName').value = `Foiling Only ${state.cards.length + 1}`;
+                document.getElementById('mFoilQty').value = state.globalQty;
+                activeFoilRows = [];
+                updateFoilItemSummary();
+                triggerLiveItemTotal();
+            } else closeModal('modalItem');
         }
 
         function saveCard(addAnother) {
@@ -4345,7 +4597,7 @@
 
         function deleteItem() {
             let id = document.getElementById('itemEditId').value;
-            if(currentModalType === 'card' || currentModalType === 'book') state.cards = state.cards.filter(c => c.id !== id);
+            if(currentModalType === 'card' || currentModalType === 'book' || currentModalType === 'foil') state.cards = state.cards.filter(c => c.id !== id);
             else if(currentModalType === 'exp') state.expenses = state.expenses.filter(x => x.id !== id);
             
             isDirty = true;
@@ -4356,7 +4608,7 @@
 
         function directDelete(event, type, id) {
             event.stopPropagation(); 
-            if(type === 'card' || type === 'book') state.cards = state.cards.filter(c => c.id !== id);
+            if(type === 'card' || type === 'book' || type === 'foil') state.cards = state.cards.filter(c => c.id !== id);
             else if(type === 'exp') state.expenses = state.expenses.filter(x => x.id !== id);
             
             isDirty = true;
@@ -4695,7 +4947,6 @@
         window.updateFoilRowCalculations = updateFoilRowCalculations;
         window.openPrintModal = openPrintModal;
         window.printEstimate = printEstimate;
-        window.viewOrderDetails = viewOrderDetails;
         window.setQuickMargin = setQuickMargin;
         window.addPostPressRow = addPostPressRow;
         window.changePostPressProcess = changePostPressProcess;
