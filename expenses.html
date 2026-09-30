@@ -2080,8 +2080,16 @@ function initAutocomplete(inputId, suggestions, listId) {
                     const formatted = formatIndianAmount(num);
                     const cursorPos = e.target.selectionStart;
                     if (e.target.value !== formatted && !val.includes('+') && !val.includes('-') && !val.includes('*') && !val.includes('/')) {
+                        const rawCursorPos = val.slice(0, cursorPos).replace(/,/g, '').length;
                         e.target.value = formatted;
-                        e.target.setSelectionRange(cursorPos, cursorPos);
+                        let formattedCursorPos = 0;
+                        let unformattedChars = 0;
+                        while (formattedCursorPos < formatted.length && unformattedChars < rawCursorPos) {
+                            if (formatted[formattedCursorPos] !== ',') unformattedChars++;
+                            formattedCursorPos++;
+                        }
+                        while (formatted[formattedCursorPos] === ',') formattedCursorPos++;
+                        e.target.setSelectionRange(formattedCursorPos, formattedCursorPos);
                     }
                 }
             }
