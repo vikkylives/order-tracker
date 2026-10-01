@@ -117,6 +117,35 @@
             cursor: pointer;
         }
         .filter-pill.active { background: var(--accent); border-color: var(--accent); color: white; }
+        .bulk-toolbar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 0.7rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+        }
+        .bulk-toolbar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+        .bulk-toolbar input[type="checkbox"], .item-select-checkbox { accent-color: var(--accent); }
+        .bulk-toolbar select {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.7rem;
+            padding: 7px 10px;
+            color: var(--text-primary);
+            color-scheme: dark;
+            font-size: 0.75rem;
+        }
+        .bulk-toolbar select option { background: #101827; color: #e2e8f0; }
+        body.light .bulk-toolbar select { color-scheme: light; }
+        body.light .bulk-toolbar select option { background: #fff; color: #0f172a; }
+        .bulk-spacer { flex: 1; }
+        .item-select { display: inline-flex; align-items: center; gap: 5px; color: var(--text-secondary); font-size: 0.65rem; white-space: nowrap; }
         .sort-select {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
@@ -220,6 +249,25 @@
             align-items: center;
             gap: 4px;
         }
+        .item-actions .quick-status-btn,
+        .item-actions .quick-flag-btn {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            padding: 0;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        .item-actions .billed-flag-btn { color: #60a5fa; border-color: rgba(96,165,250,0.45); background: rgba(96,165,250,0.1); }
+        .item-actions .billed-flag-btn.is-active { background: rgba(96,165,250,0.25); border-color: #60a5fa; box-shadow: 0 0 9px rgba(96,165,250,0.65); }
+        .item-actions .mark-paid-btn {
+            color: #22c55e;
+            border-color: rgba(34,197,94,0.45);
+            background: rgba(34,197,94,0.1);
+        }
+        .item-actions .mark-paid-btn.is-active { border-color: #22c55e; background: rgba(34,197,94,0.24); box-shadow: 0 0 9px rgba(34,197,94,0.65); }
+        .item-actions .mark-paid-btn:hover { background: rgba(34,197,94,0.24); }
         .btn-whatsapp {
             background: var(--whatsapp);
             border: none;
@@ -232,8 +280,12 @@
             border-radius: 2rem;
             padding: 5px 10px;
             color: var(--text-primary);
+            color-scheme: dark;
             font-size: 0.7rem;
         }
+        .status-select option { background: #101827; color: #e2e8f0; }
+        body.light .status-select { color-scheme: light; }
+        body.light .status-select option { background: #fff; color: #0f172a; }
         .toast {
             position: fixed;
             bottom: 20px;
@@ -429,18 +481,39 @@
         </div>
 
         <div class="filter-bar">
-            <button data-filter="all" class="filter-pill active">📦 All</button>
-            <button data-filter="Pending" class="filter-pill">⏳ Pending</button>
+            <button data-filter="all" class="filter-pill">📦 All</button>
+            <button data-filter="Pending" class="filter-pill active">⏳ Pending</button>
             <button data-filter="In Progress" class="filter-pill">⚙️ In Progress</button>
             <button data-filter="Completed" class="filter-pill">✅ Completed</button>
             <button data-filter="Delivered" class="filter-pill">🚚 Delivered</button>
             <button data-filter="Billed" class="filter-pill">📄 Billed</button>
             <button data-filter="Paid" class="filter-pill">💰 Paid</button>
+            <button data-filter="Unpaid & Unbilled" class="filter-pill">🧾 Unpaid &amp; Unbilled</button>
             <select id="sortSelect" class="sort-select">
                 <option value="newest">📅 Latest first</option>
                 <option value="oldest">📅 Oldest first</option>
             </select>
             <div class="stats-badge" id="itemCounter">0 items</div>
+        </div>
+
+        <div class="bulk-toolbar">
+            <label><input type="checkbox" id="selectVisibleItems"> Select visible</label>
+            <span id="selectedItemCount">0 selected</span>
+            <select id="bulkStatusSelect" aria-label="Status for selected items">
+                <option value="">Choose status...</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="billed:true">Mark billed</option>
+                <option value="billed:false">Clear billed</option>
+                <option value="paid:true">Mark paid</option>
+                <option value="paid:false">Clear paid</option>
+            </select>
+            <button id="applyBulkStatus" class="btn-icon" disabled><i class="fas fa-check"></i> Update selected</button>
+            <span class="bulk-spacer"></span>
+            <button id="undoStatusUpdate" class="btn-icon" disabled><i class="fas fa-rotate-left"></i> Undo</button>
         </div>
 
         <div id="itemsContainer" class="items-grid">
@@ -612,7 +685,7 @@
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getFirestore, collection, doc, setDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getFirestore, collection, doc, setDoc, writeBatch, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2IfsBsyBWSx415yaFajLoy_32dAb_J2Q",
@@ -686,8 +759,14 @@
         const shareOptAmount = document.getElementById('shareOptAmount');
         const shareOptInstructions = document.getElementById('shareOptInstructions');
         const confirmShareBtn = document.getElementById('confirmShareBtn');
+        const selectVisibleItems = document.getElementById('selectVisibleItems');
+        const selectedItemCount = document.getElementById('selectedItemCount');
+        const bulkStatusSelect = document.getElementById('bulkStatusSelect');
+        const applyBulkStatusButton = document.getElementById('applyBulkStatus');
+        const undoStatusUpdateButton = document.getElementById('undoStatusUpdate');
 
-        let allOrders = [], allCustomers = [], flatItems = [], currentFilter = 'all', searchTerm = '', uid = null;
+        let allOrders = [], allCustomers = [], flatItems = [], currentFilter = 'Pending', searchTerm = '', uid = null;
+        let selectedItemIds = new Set(), visibleItemIds = [], lastStatusUpdate = null;
         let pendingShareItemData = null; // Stash item config context safely
 
         function setTheme(theme) {
@@ -708,17 +787,91 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        async function updateItemStatus(orderId, itemIndex, newStatus) {
-            if (!uid) return;
+        function getItemWorkflowStatus(item) {
+            if (item.status === 'Billed' || item.status === 'Paid') return item.workflowStatus || 'Completed';
+            return item.status || 'Pending';
+        }
+
+        function getItemFlag(item, flag) {
+            if (typeof item[flag] === 'boolean') return item[flag];
+            return item.status === (flag === 'billed' ? 'Billed' : 'Paid');
+        }
+
+        function getItemStatusSummary(item) {
+            const statuses = [getItemWorkflowStatus(item)];
+            if (getItemFlag(item, 'billed')) statuses.push('Billed');
+            if (getItemFlag(item, 'paid')) statuses.push('Paid');
+            return statuses.join(' · ');
+        }
+
+        function refreshBulkControls() {
+            selectedItemCount.textContent = `${selectedItemIds.size} selected`;
+            applyBulkStatusButton.disabled = selectedItemIds.size === 0 || !bulkStatusSelect.value;
+            const visibleSelectedCount = visibleItemIds.filter(id => selectedItemIds.has(id)).length;
+            selectVisibleItems.checked = visibleItemIds.length > 0 && visibleSelectedCount === visibleItemIds.length;
+            selectVisibleItems.indeterminate = visibleSelectedCount > 0 && visibleSelectedCount < visibleItemIds.length;
+            undoStatusUpdateButton.disabled = !lastStatusUpdate;
+        }
+
+        async function updateItemsStatus(changes, message, recordUndo = true, expectedValue = null) {
+            if (!uid || changes.length === 0) return false;
+            const groupedUpdates = new Map();
             try {
-                const order = allOrders.find(o => o.id === orderId);
-                if (!order || !order.items[itemIndex]) return;
-                const updatedItems = [...order.items];
-                updatedItems[itemIndex] = { ...updatedItems[itemIndex], status: newStatus };
-                const orderRef = doc(db, 'users', uid, 'orders', orderId.toString());
-                await setDoc(orderRef, { ...order, items: updatedItems, updatedAt: new Date().toISOString() }, { merge: true });
-                showToast(`Item status → ${newStatus}`);
-            } catch (err) { showToast("Update failed", true); }
+                for (const change of changes) {
+                    let group = groupedUpdates.get(change.orderId);
+                    if (!group) {
+                        const order = allOrders.find(o => o.id === change.orderId);
+                        if (!order || !Array.isArray(order.items)) continue;
+                        group = { order, items: [...order.items], changes: [] };
+                        groupedUpdates.set(change.orderId, group);
+                    }
+                    const item = group.items[change.itemIndex];
+                    const field = change.field || 'status';
+                    const currentValue = field === 'status' ? getItemWorkflowStatus(item || {}) : getItemFlag(item || {}, field);
+                    if (!item || (expectedValue !== null && currentValue !== expectedValue) || currentValue === change.value) continue;
+                    group.changes.push({ orderId: change.orderId, itemIndex: change.itemIndex, field, previousValue: currentValue, value: change.value });
+                    const updatedItem = { ...item, [field]: change.value };
+                    if (field === 'status' && item.status === 'Billed' && typeof item.billed !== 'boolean') updatedItem.billed = true;
+                    if (field === 'status' && item.status === 'Paid' && typeof item.paid !== 'boolean') updatedItem.paid = true;
+                    group.items[change.itemIndex] = updatedItem;
+                }
+                const groups = [...groupedUpdates.values()].filter(group => group.changes.length);
+                if (expectedValue !== null && groups.flatMap(group => group.changes).length !== changes.length) {
+                    showToast('Undo skipped: an item value has changed', true);
+                    return false;
+                }
+                if (groups.length === 0) {
+                    showToast('No statuses changed');
+                    return false;
+                }
+                if (groups.length > 500) {
+                    showToast('Select items from no more than 500 orders', true);
+                    return false;
+                }
+                const batch = writeBatch(db);
+                const updatedAt = new Date().toISOString();
+                for (const group of groups) {
+                    batch.set(doc(db, 'users', uid, 'orders', group.order.id.toString()), { ...group.order, items: group.items, updatedAt }, { merge: true });
+                }
+                await batch.commit();
+                for (const group of groups) {
+                    const orderIndex = allOrders.findIndex(order => order.id === group.order.id);
+                    if (orderIndex !== -1) allOrders[orderIndex] = { ...allOrders[orderIndex], items: group.items, updatedAt };
+                }
+                lastStatusUpdate = recordUndo ? groups.flatMap(group => group.changes) : null;
+                scheduleUIRefresh();
+                showToast(message);
+                return true;
+            } catch (err) {
+                showToast('Update failed', true);
+                return false;
+            } finally {
+                refreshBulkControls();
+            }
+        }
+
+        async function updateItemStatus(orderId, itemIndex, newStatus) {
+            await updateItemsStatus([{ orderId, itemIndex, field: 'status', value: newStatus }], `Item status → ${newStatus}`);
         }
 
         // Elegant & Customizable Compact Job Card Layout Generator (Configurable options)
@@ -774,8 +927,9 @@
                     'Paid': { bg: 'rgba(5, 150, 105, 0.15)', text: '#34d399', dot: '#059669' },
                     'Cancelled': { bg: 'rgba(239, 68, 68, 0.15)', text: '#f87171', dot: '#ef4444' }
                 };
-                const currentStatus = itemData.item.status || 'Pending';
-                const stStyle = statusColors[currentStatus] || { bg: 'rgba(255,255,255,0.08)', text: '#94a3b8', dot: '#6b7280' };
+                const workflowStatus = getItemWorkflowStatus(itemData.item);
+                const currentStatus = getItemStatusSummary(itemData.item);
+                const stStyle = statusColors[workflowStatus] || { bg: 'rgba(255,255,255,0.08)', text: '#94a3b8', dot: '#6b7280' };
 
                 // Build Specification grid conditionally
                 let gridHtml = `
@@ -928,7 +1082,7 @@
                 const phone = itemData.customerPhone ? itemData.customerPhone.replace(/\D/g, '') : '';
                 
                 // Construct a text summary
-                let message = `*Design Space - Job update*\n📦 *Item:* ${itemData.item.name}\n🔢 *Qty:* ${itemData.item.qty || 1}\n⚙️ *Status:* ${itemData.item.status || 'Pending'}`;
+                let message = `*Design Space - Job update*\n📦 *Item:* ${itemData.item.name}\n🔢 *Qty:* ${itemData.item.qty || 1}\n⚙️ *Status:* ${getItemStatusSummary(itemData.item)}`;
                 if (options.includeDates && itemData.dueDate) {
                     message += `\n📅 *Target Due Date:* ${new Date(itemData.dueDate).toLocaleDateString('en-IN')}`;
                 }
@@ -1129,7 +1283,7 @@
                 // Status Pill Cell
                 rowHtml += `<td>
                     <span style="font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; background: rgba(255,255,255,0.05);">
-                        ${escapeHtml(f.item.status || 'Pending')}
+                        ${escapeHtml(getItemStatusSummary(f.item))}
                     </span>
                 </td>`;
 
@@ -1155,7 +1309,7 @@
                     `"${(f.item.material || '').replace(/"/g, '""')}"`,
                     `${f.item.qty || 1}`,
                     `${f.item.amount || 0}`,
-                    `"${f.item.status || 'Pending'}"`
+                    `"${getItemStatusSummary(f.item)}"`
                 ].join(",");
                 csvContent += row + "\n";
             });
@@ -1252,7 +1406,7 @@
 
                 row += `<td style="text-align: center;">${f.item.qty || 1}</td>`;
                 row += `<td style="text-align: right; font-weight: 600;">₹${parseFloat(f.item.amount || 0).toFixed(2)}</td>`;
-                row += `<td style="text-align: center;"><span class="badge status-${(f.item.status || 'Pending').toLowerCase().replace(/\s+/g, '-')}">${f.item.status}</span></td>`;
+                row += `<td style="text-align: center;"><span class="badge status-${getItemWorkflowStatus(f.item).toLowerCase().replace(/\s+/g, '-')}">${escapeHtml(getItemStatusSummary(f.item))}</span></td>`;
                 row += '</tr>';
                 return row;
             }).join('');
@@ -1400,7 +1554,13 @@
 
         function filterAndSortItems() {
             let filtered = [...flatItems];
-            if (currentFilter !== 'all') filtered = filtered.filter(fi => fi.item.status === currentFilter);
+            if (currentFilter === 'Unpaid & Unbilled') {
+                filtered = filtered.filter(fi => !getItemFlag(fi.item, 'paid') && !getItemFlag(fi.item, 'billed'));
+            } else if (currentFilter === 'Billed' || currentFilter === 'Paid') {
+                filtered = filtered.filter(fi => getItemFlag(fi.item, currentFilter.toLowerCase()));
+            } else if (currentFilter !== 'all') {
+                filtered = filtered.filter(fi => getItemWorkflowStatus(fi.item) === currentFilter);
+            }
             
             const searchInDesc = document.getElementById('searchInDesc')?.checked;
             
@@ -1423,9 +1583,11 @@
 
         function renderItems() {
             const filtered = filterAndSortItems();
+            visibleItemIds = filtered.map(fi => fi.id);
             itemCounterSpan.innerText = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
             if (filtered.length === 0) {
                 itemsContainer.innerHTML = '<div class="glass-card" style="text-align: center;">No items match.</div>';
+                refreshBulkControls();
                 return;
             }
 
@@ -1433,8 +1595,12 @@
                 const item = fi.item;
                 const orderId = fi.orderId;
                 const custName = fi.customerName;
+                const billed = getItemFlag(item, 'billed');
+                const paid = getItemFlag(item, 'paid');
+                const orderDate = fi.orderDate ? new Date(fi.orderDate).toLocaleDateString() : null;
                 const due = fi.dueDate ? new Date(fi.dueDate).toLocaleDateString() : null;
-                const overdue = due && fi.dueDate && !['Delivered','Paid','Billed','Cancelled'].includes(item.status) && (new Date(fi.dueDate) < new Date());
+                const workflowStatus = getItemWorkflowStatus(item);
+                const overdue = due && fi.dueDate && !['Delivered','Cancelled'].includes(workflowStatus) && (new Date(fi.dueDate) < new Date());
                 const imageSrc = item.image && item.image.trim() !== '' ? item.image : null;
                 const amount = item.amount || 0;
 
@@ -1446,6 +1612,7 @@
                         </div>
                         <div class="item-content">
                             <div class="item-header">
+                                <label class="item-select"><input class="item-select-checkbox" type="checkbox" data-item-id="${escapeHtml(fi.id)}" ${selectedItemIds.has(fi.id) ? 'checked' : ''}> Select</label>
                                 <div class="item-name">${escapeHtml(item.name)}</div>
                                 <div class="order-ref">#${escapeHtml(orderId)}</div>
                             </div>
@@ -1460,19 +1627,21 @@
                             <div class="customer-info">
                                 <span><i class="fas fa-user"></i> ${escapeHtml(custName)}</span>
                                 <span><i class="fas fa-phone"></i> ${fi.customerPhone || '—'}</span>
+                                ${orderDate ? `<span><i class="far fa-calendar-plus"></i> Order: ${orderDate}</span>` : ''}
                                 ${due ? `<span style="color:${overdue ? '#f97316' : 'var(--text-secondary)'}"><i class="far fa-calendar"></i> Due: ${due}</span>` : ''}
                             </div>
                             <div class="item-actions">
                                 <select class="status-select" data-order="${fi.originalOrderId}" data-idx="${item.index}" onchange="window.updateItemStatusFromSelect('${fi.originalOrderId}', ${item.index}, this.value)">
-                                    <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
-                                    <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>⚙️ In Progress</option>
-                                    <option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
-                                    <option value="Delivered" ${item.status === 'Delivered' ? 'selected' : ''}>🚚 Delivered</option>
-                                    <option value="Billed" ${item.status === 'Billed' ? 'selected' : ''}>📄 Billed</option>
-                                    <option value="Paid" ${item.status === 'Paid' ? 'selected' : ''}>💰 Paid</option>
-                                    <option value="Cancelled" ${item.status === 'Cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                                    <option value="Pending" ${workflowStatus === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                                    <option value="In Progress" ${workflowStatus === 'In Progress' ? 'selected' : ''}>⚙️ In Progress</option>
+                                    <option value="Completed" ${workflowStatus === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                                    <option value="Delivered" ${workflowStatus === 'Delivered' ? 'selected' : ''}>🚚 Delivered</option>
+                                    <option value="Cancelled" ${workflowStatus === 'Cancelled' ? 'selected' : ''}>❌ Cancelled</option>
                                 </select>
-                                <button class="btn-icon mark-paid-btn" data-order="${fi.originalOrderId}" data-idx="${item.index}"><i class="fas fa-check-circle"></i> Mark Paid</button>
+                                <button class="btn-icon quick-status-btn" title="Mark completed" aria-label="Mark completed" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-status="Completed"><i class="fas fa-check"></i></button>
+                                <button class="btn-icon quick-status-btn" title="Mark delivered" aria-label="Mark delivered" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-status="Delivered"><i class="fas fa-truck"></i></button>
+                                <button class="btn-icon quick-flag-btn billed-flag-btn ${billed ? 'is-active' : ''}" title="${billed ? 'Clear billed' : 'Mark billed'}" aria-label="${billed ? 'Clear billed' : 'Mark billed'}" aria-pressed="${billed}" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-field="billed" data-value="${!billed}"><i class="fas fa-file-invoice"></i></button>
+                                <button class="btn-icon quick-flag-btn mark-paid-btn ${paid ? 'is-active' : ''}" title="${paid ? 'Clear paid' : 'Mark paid'}" aria-label="${paid ? 'Clear paid' : 'Mark paid'}" aria-pressed="${paid}" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-field="paid" data-value="${!paid}"><i class="fas fa-dollar-sign"></i></button>
                                 <button class="btn-icon btn-whatsapp whatsapp-share-btn" data-item='${JSON.stringify(fi).replace(/'/g, "\\'")}'><i class="fab fa-whatsapp"></i> Share</button>
                             </div>
                         </div>
@@ -1485,9 +1654,14 @@
                     updateItemStatus(sel.dataset.order, parseInt(sel.dataset.idx), sel.value);
                 });
             });
-            document.querySelectorAll('.mark-paid-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    updateItemStatus(btn.dataset.order, parseInt(btn.dataset.idx), 'Paid');
+            document.querySelectorAll('.quick-status-btn').forEach(btn => {
+                btn.addEventListener('click', () => updateItemStatus(btn.dataset.order, parseInt(btn.dataset.idx), btn.dataset.status));
+            });
+            document.querySelectorAll('.quick-flag-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value === 'true';
+                    const field = btn.dataset.field;
+                    updateItemsStatus([{ orderId: btn.dataset.order, itemIndex: parseInt(btn.dataset.idx), field, value }], `Item ${field} ${value ? 'marked' : 'cleared'}`);
                 });
             });
             document.querySelectorAll('.whatsapp-share-btn').forEach(btn => {
@@ -1496,6 +1670,7 @@
                     openShareSettings(itemData);
                 });
             });
+            refreshBulkControls();
         }
 
         window.updateItemStatusFromSelect = (orderId, idx, status) => updateItemStatus(orderId, parseInt(idx), status);
@@ -1551,6 +1726,37 @@
             scheduleUIRefresh();
         });
         sortSelect.onchange = () => scheduleUIRefresh();
+        itemsContainer.addEventListener('change', event => {
+            const checkbox = event.target.closest('.item-select-checkbox');
+            if (!checkbox) return;
+            if (checkbox.checked) selectedItemIds.add(checkbox.dataset.itemId);
+            else selectedItemIds.delete(checkbox.dataset.itemId);
+            refreshBulkControls();
+        });
+        selectVisibleItems.onchange = () => {
+            for (const itemId of visibleItemIds) {
+                if (selectVisibleItems.checked) selectedItemIds.add(itemId);
+                else selectedItemIds.delete(itemId);
+            }
+            scheduleUIRefresh();
+        };
+        bulkStatusSelect.onchange = refreshBulkControls;
+        applyBulkStatusButton.onclick = async () => {
+            const selected = flatItems.filter(item => selectedItemIds.has(item.id));
+            const [field, rawValue] = bulkStatusSelect.value.includes(':') ? bulkStatusSelect.value.split(':') : ['status', bulkStatusSelect.value];
+            const value = field === 'status' ? rawValue : rawValue === 'true';
+            const label = field === 'status' ? value : `${field} ${value ? 'marked' : 'cleared'}`;
+            const updated = await updateItemsStatus(selected.map(item => ({ orderId: item.originalOrderId, itemIndex: item.item.index, field, value })), `Updated ${selected.length} selected item${selected.length === 1 ? '' : 's'}: ${label}`);
+            if (!updated) return;
+            selectedItemIds.clear();
+            bulkStatusSelect.value = '';
+            scheduleUIRefresh();
+        };
+        undoStatusUpdateButton.onclick = async () => {
+            if (!lastStatusUpdate) return;
+            const changesToUndo = lastStatusUpdate;
+            await updateItemsStatus(changesToUndo.map(change => ({ orderId: change.orderId, itemIndex: change.itemIndex, field: change.field, value: change.previousValue })), 'Last status update undone', false, changesToUndo[0].value);
+        };
         
         // Debounce search keystrokes to ensure fluid keyboard inputs on low-end hardware
         let searchDebounce = null;
@@ -1617,13 +1823,13 @@
                 loginPanel.style.display = 'none';
                 dashboard.style.display = 'block';
                 startListeners(user.uid);
-                currentFilter = 'all';
+                currentFilter = 'Pending';
                 searchTerm = '';
                 searchInput.value = '';
                 sortSelect.value = 'newest';
                 document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-                const allBtn = document.querySelector('.filter-pill[data-filter="all"]');
-                if(allBtn) allBtn.classList.add('active');
+                const pendingBtn = document.querySelector('.filter-pill[data-filter="Pending"]');
+                if(pendingBtn) pendingBtn.classList.add('active');
                 showToast(`Welcome, ${user.email}`);
             } else {
                 loginPanel.style.display = 'flex';
@@ -1632,6 +1838,8 @@
                 flatItems = [];
                 allOrders = [];
                 allCustomers = [];
+                selectedItemIds.clear();
+                lastStatusUpdate = null;
                 if(loginBtn) {
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = 'Login';
