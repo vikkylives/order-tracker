@@ -482,8 +482,8 @@
 
         <div class="filter-bar">
             <button data-filter="all" class="filter-pill">📦 All</button>
-            <button data-filter="Pending" class="filter-pill active">⏳ Pending</button>
-            <button data-filter="In Progress" class="filter-pill">⚙️ In Progress</button>
+            <button data-filter="Pending" class="filter-pill">⏳ Pending</button>
+            <button data-filter="In Progress" class="filter-pill active">⚙️ In Progress</button>
             <button data-filter="Completed" class="filter-pill">✅ Completed</button>
             <button data-filter="Delivered" class="filter-pill">🚚 Delivered</button>
             <button data-filter="Billed" class="filter-pill">📄 Billed</button>
@@ -765,7 +765,7 @@
         const applyBulkStatusButton = document.getElementById('applyBulkStatus');
         const undoStatusUpdateButton = document.getElementById('undoStatusUpdate');
 
-        let allOrders = [], allCustomers = [], flatItems = [], currentFilter = 'Pending', searchTerm = '', uid = null;
+        let allOrders = [], allCustomers = [], flatItems = [], currentFilter = 'In Progress', searchTerm = '', uid = null;
         let selectedItemIds = new Set(), visibleItemIds = [], lastStatusUpdate = null;
         let pendingShareItemData = null; // Stash item config context safely
 
@@ -1823,13 +1823,13 @@
                 loginPanel.style.display = 'none';
                 dashboard.style.display = 'block';
                 startListeners(user.uid);
-                currentFilter = 'Pending';
+                currentFilter = 'In Progress';
                 searchTerm = '';
                 searchInput.value = '';
                 sortSelect.value = 'newest';
                 document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-                const pendingBtn = document.querySelector('.filter-pill[data-filter="Pending"]');
-                if(pendingBtn) pendingBtn.classList.add('active');
+                const inProgressBtn = document.querySelector('.filter-pill[data-filter="In Progress"]');
+                if(inProgressBtn) inProgressBtn.classList.add('active');
                 showToast(`Welcome, ${user.email}`);
             } else {
                 loginPanel.style.display = 'flex';
