@@ -155,6 +155,17 @@
         .pending-item-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; font-size: 13px; }
         .pending-item-card-meta span { display: block; color: #666; margin-bottom: 3px; }
         .pending-item-card-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #eee; padding-top: 12px; }
+        .order-group-row td { background: #f1f4f9; border-top: 2px solid var(--border); padding: 12px 15px; }
+        .order-group-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .order-group-details { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+        .order-group-details small, .order-group-description { color: #666; }
+        .order-group-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .order-item-image, .order-item-image-placeholder { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+        .order-item-image { cursor: pointer; }
+        .order-item-image-placeholder { display: flex; align-items: center; justify-content: center; color: #aaa; background: #eee; }
+        .order-item-description { display: block; color: #666; margin-top: 3px; }
+        .order-item-row td { background: white; }
+        .order-item-row:hover td { background: #f8f9fa; }
         table { width: 100%; border-collapse: collapse; }
         th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 600; color: var(--dark); border-bottom: 2px solid var(--border); }
         td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
@@ -466,7 +477,7 @@
                     <div class="table-responsive">
                         <table>
                             <thead>
-                                <tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Status</th><th>Actions</th></tr>
+                                <tr><th style="width:60px;">Image</th><th>Item Name &amp; Description</th><th>Qty</th><th>Item Status</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="ordersTableBody"></tbody>
                         </table>
@@ -2170,19 +2181,14 @@
             if (term) {
                 if (term === 'overdue') {
                     orders = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed', 'Ready to Deliver'].includes(o.status || 'Pending'));
-                } else if (term === 'pending / in progress') {
-                    orders = orders.filter(o => o.status === 'Pending' || o.status === 'In Progress');
-                } else if (term === 'payment pending' || term === 'payment pending / delivered' || term === 'delivered') {
-                    orders = orders.filter(o => o.status === 'Payment Pending' || o.status === 'Delivered');
-                } else if (term === 'ready to deliver' || term === 'ready to deliver / completed' || term === 'completed') {
-                    orders = orders.filter(o => o.status === 'Ready to Deliver' || o.status === 'Completed');
                 } else {
                     orders = orders.filter(order => {
                         const customer = customers.find(c => String(c.id) === String(order.customerId));
                         const searchable = [
-                            order.orderId, order.customerName, order.customerPhone, order.status,
+                            order.orderId, order.customerName, order.customerPhone,
                             customer?.name, customer?.phone, customer?.contactPerson,
-                            ...(Array.isArray(order.items) ? order.items.map(item => item.name) : [])
+                            ...(Array.isArray(order.items) ? order.items.flatMap(item => [item.name, item.description, item.status || 'Pending']) : []),
+                            order.description
                         ];
                         return searchable.some(value => String(value || '').toLowerCase().includes(term));
                     });
@@ -2199,13 +2205,13 @@
             const tbody = document.getElementById('ordersTableBody');
             if (window.ordersSyncStatus === 'loading') {
                 document.getElementById('ordersCount').textContent = '';
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #666;">Loading orders from Cloud...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #666;">Loading orders from Cloud...</td></tr>';
                 return;
             }
             if (window.ordersSyncStatus === 'error') {
                 document.getElementById('ordersCount').textContent = '';
                 const cell = document.createElement('td');
-                cell.colSpan = 6;
+                cell.colSpan = 5;
                 cell.style.cssText = 'text-align: center; padding: 30px; color: var(--danger);';
                 cell.textContent = `Could not load orders from Cloud: ${window.ordersSyncError}`;
                 const row = document.createElement('tr');
@@ -2216,39 +2222,58 @@
             document.getElementById('ordersCount').textContent = `(${orders.length})`;
             if (orders.length === 0) {
                 const emptyMessage = term ? 'No matching orders found. Try another search.' : 'No orders found. Select “New Order” to create one.';
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #666;">${emptyMessage}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: #666;">${emptyMessage}</td></tr>`;
                 return;
             }
             tbody.innerHTML = orders.map(order => {
                 const customer = customers.find(c => String(c.id) === String(order.customerId)) || { name: order.customerName || 'Unknown' };
                 const orderId = String(order.orderId || order.id || 'Order');
-                const status = order.status || 'Pending';
-                const itemsListHtml = order.items?.map(i => `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 12px; margin-right: 4px; margin-bottom: 4px; display: inline-block; white-space: nowrap;">${i.name}</span>`).join('') || '<span style="color:#999;font-size:12px;">No items</span>';
+                const orderRecordId = String(order.id || '');
+                const items = Array.isArray(order.items) ? order.items : [];
+                const orderActions = `
+                    <button class="btn-icon" onclick="window.editOrder('${orderRecordId}')" title="Edit order"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon" onclick="window.showOrderDetails('order', '${orderRecordId}')" title="Order details"><i class="fas fa-eye"></i></button>
+                    <button class="btn-icon" onclick="window.shareOrderWhatsApp('${orderRecordId}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn-icon" onclick="window.deleteOrder('${orderRecordId}')" title="Delete order"><i class="fas fa-trash"></i></button>`;
+                const orderDescription = order.description
+                    ? `<small class="order-group-description">${order.description}</small>`
+                    : '';
+                const itemRows = items.length
+                    ? items.map((item, index) => {
+                        const itemStatus = item.status || 'Pending';
+                        const image = item.image
+                            ? `<img class="order-item-image" src="${item.image}" alt="${item.name || 'Item'} image" onclick="window.viewFullImage('${item.image}')">`
+                            : '<div class="order-item-image-placeholder"><i class="fas fa-image"></i></div>';
+                        const itemStatusOptions = ['Pending', 'In Progress', 'Completed', 'Delivered', 'Cancelled'];
+                        return `
+                            <tr class="order-item-row">
+                                <td>${image}</td>
+                                <td><strong>${item.name || 'Unnamed item'}</strong><small class="order-item-description">${item.description || '-'}</small></td>
+                                <td><span style="background:var(--light); padding:2px 8px; border-radius:4px; font-weight:bold;">${item.qty || 1}</span></td>
+                                <td>
+                                    <select class="status-select status-${itemStatus.replace(/ /g, '-')}" data-order-id="${orderRecordId}" data-item-index="${index}" onchange="window.updateItemStatus(this.dataset.orderId, Number(this.dataset.itemIndex), this)" aria-label="Status for ${item.name || 'item'}">
+                                        ${itemStatusOptions.map(option => `<option value="${option}" ${itemStatus === option ? 'selected' : ''}>${option}</option>`).join('')}
+                                    </select>
+                                </td>
+                                <td><button class="btn-icon" onclick="window.editOrder('${orderRecordId}')" title="Edit order"><i class="fas fa-edit"></i></button></td>
+                            </tr>`;
+                    }).join('')
+                    : '<tr class="order-item-row"><td colspan="5" style="color:#999;">No items in this order.</td></tr>';
                 return `
-                    <tr>
-                        <td><strong>${orderId}</strong></td>
-                        <td>${formatDate(order.date)}</td>
-                        <td>${customer.name}</td>
-                        <td>${itemsListHtml}</td>
-                        <td>
-                            <select class="status-select status-${status.replace(/ /g, '-')}" onchange="window.updateOrderStatus('${order.id}', this)">
-                                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
-                                <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                                <option value="Ready to Deliver" ${status === 'Ready to Deliver' ? 'selected' : ''}>Ready to Deliver</option>
-                                <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
-                                <option value="Delivered" ${status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="Payment Pending" ${status === 'Payment Pending' ? 'selected' : ''}>Payment Pending</option>
-                                <option value="Paid" ${status === 'Paid' ? 'selected' : ''}>Paid</option>
-                                <option value="Cancelled" ${status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button class="btn-icon" onclick="window.editOrder('${order.id}')" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="btn-icon" onclick="window.showOrderDetails('order', '${order.id}')" title="Details"><i class="fas fa-eye"></i></button>
-                            <button class="btn-icon" onclick="window.shareOrderWhatsApp('${order.id}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
-                            <button class="btn-icon" onclick="window.deleteOrder('${order.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                    <tr class="order-group-row">
+                        <td colspan="5">
+                            <div class="order-group-meta">
+                                <div class="order-group-details">
+                                    <strong>${orderId}</strong>
+                                    <small>${formatDate(order.date) || 'Date not set'}</small>
+                                    <small>${customer.name || 'Unknown'}</small>
+                                </div>
+                                <div class="order-group-controls">${orderActions}</div>
+                            </div>
+                            ${orderDescription}
                         </td>
                     </tr>
+                    ${itemRows}
                 `;
             }).join('');
         };
