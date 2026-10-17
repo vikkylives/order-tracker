@@ -877,14 +877,17 @@
                 <div class="form-group">
                     <label>Print Method</label>
                     <select id="mCardPrintMethod" class="neumorphic-input" onchange="toggleMCardPrintMethod()">
+                        <option value="">Select print method</option>
                         <option value="offset">Offset Printing</option>
                         <option value="digital">Digital Printing</option>
+                        <option value="none">No Printing</option>
                     </select>
                 </div>
                 
                 <div class="form-group full-width">
                     <label style="color: var(--accent);">Finishing Size (Auto Layout Optimizer)</label>
                     <select id="mCardJobSize" class="neumorphic-input" onchange="handleJobSizeChange('card')">
+                        <option value="">Select finishing size</option>
                         <option value="custom">Manual / Custom Setup</option>
                         <option value="a3">A3 (11.7" x 16.5")</option>
                         <option value="a4">A4 (8.3" x 11.7")</option>
@@ -899,6 +902,7 @@
                 <div class="form-group card-offset-only">
                     <label>Colour Mode</label>
                     <select id="mCardColorMode" class="neumorphic-input" onchange="triggerLiveItemTotal()">
+                        <option value="">Select colour mode</option>
                         <option value="multi">Multicolour</option>
                         <option value="single">Single Colour</option>
                         <option value="two">Double Colour (2 Colour)</option>
@@ -928,6 +932,7 @@
                 <div class="form-group card-offset-only">
                     <label>Print Sides (Offset)</label>
                     <select id="mCardSidesOffset" class="neumorphic-input" onchange="triggerLiveItemTotal(); syncLaminationSidesFromPrintSides('card');">
+                        <option value="">Select print sides</option>
                         <option value="1">Single Sided</option>
                         <option value="2">Front & Back</option>
                     </select>
@@ -944,6 +949,7 @@
                 <div class="form-group card-digital-only hidden">
                     <label>Print Sides (Digital)</label>
                     <select id="mCardSidesDigital" class="neumorphic-input" onchange="triggerLiveItemTotal(); syncLaminationSidesFromPrintSides('card');">
+                        <option value="">Select print sides</option>
                         <option value="1">Single Sided</option>
                         <option value="2">Front & Back</option>
                     </select>
@@ -1017,6 +1023,13 @@
                     <input type="text" inputmode="decimal" id="mBookQty" class="neumorphic-input" oninput="triggerLiveItemTotal()">
                 </div>
                 <div class="form-group">
+                    <label>Print Method</label>
+                    <select id="mBookPrintMethod" class="neumorphic-input" onchange="toggleBookPrintMethod()">
+                        <option value="offset">Offset Printing</option>
+                        <option value="digital">Digital Printing</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Total Pages (Inner)</label>
                     <input type="text" inputmode="decimal" id="mBookPages" class="neumorphic-input" value="8" oninput="triggerLiveItemTotal()">
                 </div>
@@ -1024,6 +1037,7 @@
                 <div class="form-group full-width">
                     <label style="color: var(--accent);">Finishing Size (Auto Layout Optimizer)</label>
                     <select id="mBookJobSize" class="neumorphic-input" onchange="handleJobSizeChange('book')">
+                        <option value="">Select finishing size</option>
                         <option value="custom">Manual / Custom Setup</option>
                         <option value="a3">A3 (11.7" x 16.5")</option>
                         <option value="a4">A4 (8.3" x 11.7")</option>
@@ -1035,13 +1049,14 @@
                     </select>
                 </div>
 
-                <div class="form-group full-width" style="display:flex; flex-direction:row; align-items:center; gap:10px;">
+                <div class="form-group full-width book-offset-only" style="display:flex; flex-direction:row; align-items:center; gap:10px;">
                     <input type="checkbox" id="mBookCommonPages" style="width:20px; height:20px; box-shadow:none; cursor:pointer;" onchange="triggerLiveItemTotal()">
                     <label for="mBookCommonPages" style="margin:0; cursor:pointer; color:var(--accent);">Common Pages (Reuse plates for all signatures, e.g. Notebooks)</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group book-offset-only">
                     <label>Colour Mode</label>
                     <select id="mBookColorMode" class="neumorphic-input" onchange="triggerLiveItemTotal()">
+                        <option value="">Select colour mode</option>
                         <option value="multi">Multicolour</option>
                         <option value="single">Single Colour</option>
                         <option value="two">Double Colour (2 Colour)</option>
@@ -1050,15 +1065,22 @@
                 <div class="form-group">
                     <label>Print Sides (Magazine)</label>
                     <select id="mBookSides" class="neumorphic-input" onchange="triggerLiveItemTotal(); syncLaminationSidesFromPrintSides('book');">
+                        <option value="">Select print sides</option>
                         <option value="2">Front & Back</option>
                         <option value="1">Single Sided</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group book-offset-only">
                     <label>Paper GSM</label>
                     <input type="text" inputmode="decimal" id="mBookGSM" class="neumorphic-input" value="130" oninput="handlePaperSelectionChange(); triggerLiveItemTotal()">
                 </div>
-                <div class="form-group">
+                <div class="form-group book-digital-only hidden">
+                    <label>Digital Paper Type</label>
+                    <select id="mBookDigitalPaper" class="neumorphic-input" onchange="handlePaperSelectionChange(); triggerLiveItemTotal()">
+                        <option value="">Select paper type</option>
+                    </select>
+                </div>
+                <div class="form-group book-offset-only">
                     <label>Print / Paper Size</label>
                     <select id="mBookMasterSheet" class="neumorphic-input" onchange="handleMasterSheetChange('book'); handlePaperSelectionChange();">
                         <!-- Injected via JS -->
@@ -1078,7 +1100,7 @@
                     <label>Pages per Sheet Side (Ups)</label>
                     <input type="text" inputmode="decimal" id="mBookUps" class="neumorphic-input" value="4" oninput="triggerLiveItemTotal()">
                 </div>
-                <div class="form-group">
+                <div class="form-group book-offset-only">
                     <label>Waste Sheets (Per Signature)</label>
                     <input type="text" inputmode="decimal" id="mBookWaste" class="neumorphic-input" value="20" oninput="triggerLiveItemTotal()">
                 </div>
@@ -1099,10 +1121,10 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Custom Paper Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
+                    <label>Custom Rate (₹/sh) <span style="text-transform:none; font-size:0.8em; color:var(--info)">(0 = Auto)</span></label>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <input type="text" inputmode="decimal" id="mBookCustomPaperPrice" class="neumorphic-input" value="0" oninput="markPaperRateManualOverride(this); triggerLiveItemTotal();" style="flex:1;">
-                        <button type="button" class="neumorphic-btn animate-pulse" id="mBookPaperRateCalcBtn" onclick="openPaperRateCalculator()" style="padding: 10px 12px; font-size: 0.8em; white-space: nowrap; font-weight: bold; background: var(--bg); color: var(--accent); box-shadow: var(--shadow-raised);" title="Calculate paper rate from GSM and sheet size">
+                        <button type="button" class="neumorphic-btn animate-pulse book-offset-only" id="mBookPaperRateCalcBtn" onclick="openPaperRateCalculator()" style="padding: 10px 12px; font-size: 0.8em; white-space: nowrap; font-weight: bold; background: var(--bg); color: var(--accent); box-shadow: var(--shadow-raised);" title="Calculate paper rate from GSM and sheet size">
                             ⚖️ Calc
                         </button>
                     </div>
@@ -1697,7 +1719,8 @@
 
         function getItemPaperDescription(item) {
             const gsm = item.gsm ? `${item.gsm} GSM` : '';
-            if (item.itemType !== 'book' && item.printMethod !== 'offset' && item.paper) {
+            if (item.printMethod === 'none') return gsm || '-';
+            if (item.printMethod === 'digital' && item.paper) {
                 return item.paper.replace(/_/g, ' ');
             }
             return gsm || '-';
@@ -1979,7 +2002,14 @@
                 sheets = calcResult.sheetsNeeded;
                 
                 let commonText = c.commonPages ? ' (Common Pages)' : '';
-                breakdownDesc = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText} • ${calcResult.signatures} Sig (${calcResult.machClass})`;
+                breakdownDesc = c.printMethod === 'digital'
+                    ? `Magazine Inner Digital [${String(c.paper || '').replace(/_/g, ' ')}] • ${c.pages} pages`
+                    : `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText} • ${calcResult.signatures} Sig (${calcResult.machClass})`;
+            } else if (c.printMethod === 'none') {
+                calcResult = runOffsetCalculation(c);
+                paperCost = calcResult.paperCost;
+                sheets = calcResult.sheetsNeeded;
+                breakdownDesc = 'No Printing';
             } else if (c.printMethod === 'offset') {
                 calcResult = runOffsetCalculation(c);
                 paperCost = calcResult.paperCost;
@@ -2011,7 +2041,8 @@
                     } else if (procType === 'per1000') {
                         runCost = row.rate * Math.ceil(row.qty / 1000);
                     }
-                    const calculatedCost = Math.max(row.setup, runCost);
+                    const setup = getPostPressRowSetup(row, globalProc);
+                    const calculatedCost = Math.max(setup, runCost);
                     
                     postPressCost += calculatedCost;
                     postPressBreakdowns.push({ name: displayDesc, cost: calculatedCost });
@@ -2053,20 +2084,26 @@
 
         function getCurrentAutoPaperRatePerSheet() {
             const isBook = currentModalType === 'book';
+            const bookMethod = isBook && document.getElementById('mBookPrintMethod')
+                ? document.getElementById('mBookPrintMethod').value
+                : 'offset';
             const cardMethod = document.getElementById('mCardPrintMethod') ? document.getElementById('mCardPrintMethod').value : 'offset';
-            const isDigitalCard = !isBook && cardMethod === 'digital';
+            const isDigitalItem = isBook ? bookMethod === 'digital' : cardMethod === 'digital';
 
-            if (isDigitalCard) {
-                const paperField = document.getElementById('mCardDigitalPaper');
-                const qtyField = document.getElementById('mCardQty');
-                const upsField = document.getElementById('mCardUps');
+            if (isDigitalItem) {
+                const paperField = document.getElementById(isBook ? 'mBookDigitalPaper' : 'mCardDigitalPaper');
+                const qtyField = document.getElementById(isBook ? 'mBookQty' : 'mCardQty');
+                const upsField = document.getElementById(isBook ? 'mBookUps' : 'mCardUps');
                 if (!paperField || !qtyField || !upsField) return 0;
 
                 const paper = paperField.value;
                 const qty = Number(qtyField.value) || 0;
                 const ups = Number(upsField.value) || 1;
-                const sheetsNeeded = Math.max(1, Math.ceil(qty / ups));
-                const lookupKey = `${paper}_${Number(document.getElementById('mCardSidesDigital').value) === 2 ? 'double' : 'single'}`;
+                const sides = Number(document.getElementById(isBook ? 'mBookSides' : 'mCardSidesDigital').value) || 1;
+                const sheetsNeeded = Math.max(1, isBook
+                    ? Math.ceil((Number(document.getElementById('mBookPages').value) || 0) / (ups * sides) * qty)
+                    : Math.ceil(qty / ups));
+                const lookupKey = `${paper}_${sides === 2 ? 'double' : 'single'}`;
                 const rate = getRates().digitalRates && getRates().digitalRates[lookupKey] ? getPaperPrice(lookupKey, sheetsNeeded) : getPaperPrice(`${paper}_single`, sheetsNeeded);
                 return rate || 0;
             }
@@ -2178,13 +2215,19 @@
             const amount = value => `₹${(value * markupFactor).toFixed(2)}`;
 
             if (item.itemType === 'book') {
-                rows.push(`<div class="live-cost-breakdown-row"><span>Sheets @ ₹${(calc.pricePerSheet || 0).toFixed(2)}</span><strong>${calc.sheetsNeeded || 0} = ${amount(data.paperCost)}</strong></div>`);
-                rows.push(`<div class="live-cost-breakdown-row"><span>Signatures</span><strong>${calc.signatures || 0} = ${amount(data.printCost)}</strong></div>`);
+                if (item.printMethod === 'digital') {
+                    rows.push(`<div class="live-cost-breakdown-row"><span>Digital sheets @ ₹${(calc.ratePerSheet || 0).toFixed(2)}</span><strong>${calc.sheetsNeeded || 0} = ${amount(data.printCost)}</strong></div>`);
+                } else {
+                    rows.push(`<div class="live-cost-breakdown-row"><span>Sheets @ ₹${(calc.pricePerSheet || 0).toFixed(2)}</span><strong>${calc.sheetsNeeded || 0} = ${amount(data.paperCost)}</strong></div>`);
+                    rows.push(`<div class="live-cost-breakdown-row"><span>Signatures</span><strong>${calc.signatures || 0} = ${amount(data.printCost)}</strong></div>`);
+                }
             } else if (item.printMethod === 'digital') {
                 rows.push(`<div class="live-cost-breakdown-row"><span>Sheets @ ₹${(calc.ratePerSheet || 0).toFixed(2)}</span><strong>${calc.sheetsNeeded || 0} = ${amount(data.printCost)}</strong></div>`);
             } else {
                 rows.push(`<div class="live-cost-breakdown-row"><span>Sheets @ ₹${(calc.pricePerSheet || 0).toFixed(2)}</span><strong>${calc.sheetsNeeded || 0} = ${amount(data.paperCost)}</strong></div>`);
-                rows.push(`<div class="live-cost-breakdown-row"><span>Impressions</span><strong>${calc.roundupImpressions || 0}k = ${amount(data.printCost)}</strong></div>`);
+                if (item.printMethod !== 'none') {
+                    rows.push(`<div class="live-cost-breakdown-row"><span>Impressions</span><strong>${calc.roundupImpressions || 0}k = ${amount(data.printCost)}</strong></div>`);
+                }
             }
 
             if (data.lamCost > 0) {
@@ -2192,7 +2235,7 @@
                 rows.push(`<div class="live-cost-breakdown-row"><span>Lamination ${sides}</span><strong>${amount(data.lamCost)}</strong></div>`);
             }
 
-            panel.innerHTML = `<div class="live-cost-breakdown-title">Live Calculation</div>${rows.join('')}`;
+            panel.innerHTML = rows.length ? `<div class="live-cost-breakdown-title">Live Calculation</div>${rows.join('')}` : '';
         }
 
         function clearModalCostBreakdown() {
@@ -2246,10 +2289,24 @@
                 return;
             }
 
+            if (getItemFormValidationError()) {
+                document.getElementById('modalItemLiveTotal').innerText = '--';
+                if (preview) preview.innerHTML = '';
+                clearModalCostBreakdown();
+                const panel = document.getElementById(currentModalType === 'book' ? 'bookCostBreakdown' : 'cardCostBreakdown');
+                if (panel && (currentModalType === 'card' || currentModalType === 'book')) {
+                    panel.innerHTML = '<div class="live-cost-breakdown-title">Live Calculation</div>';
+                }
+                updateOptionalCostStates({ lamCost: 0, foilCost: 0, otherExp: 0, postPressBreakdowns: [] });
+                return;
+            }
+
             let dummyCard = {
                 itemType: currentModalType,
                 qty: Number(document.getElementById(currentModalType === 'book' ? 'mBookQty' : 'mCardQty').value) || 0,
-                printMethod: document.getElementById('mCardPrintMethod') ? document.getElementById('mCardPrintMethod').value : 'offset',
+                printMethod: currentModalType === 'book'
+                    ? document.getElementById('mBookPrintMethod').value
+                    : document.getElementById('mCardPrintMethod').value,
                 colorMode: document.getElementById(currentModalType === 'book' ? 'mBookColorMode' : 'mCardColorMode').value,
                 gsm: Number(document.getElementById(currentModalType === 'book' ? 'mBookGSM' : 'mCardGSM').value) || 130,
                 jobSize: document.getElementById(currentModalType === 'book' ? 'mBookJobSize' : 'mCardJobSize').value || 'custom',
@@ -2258,11 +2315,11 @@
                 customB: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomB' : 'mCardCustomB').value) || 0,
                 pages: Number(document.getElementById('mBookPages') ? document.getElementById('mBookPages').value : 8),
                 commonPages: document.getElementById('mBookCommonPages') ? document.getElementById('mBookCommonPages').checked : false,
-                sides: Number(document.getElementById(currentModalType === 'book' ? 'mBookSides' : 'mCardSidesOffset').value) || 2,
+                sides: Number(document.getElementById(currentModalType === 'book' ? 'mBookSides' : (document.getElementById('mCardPrintMethod').value === 'digital' ? 'mCardSidesDigital' : 'mCardSidesOffset')).value) || 2,
                 sets: Number(document.getElementById('mCardSets') ? document.getElementById('mCardSets').value : 1),
                 ups: Number(document.getElementById(currentModalType === 'book' ? 'mBookUps' : 'mCardUps').value) || 4,
                 waste: Number(document.getElementById('mBookWaste') ? document.getElementById('mBookWaste').value : 20),
-                paper: document.getElementById('mCardDigitalPaper') ? document.getElementById('mCardDigitalPaper').value : '',
+                paper: document.getElementById(currentModalType === 'book' ? 'mBookDigitalPaper' : 'mCardDigitalPaper').value,
                 lamination: document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination') ? document.getElementById(currentModalType === 'book' ? 'mBookLamination' : 'mCardLamination').value : 'None',
                 laminationSides: document.getElementById(currentModalType === 'book' ? 'mBookLaminationSides' : 'mCardLaminationSides') ? document.getElementById(currentModalType === 'book' ? 'mBookLaminationSides' : 'mCardLaminationSides').value : 'single',
                 customPaperPrice: Number(document.getElementById(currentModalType === 'book' ? 'mBookCustomPaperPrice' : 'mCardCustomPaperPrice').value) || 0,
@@ -2866,6 +2923,9 @@
                 
                 text += `*${c.name}*\n`;
                 text += `- Quantity: ${c.qty}\n`;
+                if (c.itemType === 'book') {
+                    text += `- Print Method: ${c.printMethod === 'digital' ? 'Digital' : 'Offset'}\n`;
+                }
                 text += `- Sides: ${printSides}\n`;
                 if (c.itemType === 'book') {
                     text += `- Pages: ${c.pages}\n`;
@@ -3020,7 +3080,9 @@
                 const itemData = computeItemActualCosts(card);
                 const amount = roundUpToTen(itemData.totalActual * markupFactor);
                 const quantity = Number(card.qty) || 0;
-                const type = card.itemType === 'book' ? 'Book Inner' : (card.itemType === 'foil' ? 'Foiling Only' : (card.printMethod === 'offset' ? 'Offset Print' : 'Digital Print'));
+                const type = card.itemType === 'book'
+                    ? (card.printMethod === 'digital' ? 'Digital Magazine Inner' : 'Book Inner')
+                    : (card.itemType === 'foil' ? 'Foiling Only' : (card.printMethod === 'offset' ? 'Offset Print' : (card.printMethod === 'none' ? 'No Printing' : 'Digital Print')));
                 const details = [
                     type,
                     getItemPaperDescription(card),
@@ -3216,7 +3278,7 @@
             const printMethod = document.getElementById('mCardPrintMethod').value;
             const { gapX, gapY } = getUpsSpacingInches();
             let ups = 0;
-            if (printMethod === 'offset') {
+            if (printMethod !== 'digital') {
                 const sheet = document.getElementById('mCardMasterSheet').value;
                 if(sheet === 'custom') {
                     showToast('Auto calc unavailable for custom sheets.', true);
@@ -3276,7 +3338,7 @@
             
             const ups = item.ups || 1;
             const baseSheets = Math.ceil(item.qty / ups);
-            const sheetsNeeded = baseSheets + 40; 
+            const sheetsNeeded = baseSheets + (item.printMethod === 'none' ? 0 : 40);
             
             let pricePerSheet = 0;
             if (item.customPaperPriceManual && item.customPaperPrice && item.customPaperPrice > 0) {
@@ -3352,6 +3414,48 @@
         }
 
         function runBookCalculation(item) {
+            const pagesPerSheet = item.ups * item.sides;
+            const rawSignatures = Math.ceil(item.pages / item.ups);
+            let signatures = item.commonPages ? 1 : rawSignatures;
+            const sheetsPerBook = item.pages / pagesPerSheet;
+            const baseSheets = Math.ceil(sheetsPerBook * item.qty);
+
+            if (item.printMethod === 'digital') {
+                const sheetsNeeded = baseSheets;
+                const sidesStr = item.sides === 2 ? 'double' : 'single';
+                const lookupKey = `${item.paper}_${sidesStr}`;
+                let ratePerSheet = 0;
+
+                if (item.customPaperPriceManual && item.customPaperPrice > 0) {
+                    ratePerSheet = parseFloat(item.customPaperPrice);
+                } else if (getRates().digitalRates[lookupKey]) {
+                    ratePerSheet = getPaperPrice(lookupKey, sheetsNeeded);
+                } else {
+                    ratePerSheet = getPaperPrice(`${item.paper}_single`, sheetsNeeded) * (item.sides === 2 ? 2 : 1);
+                }
+
+                let lamCost = 0;
+                if (item.lamination && item.lamination !== 'None') {
+                    const rate = getRates().lamRates.digital[item.lamination] || 0;
+                    const laminationSidesCount = item.laminationSides === 'single' ? 1 : item.sides;
+                    lamCost = rate * sheetsNeeded * laminationSidesCount;
+                }
+
+                return {
+                    paperCost: 0,
+                    printCost: ratePerSheet * sheetsNeeded,
+                    lamCost,
+                    sheetsNeeded,
+                    baseSheets,
+                    signatures,
+                    rawSignatures,
+                    machClass: 'Digital',
+                    pricePerSheet: 0,
+                    ratePerSheet,
+                    commonPages: item.commonPages
+                };
+            }
+
             let sheetL, sheetB;
             if (item.masterSheet === 'custom') {
                 sheetL = parseFloat(item.customL) || 0; 
@@ -3362,19 +3466,6 @@
                 sheetB = parseFloat(sizeVal[1]);
             }
             const masterArea = sheetL * sheetB;
-            
-            let pagesPerSheet = item.ups * item.sides;
-            
-            // Store the real number of plates/passes before we override it
-            let rawSignatures = Math.ceil(item.pages / item.ups);
-            let signatures = rawSignatures;
-            
-            let sheetsPerBook = item.pages / pagesPerSheet;
-            let baseSheets = Math.ceil(sheetsPerBook * item.qty);
-
-            if (item.commonPages) {
-                signatures = 1;
-            }
             
             let totalSheets = baseSheets + (item.waste * signatures);
             
@@ -3533,7 +3624,7 @@
                         <button class="slot-delete-btn" onclick="directDelete(event, 'card', '${c.id}')" title="Delete">×</button>
                         <div class="data-slot-title" style="padding-right: 25px;">${c.name}</div>
                         <div class="data-slot-meta">
-                            <span>Qty: ${c.qty} (${c.itemType === 'book' ? 'Book Inner' : (c.itemType === 'foil' ? 'Foiling Only' : (c.printMethod === 'offset' ? 'Offset' : 'Digital'))})</span>
+                            <span>Qty: ${c.qty} (${c.itemType === 'book' ? (c.printMethod === 'digital' ? 'Digital Magazine Inner' : 'Book Inner') : (c.itemType === 'foil' ? 'Foiling Only' : (c.printMethod === 'offset' ? 'Offset' : (c.printMethod === 'none' ? 'No Printing' : 'Digital')))})</span>
                             <span style="color:var(--accent); font-weight:bold;">₹${itemClientTotal.toFixed(2)}</span>
                         </div>
                     </div>`;
@@ -3552,13 +3643,21 @@
 
                 if (c.itemType === 'book') {
                     let commonText = c.commonPages ? ' (Common Pages)' : '';
-                    descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
-                    paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
-                    
-                    let impText = c.commonPages ? `${Math.ceil((c.qty * data.calcResult.rawSignatures) / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
-                    printDescOffice = `↳ Print Cost (${impText})`;
+                    if (c.printMethod === 'digital') {
+                        descCustomer = `Magazine Inner Digital [${String(c.paper || '').replace(/_/g, ' ')}] • ${c.pages} pages`;
+                        printDescOffice = `↳ Digital Print (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.ratePerSheet || 0).toFixed(2)}/sh)`;
+                    } else {
+                        descCustomer = `Magazine Inner [${displaySheet}]${colorStr} • ${c.pages} pages${commonText}`;
+                        paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
+                        
+                        let impText = c.commonPages ? `${Math.ceil((c.qty * data.calcResult.rawSignatures) / 1000)}k imp total` : `${data.calcResult.signatures} Sig`;
+                        printDescOffice = `↳ Print Cost (${impText})`;
+                    }
                 } else if (c.itemType === 'foil') {
                     descCustomer = 'Foiling Only';
+                } else if (c.printMethod === 'none') {
+                    descCustomer = 'No Printing';
+                    paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
                 } else if (c.printMethod === 'offset') {
                     descCustomer = `Offset Print [${displaySheet}]${colorStr}`;
                     paperDescOffice = `↳ Paper Cost [${displaySheet}] (${data.calcResult.sheetsNeeded} sh @ ₹${(data.calcResult.pricePerSheet || 0).toFixed(2)}/sh)`;
@@ -3688,16 +3787,18 @@
         function renderAll() { calculateAndRender(); }
 
         function populateDigitalPaperDropdown(selected = '') {
-            const select = document.getElementById('mCardDigitalPaper');
-            if(!select) return;
-            select.innerHTML = '';
             const baseNames = getUniqueDigitalPaperNames();
-            baseNames.forEach(name => {
-                let opt = document.createElement('option');
-                opt.value = name;
-                opt.text = name.replace(/_/g, ' ');
-                if (name === selected) opt.selected = true;
-                select.add(opt);
+            ['mCardDigitalPaper', 'mBookDigitalPaper'].forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">Select paper type</option>';
+                baseNames.forEach(name => {
+                    let opt = document.createElement('option');
+                    opt.value = name;
+                    opt.text = name.replace(/_/g, ' ');
+                    if (name === selected) opt.selected = true;
+                    select.add(opt);
+                });
             });
         }
 
@@ -3707,7 +3808,7 @@
             const bookSelect = document.getElementById('mBookMasterSheet');
             if (!cardSelect || !bookSelect) return;
             
-            let html = '';
+            let html = '<option value="">Select print / paper size</option>';
             rates.masterPapers.forEach(m => {
                 const displayStr = `${m.l}x${m.b}`;
                 let classStr = m.machClass === 'std' ? 'Standard' : (m.machClass === 'med' ? 'Medium' : 'Large');
@@ -3741,10 +3842,12 @@
             const target = sizes[sizeKey];
             if (!target) return;
 
-            const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
+            const printMethod = type === 'card'
+                ? document.getElementById('mCardPrintMethod').value
+                : document.getElementById('mBookPrintMethod').value;
             const { gapX, gapY } = getUpsSpacingInches();
             
-            if (printMethod === 'offset') {
+            if (printMethod !== 'digital') {
                 let bestFit = null;
                 let bestScore = -1;
 
@@ -3775,8 +3878,10 @@
                 }
             } else {
                 const ups = autoCalcDigitalUps(target.l, target.b, gapX, gapY);
-                document.getElementById('mCardUps').value = ups || 1;
-                showToast(`Auto-Layout: ${ups} pieces per Digital Sheet`);
+                document.getElementById(type === 'book' ? 'mBookUps' : 'mCardUps').value = ups || 1;
+                showToast(type === 'book'
+                    ? `Auto-Layout: ${ups} pages per Digital Sheet Side`
+                    : `Auto-Layout: ${ups} pieces per Digital Sheet`);
             }
             
             triggerLiveItemTotal();
@@ -3802,7 +3907,7 @@
                 
                 if (target && masterSheetStr !== 'custom') {
                     const printMethod = type === 'card' ? document.getElementById('mCardPrintMethod').value : 'offset';
-                    if (printMethod === 'offset') {
+                    if (printMethod !== 'digital') {
                         const { gapX, gapY } = getUpsSpacingInches();
                         const ups = autoCalcOffsetUps(target.l, target.b, masterSheetStr, gapX, gapY);
                         document.getElementById(type === 'book' ? 'mBookUps' : 'mCardUps').value = ups || 1;
@@ -3818,11 +3923,17 @@
         }
 
         function toggleBookCustomSize() {
-            const isCustom = document.getElementById('mBookMasterSheet').value === 'custom';
+            const isCustom = document.getElementById('mBookMasterSheet').value === 'custom'
+                && document.getElementById('mBookPrintMethod').value !== 'digital';
             document.querySelectorAll('.book-custom-size').forEach(el => el.classList.toggle('hidden', !isCustom));
         }
 
         // --- POST PRESS MODULE ---
+        function getPostPressRowSetup(row, process) {
+            if (process && Number(row.rate) !== Number(process.rate)) return 0;
+            return Number(row.setup) || 0;
+        }
+
         function renderPostPressSubGrid() {
             const container = document.getElementById('modalPostPressContainer');
             container.innerHTML = '';
@@ -3852,7 +3963,7 @@
                 } else {
                     runCost = row.rate * Math.ceil(row.qty / 1000);
                 }
-                const rowTotal = Math.max(row.setup, runCost);
+                const rowTotal = Math.max(getPostPressRowSetup(row, rates[row.processKey]), runCost);
 
                 container.innerHTML += `
                     <div style="display:flex; gap: 15px; align-items:flex-end; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:12px; min-width: 650px;">
@@ -3938,7 +4049,7 @@
             if (procType === 'perUnit') runCost = row.rate * row.qty;
             else if (procType === 'per1000') runCost = row.rate * Math.ceil(row.qty / 1000);
             
-            const rowTotal = Math.max(row.setup, runCost);
+            const rowTotal = Math.max(getPostPressRowSetup(row, procConfig), runCost);
             document.getElementById(`ppRowTotal_${rowId}`).innerText = `₹${rowTotal.toFixed(2)}`;
             triggerLiveItemTotal();
         }
@@ -4013,21 +4124,142 @@
             if (laminationField && sidesField) sidesField.disabled = laminationField.value === 'None';
         }
 
+        function resetNewItemFields() {
+            const blankFieldIds = [
+                'mCardName', 'mCardQty', 'mCardPrintMethod', 'mCardJobSize', 'mCardColorMode',
+                'mCardGSM', 'mCardMasterSheet', 'mCardCustomL', 'mCardCustomB', 'mCardSidesOffset',
+                'mCardSidesDigital', 'mCardDigitalPaper', 'mCardUps', 'mBookName',
+                'mBookQty', 'mBookPages', 'mBookJobSize', 'mBookColorMode', 'mBookSides', 'mBookGSM',
+                'mBookMasterSheet', 'mBookCustomL', 'mBookCustomB', 'mBookUps', 'mBookWaste',
+                'mExpDesc', 'mExpCost', 'mFoilName', 'mFoilQty'
+            ];
+            blankFieldIds.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.value = '';
+            });
+
+            document.getElementById('mCardUnit').value = 'inches';
+            document.getElementById('mCardLength').value = '';
+            document.getElementById('mCardBreadth').value = '';
+            document.getElementById('mCardSets').value = '1';
+            document.getElementById('mCardLamination').value = 'None';
+            document.getElementById('mCardLaminationSides').value = 'single';
+            document.getElementById('mCardCustomPaperPrice').value = '0';
+            document.getElementById('mCardCustomPaperPrice').dataset.userEdited = '0';
+            document.getElementById('mCardFoil').value = '0';
+            document.getElementById('mCardOtherExp').value = '0';
+            document.getElementById('mBookCommonPages').checked = false;
+            document.getElementById('mBookPrintMethod').value = 'offset';
+            document.getElementById('mBookWaste').value = '20';
+            document.getElementById('mBookLamination').value = 'None';
+            document.getElementById('mBookLaminationSides').value = 'single';
+            document.getElementById('mBookCustomPaperPrice').value = '0';
+            document.getElementById('mBookCustomPaperPrice').dataset.userEdited = '0';
+            document.getElementById('mBookDigitalPaper').value = '';
+            document.getElementById('mBookOtherExp').value = '0';
+            document.getElementById('foilItemSummary').innerText = 'No foiling rows added.';
+            activeFoilRows = [];
+            activePostPressRows = [];
+            updateOptionalCostStates({ lamCost: 0, foilCost: 0, otherExp: 0, postPressBreakdowns: [] });
+        }
+
+        function getItemFormValidationError() {
+            const hasText = id => String(document.getElementById(id).value || '').trim() !== '';
+            const isPositive = id => {
+                const value = Number(document.getElementById(id).value);
+                return Number.isFinite(value) && value > 0;
+            };
+            const isNonNegative = id => {
+                const value = Number(document.getElementById(id).value);
+                return hasText(id) && Number.isFinite(value) && value >= 0;
+            };
+
+            if (currentModalType === 'card') {
+                if (!hasText('mCardName')) return 'Enter an item name.';
+                if (!isPositive('mCardQty')) return 'Enter a quantity greater than zero.';
+                if (!hasText('mCardPrintMethod')) return 'Select a print method.';
+                if (!hasText('mCardJobSize')) return 'Select a finishing size.';
+                if (!isPositive('mCardUps')) return 'Enter pieces per sheet.';
+
+                const method = document.getElementById('mCardPrintMethod').value;
+                if (method === 'digital') {
+                    if (!hasText('mCardDigitalPaper')) return 'Select a digital paper type.';
+                    if (!hasText('mCardSidesDigital')) return 'Select digital print sides.';
+                } else {
+                    if (!isPositive('mCardGSM')) return 'Enter the paper GSM.';
+                    if (!hasText('mCardMasterSheet')) return 'Select a print / paper size.';
+                    if (document.getElementById('mCardMasterSheet').value === 'custom' && (!isPositive('mCardCustomL') || !isPositive('mCardCustomB'))) {
+                        return 'Enter both custom paper dimensions.';
+                    }
+                    if (method === 'offset') {
+                        if (!hasText('mCardColorMode')) return 'Select a colour mode.';
+                        if (!hasText('mCardSidesOffset')) return 'Select offset print sides.';
+                        if (!isPositive('mCardSets')) return 'Enter the number of sets.';
+                    }
+                }
+            } else if (currentModalType === 'book') {
+                if (!hasText('mBookName')) return 'Enter a book / magazine name.';
+                if (!isPositive('mBookQty')) return 'Enter a quantity greater than zero.';
+                if (!isPositive('mBookPages')) return 'Enter the total page count.';
+                if (!hasText('mBookJobSize')) return 'Select a finishing size.';
+                if (!hasText('mBookSides')) return 'Select print sides.';
+                if (!isPositive('mBookUps')) return 'Enter pages per sheet side.';
+                if (document.getElementById('mBookPrintMethod').value === 'digital') {
+                    if (!hasText('mBookDigitalPaper')) return 'Select a digital paper type.';
+                } else {
+                    if (!hasText('mBookColorMode')) return 'Select a colour mode.';
+                    if (!isPositive('mBookGSM')) return 'Enter the paper GSM.';
+                    if (!hasText('mBookMasterSheet')) return 'Select a print / paper size.';
+                    if (!isNonNegative('mBookWaste')) return 'Enter waste sheets per signature.';
+                    if (document.getElementById('mBookMasterSheet').value === 'custom' && (!isPositive('mBookCustomL') || !isPositive('mBookCustomB'))) {
+                        return 'Enter both custom paper dimensions.';
+                    }
+                }
+            } else if (currentModalType === 'exp') {
+                if (!hasText('mExpDesc')) return 'Enter an expense description.';
+                if (!isNonNegative('mExpCost')) return 'Enter a valid expense amount.';
+            } else if (currentModalType === 'foil') {
+                if (!hasText('mFoilName')) return 'Enter a foiling item name.';
+                if (!isPositive('mFoilQty')) return 'Enter a quantity greater than zero.';
+                if (!activeFoilRows.length || activeFoilRows.some(row => !(Number(row.width) > 0 && Number(row.height) > 0 && Number(row.qty) > 0))) {
+                    return 'Add a foiling row with valid dimensions and quantity.';
+                }
+            }
+
+            return '';
+        }
+
         function toggleMCardPrintMethod(skipUpsCalc) {
             const method = document.getElementById('mCardPrintMethod').value;
             const isOffset = method === 'offset';
+            const hasPrinting = method === 'offset' || method === 'digital';
 
-            document.querySelectorAll('.card-offset-only').forEach(el => el.classList.toggle('hidden', !isOffset));
-            document.querySelectorAll('.card-digital-only').forEach(el => el.classList.toggle('hidden', isOffset));
+            document.querySelectorAll('.card-offset-only').forEach(el => {
+                const field = el.querySelector('input, select');
+                const isPaperField = field && ['mCardGSM', 'mCardMasterSheet'].includes(field.id);
+                el.classList.toggle('hidden', !isOffset && !(method === 'none' && isPaperField));
+            });
+            document.querySelectorAll('.card-digital-only').forEach(el => el.classList.toggle('hidden', isOffset || !hasPrinting));
 
             const calcBtn = document.getElementById('mCardPaperRateCalcBtn');
-            if (calcBtn) calcBtn.style.display = isOffset ? 'inline-flex' : 'none';
+            if (calcBtn) calcBtn.style.display = isOffset || method === 'none' ? 'inline-flex' : 'none';
 
             if (skipUpsCalc !== true) triggerCardUpsCalc();
-            if (method === 'digital' || isOffset) {
+            if (hasPrinting) {
                 setPaperRateAutoValue();
             }
             syncLaminationSidesFromPrintSides('card');
+            triggerLiveItemTotal();
+        }
+
+        function toggleBookPrintMethod() {
+            const isDigital = document.getElementById('mBookPrintMethod').value === 'digital';
+            document.querySelectorAll('.book-offset-only').forEach(el => el.classList.toggle('hidden', isDigital));
+            document.querySelectorAll('.book-digital-only').forEach(el => el.classList.toggle('hidden', !isDigital));
+            toggleBookCustomSize();
+
+            syncCustomPaperRateField();
+            syncLaminationSidesFromPrintSides('book');
             triggerLiveItemTotal();
         }
 
@@ -4064,6 +4296,7 @@
                     document.getElementById('mBookQty').value = item.qty;
                     document.getElementById('mBookPages').value = item.pages || 8;
                     document.getElementById('mBookCommonPages').checked = item.commonPages || false;
+                    document.getElementById('mBookPrintMethod').value = item.printMethod || 'offset';
                     document.getElementById('mBookJobSize').value = item.jobSize || 'custom';
                     document.getElementById('mBookColorMode').value = item.colorMode || 'multi';
                     document.getElementById('mBookSides').value = item.sides || 2;
@@ -4074,11 +4307,13 @@
                     document.getElementById('mBookUps').value = item.ups || 4;
                     document.getElementById('mBookWaste').value = item.waste || 20;
                     document.getElementById('mBookLamination').value = item.lamination || 'None';
-                    document.getElementById('mBookLaminationSides').value = item.laminationSides || (item.sides === 2 ? 'double' : 'single');
                     document.getElementById('mBookCustomPaperPrice').value = item.customPaperPrice || 0;
                     document.getElementById('mBookCustomPaperPrice').dataset.userEdited = item.customPaperPriceManual === true ? '1' : '0';
                     document.getElementById('mBookOtherExp').value = item.otherExp || 0;
 
+                    populateDigitalPaperDropdown(item.paper || '300gsm');
+                    toggleBookPrintMethod();
+                    document.getElementById('mBookLaminationSides').value = item.laminationSides || (item.sides === 2 ? 'double' : 'single');
                     toggleBookCustomSize();
                 } else if (loadedType === 'card') {
                     document.getElementById('mCardName').value = item.name;
@@ -4095,7 +4330,6 @@
                     document.getElementById('mCardLength').value = item.length || 11;
                     document.getElementById('mCardBreadth').value = item.breadth || 8.5;
                     document.getElementById('mCardLamination').value = item.lamination || 'None';
-                    document.getElementById('mCardLaminationSides').value = item.laminationSides || (item.sides === 2 ? 'double' : 'single');
                     document.getElementById('mCardCustomPaperPrice').value = item.customPaperPrice || 0;
                     document.getElementById('mCardUps').value = item.ups || 8;
                     document.getElementById('mCardFoil').value = item.foil || 0;
@@ -4111,7 +4345,7 @@
                     const savedPaperRate = Number(item.customPaperPrice) || 0;
                     document.getElementById('mCardCustomPaperPrice').value = savedPaperRate > 0 ? savedPaperRate : 0;
                     document.getElementById('mCardCustomPaperPrice').dataset.userEdited = item.customPaperPriceManual === true ? '1' : '0';
-                    syncLaminationSidesFromPrintSides('card');
+                    document.getElementById('mCardLaminationSides').value = item.laminationSides || (item.sides === 2 ? 'double' : 'single');
                 } else if (loadedType === 'exp') {
                     document.getElementById('mExpDesc').value = item.desc;
                     document.getElementById('mExpCost').value = item.cost;
@@ -4138,62 +4372,13 @@
                 document.getElementById('itemModalTitle').innerText = 'Add Item';
                 document.getElementById('modalTypeSelector').style.display = 'flex';
                 setModalType(type);
-
-                document.getElementById('mCardName').value = `Printed Item ${state.cards.length + 1}`;
-                document.getElementById('mCardQty').value = state.globalQty;
-                document.getElementById('mCardPrintMethod').value = 'offset';
-                document.getElementById('mCardJobSize').value = 'custom';
-                document.getElementById('mCardColorMode').value = 'multi';
-                document.getElementById('mCardGSM').value = 130;
-                document.getElementById('mCardMasterSheet').value = getRates().masterPapers.length > 0 ? `${getRates().masterPapers[0].l}x${getRates().masterPapers[0].b}` : 'custom';
-                document.getElementById('mCardCustomL').value = '';
-                document.getElementById('mCardCustomB').value = '';
-                document.getElementById('mCardUnit').value = 'inches';
-                document.getElementById('mCardLength').value = 11;
-                document.getElementById('mCardBreadth').value = 8.5;
-                document.getElementById('mCardSidesOffset').value = '1';
-                document.getElementById('mCardSidesDigital').value = '1';
-                document.getElementById('mCardSets').value = 1;
-                document.getElementById('mCardLamination').value = 'None';
-                document.getElementById('mCardLaminationSides').value = 'single';
-                document.getElementById('mCardCustomPaperPrice').value = 0;
-                document.getElementById('mCardCustomPaperPrice').dataset.userEdited = '0';
-                document.getElementById('mCardUps').value = 8;
-                document.getElementById('mCardFoil').value = 0;
-                document.getElementById('mCardOtherExp').value = 0;
-                
-                document.getElementById('mBookName').value = `Book Inner Pages ${state.cards.length + 1}`;
-                document.getElementById('mBookQty').value = state.globalQty;
-                document.getElementById('mBookPages').value = 8;
-                document.getElementById('mBookCommonPages').checked = false;
-                document.getElementById('mBookJobSize').value = 'custom';
-                document.getElementById('mBookColorMode').value = 'multi';
-                document.getElementById('mBookSides').value = 2;
-                document.getElementById('mBookGSM').value = 130;
-                document.getElementById('mBookMasterSheet').value = getRates().masterPapers.length > 0 ? `${getRates().masterPapers[0].l}x${getRates().masterPapers[0].b}` : 'custom';
-                document.getElementById('mBookCustomL').value = '';
-                document.getElementById('mBookCustomB').value = '';
-                document.getElementById('mBookUps').value = 4;
-                document.getElementById('mBookWaste').value = 20;
-                document.getElementById('mBookLamination').value = 'None';
-                document.getElementById('mBookLaminationSides').value = 'single';
-                document.getElementById('mBookCustomPaperPrice').value = 0;
-                document.getElementById('mBookCustomPaperPrice').dataset.userEdited = '0';
-                document.getElementById('mBookOtherExp').value = 0;
-
+                resetNewItemFields();
                 activePostPressRows = [];
                 renderPostPressSubGrid();
                 toggleCardCustomSize();
                 toggleBookCustomSize();
-                toggleMCardPrintMethod();
-                syncLaminationSidesFromPrintSides('book');
-                syncLaminationSidesFromPrintSides('card');
-
-                document.getElementById('mExpDesc').value = '';
-                document.getElementById('mExpCost').value = 0;
-                document.getElementById('mFoilName').value = `Foiling Only ${state.cards.length + 1}`;
-                document.getElementById('mFoilQty').value = state.globalQty;
-                document.getElementById('foilItemSummary').innerText = 'No foiling rows added.';
+                toggleMCardPrintMethod(true);
+                toggleBookPrintMethod();
                 document.getElementById('mItemDeleteBtn').style.display = 'none';
             }
 
@@ -4412,6 +4597,12 @@
 
         // --- SAVES AND EDITS TRANSACTIONS ---
         function saveItem(addAnother = false) {
+            const validationError = getItemFormValidationError();
+            if (validationError) {
+                showToast(validationError, true);
+                return;
+            }
+
             if (currentModalType === 'card') saveCard(addAnother);
             else if (currentModalType === 'book') saveBook(addAnother);
             else if (currentModalType === 'exp') saveExpense(addAnother);
@@ -4436,12 +4627,7 @@
             isDirty = true;
             renderAll();
             if (addAnother) {
-                document.getElementById('itemEditId').value = '';
-                document.getElementById('mFoilName').value = `Foiling Only ${state.cards.length + 1}`;
-                document.getElementById('mFoilQty').value = state.globalQty;
-                activeFoilRows = [];
-                updateFoilItemSummary();
-                triggerLiveItemTotal();
+                openItemModal('foil');
             } else closeModal('modalItem');
         }
 
@@ -4493,20 +4679,7 @@
             
             if (addAnother) {
                 showToast('Item Saved!');
-                document.getElementById('itemEditId').value = '';
-                document.getElementById('mCardName').value = `Printed Item ${state.cards.length + 1}`;
-                document.getElementById('mCardQty').value = state.globalQty;
-                document.getElementById('mCardCustomPaperPrice').value = 0;
-                document.getElementById('mCardCustomPaperPrice').dataset.userEdited = '0';
-                document.getElementById('mCardFoil').value = 0;
-                document.getElementById('mCardOtherExp').value = 0;
-                document.getElementById('mCardName').focus();
-                document.getElementById('mItemDeleteBtn').style.display = 'none';
-                document.getElementById('itemModalTitle').innerText = 'Add Item';
-                activeFoilRows = [];
-                activePostPressRows = [];
-                renderPostPressSubGrid();
-                triggerLiveItemTotal();
+                openItemModal('card');
             } else {
                 closeModal('modalItem');
             }
@@ -4522,6 +4695,8 @@
                 name: document.getElementById('mBookName').value || 'Book Inner Pages',
                 qty: qty,
                 unlinked: qty !== state.globalQty,
+                printMethod: document.getElementById('mBookPrintMethod').value,
+                paper: document.getElementById('mBookDigitalPaper').value,
                 pages: Number(document.getElementById('mBookPages').value) || 8,
                 commonPages: document.getElementById('mBookCommonPages').checked,
                 jobSize: document.getElementById('mBookJobSize').value || 'custom',
@@ -4550,18 +4725,7 @@
             
             if (addAnother) {
                 showToast('Book Module Saved!');
-                document.getElementById('itemEditId').value = '';
-                document.getElementById('mBookName').value = `Book Inner Pages ${state.cards.length + 1}`;
-                document.getElementById('mBookQty').value = state.globalQty;
-                document.getElementById('mBookCustomPaperPrice').value = 0;
-                document.getElementById('mBookCustomPaperPrice').dataset.userEdited = '0';
-                document.getElementById('mBookOtherExp').value = 0;
-                document.getElementById('mBookName').focus();
-                document.getElementById('mItemDeleteBtn').style.display = 'none';
-                document.getElementById('itemModalTitle').innerText = 'Add Item';
-                activePostPressRows = [];
-                renderPostPressSubGrid();
-                triggerLiveItemTotal();
+                openItemModal('book');
             } else {
                 closeModal('modalItem');
             }
@@ -4583,13 +4747,7 @@
 
             if (addAnother) {
                 showToast('Item Saved!');
-                document.getElementById('itemEditId').value = '';
-                document.getElementById('mExpDesc').value = '';
-                document.getElementById('mExpCost').value = 0;
-                document.getElementById('mExpDesc').focus();
-                document.getElementById('mItemDeleteBtn').style.display = 'none';
-                document.getElementById('itemModalTitle').innerText = 'Add Item';
-                triggerLiveItemTotal();
+                openItemModal('exp');
             } else {
                 closeModal('modalItem');
             }
