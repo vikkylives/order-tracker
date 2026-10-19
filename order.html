@@ -240,30 +240,9 @@
         .portal-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
         .portal-item-row:last-child { border-bottom: none; }
         .portal-financials { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
-        #sharedOrderView { display: none; }
-        html.shared-order-view body > :not(#sharedOrderView) { display: none !important; }
-        html.shared-order-view #sharedOrderView { display: block; min-height: 100vh; background: #f5f5f5; padding: 24px 16px; }
-        .shared-order-card { max-width: 760px; margin: 0 auto; }
-        .shared-order-item { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
-        .shared-order-item:last-child { border-bottom: 0; }
-        .shared-order-image { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; background: #f1f3f5; border: 1px solid var(--border); }
-        .shared-order-image-placeholder { width: 120px; height: 120px; border-radius: 8px; background: #f1f3f5; color: #999; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-        @media (max-width: 520px) {
-            .shared-order-item { grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
-            .shared-order-image, .shared-order-image-placeholder { width: 80px; height: 80px; }
-        }
     </style>
-    <script>
-        if (new URLSearchParams(window.location.hash.slice(1)).has('share')) {
-            document.documentElement.classList.add('shared-order-view');
-        }
-    </script>
 </head>
 <body>
-
-    <main id="sharedOrderView" aria-live="polite">
-        <div class="card shared-order-card">Loading shared order...</div>
-    </main>
 
     <!-- Landing Screen (Default View) -->
     <div id="landingScreen" class="auth-wrapper" style="display: flex;">
@@ -2049,7 +2028,6 @@
                 paidAmount: parseFloat(document.getElementById('orderPaid').value) || 0,
                 dueDate: document.getElementById('dueDate').value,
                 status: document.getElementById('orderStatus').value,
-                shareToken: appState.orders.find(existing => String(existing.id) === String(document.getElementById('orderId').value))?.shareToken || '',
                 updatedAt: new Date().toISOString()
             };
             
@@ -2200,25 +2178,14 @@
             let orders = [...appState.orders];
             const customers = appState.customers;
             const term = String(searchTerm || '').trim().toLowerCase();
-            let itemStatusFilter = null;
             if (term) {
                 if (term === 'overdue') {
                     orders = orders.filter(o => isOverdue(o.dueDate) && !['Delivered', 'Paid', 'Completed', 'Ready to Deliver'].includes(o.status || 'Pending'));
-                    itemStatusFilter = ['Pending', 'In Progress'];
-                } else if (term === 'pending / in progress') {
-                    orders = orders.filter(order => ['Pending', 'In Progress'].includes(order.status || 'Pending'));
-                    itemStatusFilter = ['Pending', 'In Progress'];
-                } else if (term === 'payment pending / delivered') {
-                    orders = orders.filter(order => ['Payment Pending', 'Delivered'].includes(order.status || 'Pending'));
-                    itemStatusFilter = ['Delivered'];
-                } else if (term === 'ready to deliver / completed') {
-                    orders = orders.filter(order => ['Ready to Deliver', 'Completed'].includes(order.status || 'Pending'));
-                    itemStatusFilter = ['Completed', 'Delivered'];
                 } else {
                     orders = orders.filter(order => {
                         const customer = customers.find(c => String(c.id) === String(order.customerId));
                         const searchable = [
-                            order.orderId, order.customerName, order.customerPhone, order.status,
+                            order.orderId, order.customerName, order.customerPhone,
                             customer?.name, customer?.phone, customer?.contactPerson,
                             ...(Array.isArray(order.items) ? order.items.flatMap(item => [item.name, item.description, item.status || 'Pending']) : []),
                             order.description
@@ -2226,10 +2193,6 @@
                         return searchable.some(value => String(value || '').toLowerCase().includes(term));
                     });
                 }
-            }
-            if (itemStatusFilter) {
-                orders = orders.filter(order => Array.isArray(order.items)
-                    && order.items.some(item => itemStatusFilter.includes(item.status || 'Pending')));
             }
             
             const sortDirection = document.getElementById('orderSort')?.value === 'oldest' ? 1 : -1;
@@ -2270,17 +2233,13 @@
                 const orderActions = `
                     <button class="btn-icon" onclick="window.editOrder('${orderRecordId}')" title="Edit order"><i class="fas fa-edit"></i></button>
                     <button class="btn-icon" onclick="window.showOrderDetails('order', '${orderRecordId}')" title="Order details"><i class="fas fa-eye"></i></button>
-                    <button class="btn-icon" data-share-order="${orderRecordId}" title="Copy view-only customer link"><i class="fas fa-link"></i></button>
                     <button class="btn-icon" onclick="window.shareOrderWhatsApp('${orderRecordId}')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
                     <button class="btn-icon" onclick="window.deleteOrder('${orderRecordId}')" title="Delete order"><i class="fas fa-trash"></i></button>`;
                 const orderDescription = order.description
                     ? `<small class="order-group-description">${order.description}</small>`
                     : '';
-                const visibleItems = items
-                    .map((item, index) => ({ item, index }))
-                    .filter(({ item }) => !itemStatusFilter || itemStatusFilter.includes(item.status || 'Pending'));
-                const itemRows = visibleItems.length
-                    ? visibleItems.map(({ item, index }) => {
+                const itemRows = items.length
+                    ? items.map((item, index) => {
                         const itemStatus = item.status || 'Pending';
                         const image = item.image
                             ? `<img class="order-item-image" src="${item.image}" alt="${item.name || 'Item'} image" onclick="window.viewFullImage('${item.image}')">`
@@ -2317,9 +2276,6 @@
                     ${itemRows}
                 `;
             }).join('');
-            tbody.querySelectorAll('[data-share-order]').forEach(button => {
-                button.addEventListener('click', () => window.copyOrderShareLink(button.dataset.shareOrder));
-            });
         };
 
         window.exportAllOrdersCSV = function() {
@@ -2343,158 +2299,6 @@
             a.download = `All_Orders_Cloud_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             showToast('Orders exported successfully!', 'success');
-        };
-
-        window.copyOrderShareLink = async function(orderId) {
-            if (window.location.protocol === 'file:') {
-                showToast('Host this app online over HTTPS before sharing order links.', 'error');
-                return;
-            }
-            if (!window.dbAPI) {
-                showToast('Cloud connection is not ready. Try again when connected.', 'error');
-                return;
-            }
-
-            const order = appState.orders.find(existing => String(existing.id) === String(orderId));
-            if (!order) {
-                showToast('Order not found. Refresh the order list and try again.', 'error');
-                return;
-            }
-
-            try {
-                if (!order.shareToken) {
-                    const tokenBytes = new Uint8Array(24);
-                    window.crypto.getRandomValues(tokenBytes);
-                    const shareToken = Array.from(tokenBytes, byte => byte.toString(16).padStart(2, '0')).join('');
-                    const sharedOrder = { ...order, shareToken };
-                    await window.dbAPI.saveOrder(sharedOrder);
-                    Object.assign(order, sharedOrder);
-                }
-
-                const shareUrl = new URL(window.location.href);
-                shareUrl.hash = `share=${encodeURIComponent(order.shareToken)}`;
-                const link = shareUrl.toString();
-                try {
-                    await navigator.clipboard.writeText(link);
-                    showToast('View-only order link copied. It includes the item photos.', 'success');
-                } catch (error) {
-                    console.error('Could not copy order link:', error);
-                    window.prompt('Copy this view-only order link:', link);
-                }
-            } catch (error) {
-                console.error('Could not create shared order link:', error);
-                showToast(`Could not create link: ${error.message}`, 'error');
-            }
-        };
-
-        window.renderSharedOrder = function(order) {
-            const root = document.getElementById('sharedOrderView');
-            root.replaceChildren();
-            document.title = `${order.orderId || 'Order'} - OrderTrack`;
-
-            const card = document.createElement('section');
-            card.className = 'card shared-order-card';
-            const title = document.createElement('h1');
-            title.textContent = 'Order details';
-            title.style.cssText = 'font-size: 24px; color: var(--dark); margin-bottom: 8px;';
-            card.appendChild(title);
-
-            const orderInfo = document.createElement('p');
-            orderInfo.textContent = `Order ${order.orderId || order.id || ''}${order.date ? ` • ${formatDate(order.date)}` : ''}`;
-            orderInfo.style.cssText = 'color: #666; margin-bottom: 16px;';
-            card.appendChild(orderInfo);
-
-            const status = document.createElement('span');
-            status.className = `status-badge status-${String(order.status || 'Pending').replace(/ /g, '-')}`;
-            status.textContent = order.status || 'Pending';
-            card.appendChild(status);
-
-            if (order.customerName) {
-                const customerName = document.createElement('p');
-                customerName.textContent = `Customer: ${order.customerName}`;
-                customerName.style.cssText = 'margin-top: 16px; font-weight: 600;';
-                card.appendChild(customerName);
-            }
-            if (order.dueDate) {
-                const dueDate = document.createElement('p');
-                dueDate.textContent = `Due date: ${formatDate(order.dueDate)}`;
-                dueDate.style.cssText = 'margin-top: 6px; color: #666;';
-                card.appendChild(dueDate);
-            }
-
-            const itemsHeading = document.createElement('h2');
-            itemsHeading.textContent = 'Items';
-            itemsHeading.style.cssText = 'font-size: 18px; margin-top: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px;';
-            card.appendChild(itemsHeading);
-
-            (Array.isArray(order.items) ? order.items : []).forEach(item => {
-                const row = document.createElement('article');
-                row.className = 'shared-order-item';
-                const imageSource = typeof item.image === 'string' && /^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(item.image)
-                    ? item.image
-                    : '';
-                if (imageSource) {
-                    const image = document.createElement('img');
-                    image.className = 'shared-order-image';
-                    image.src = imageSource;
-                    image.alt = `${item.name || 'Item'} photo`;
-                    row.appendChild(image);
-                } else {
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'shared-order-image-placeholder';
-                    placeholder.setAttribute('aria-label', 'No item photo');
-                    placeholder.innerHTML = '<i class="fas fa-image"></i>';
-                    row.appendChild(placeholder);
-                }
-
-                const details = document.createElement('div');
-                const name = document.createElement('h3');
-                name.textContent = item.name || 'Unnamed item';
-                name.style.cssText = 'font-size: 16px; margin-bottom: 6px;';
-                details.appendChild(name);
-                const itemMeta = [item.qty ? `Quantity: ${item.qty}` : '', item.printType, item.material, item.finishing]
-                    .filter(Boolean)
-                    .join(' • ');
-                if (itemMeta) {
-                    const meta = document.createElement('p');
-                    meta.textContent = itemMeta;
-                    meta.style.cssText = 'color: #666; font-size: 13px; line-height: 1.5;';
-                    details.appendChild(meta);
-                }
-                if (item.description) {
-                    const description = document.createElement('p');
-                    description.textContent = item.description;
-                    description.style.cssText = 'color: #666; font-size: 13px; margin-top: 6px;';
-                    details.appendChild(description);
-                }
-                const itemStatus = document.createElement('span');
-                const statusValue = item.status || 'Pending';
-                itemStatus.className = `status-badge status-${String(statusValue).replace(/ /g, '-')}`;
-                itemStatus.textContent = statusValue;
-                itemStatus.style.marginTop = '8px';
-                details.appendChild(itemStatus);
-                row.appendChild(details);
-                card.appendChild(row);
-            });
-
-            if (order.description) {
-                const notes = document.createElement('p');
-                notes.textContent = `Order notes: ${order.description}`;
-                notes.style.cssText = 'margin-top: 16px; color: #666;';
-                card.appendChild(notes);
-            }
-
-            const total = Number(order.totalValue) || 0;
-            const paid = Number(order.paidAmount) || 0;
-            const financials = document.createElement('div');
-            financials.className = 'portal-financials';
-            const totalAmount = document.createElement('strong');
-            totalAmount.textContent = `Total: ₹${total.toFixed(2)}`;
-            const balance = document.createElement('strong');
-            balance.textContent = `Balance due: ₹${Math.max(0, total - paid).toFixed(2)}`;
-            financials.append(totalAmount, balance);
-            card.appendChild(financials);
-            root.appendChild(card);
         };
 
         window.loadCustomersList = function(searchTerm = '') {
@@ -3080,34 +2884,6 @@
             };
 
             let activeListeners = [];
-
-            async function loadSharedOrder() {
-                const shareToken = new URLSearchParams(window.location.hash.slice(1)).get('share');
-                if (!shareToken) {
-                    document.getElementById('sharedOrderView').textContent = 'This order link is invalid.';
-                    return;
-                }
-
-                try {
-                    if (!auth.currentUser) await signInAnonymously(auth);
-                    const ordersSnapshot = await getDocs(collectionGroup(db, 'orders'));
-                    const sharedOrder = ordersSnapshot.docs
-                        .map(orderDoc => orderDoc.data())
-                        .find(order => order.shareToken === shareToken);
-                    if (!sharedOrder) {
-                        document.getElementById('sharedOrderView').textContent = 'This order link is invalid or has been revoked.';
-                        return;
-                    }
-                    window.renderSharedOrder(sharedOrder);
-                } catch (error) {
-                    console.error('Could not load shared order:', error);
-                    document.getElementById('sharedOrderView').textContent = 'Unable to load this order. Please try again later.';
-                }
-            }
-
-            if (document.documentElement.classList.contains('shared-order-view')) {
-                loadSharedOrder();
-            }
 
             onAuthStateChanged(auth, (user) => {
                 const landingScreen = document.getElementById('landingScreen');
