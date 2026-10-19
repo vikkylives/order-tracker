@@ -429,6 +429,43 @@
             justify-content: center;
             min-height: 100vh;
         }
+        #customerOrderView { display: none; }
+        html.customer-order-share body > :not(#customerOrderView) { display: none !important; }
+        html.customer-order-share #customerOrderView {
+            display: block;
+            max-width: 760px;
+            margin: 0 auto;
+            color: var(--text-primary);
+        }
+        .customer-share-item {
+            display: grid;
+            grid-template-columns: 110px minmax(0, 1fr);
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .customer-share-item:last-child { border-bottom: 0; }
+        .customer-share-image,
+        .customer-share-image-placeholder {
+            width: 110px;
+            height: 110px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+        .customer-share-image-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+        }
+        @media (max-width: 520px) {
+            .customer-share-item { grid-template-columns: 76px minmax(0, 1fr); gap: 10px; }
+            .customer-share-image,
+            .customer-share-image-placeholder { width: 76px; height: 76px; }
+        }
         .theme-toggle {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -443,8 +480,14 @@
             .search-box input { width: 100%; }
         }
     </style>
+    <script>
+        if (new URLSearchParams(window.location.hash.slice(1)).has('view')) {
+            document.documentElement.classList.add('customer-order-share');
+        }
+    </script>
 </head>
 <body>
+    <main id="customerOrderView" aria-live="polite"></main>
     <div id="loginPanel" class="login-container">
         <div class="glass-card" style="max-width: 400px; text-align: center;">
             <div style="text-align: center; margin-bottom: 1rem;">
@@ -1581,6 +1624,188 @@
 
         function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
+        function encodeCustomerShare(order) {
+            const items = (Array.isArray(order.items) ? order.items : []).map(item => ({
+                name: String(item.name || 'Order item'),
+                quantity: Number(item.qty) || 1,
+                status: String(getItemWorkflowStatus(item) || 'Pending'),
+                printType: String(item.printType || ''),
+                material: String(item.material || ''),
+                finishing: String(item.finishing || ''),
+                description: String(item.description || ''),
+                amount: Number(item.amount) || 0,
+                image: typeof item.image === 'string' ? item.image : ''
+            }));
+            const payload = {
+                version: 1,
+                orderId: String(order.orderId || order.id || ''),
+                orderDate: String(order.date || ''),
+                dueDate: String(order.dueDate || ''),
+                customerName: String(order.customerName || ''),
+                items,
+                total: items.reduce((sum, item) => sum + item.amount, 0)
+            };
+            const bytes = new TextEncoder().encode(JSON.stringify(payload));
+            let binary = '';
+            for (let index = 0; index < bytes.length; index++) {
+                binary += String.fromCharCode(bytes[index]);
+            }
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        async function copyCustomerOrderLink(orderId) {
+            if (window.location.protocol === 'file:') {
+                showToast('Host this staff dashboard online over HTTPS before sharing links.', true);
+                return;
+            }
+            const order = allOrders.find(entry => String(entry.id) === String(orderId));
+            if (!order) {
+                showToast('Could not find the order. Refresh the dashboard and try again.', true);
+                return;
+            }
+            const encoded = encodeCustomerShare(order);
+            if (encoded.length > 400000) {
+                showToast('This order with photos is too large for a share link. Reduce the photo sizes and try again.', true);
+                return;
+            }
+            const link = `${window.location.href.split('#')[0]}#view=${encoded}`;
+            try {
+                await navigator.clipboard.writeText(link);
+                showToast('Customer view-only link copied.');
+            } catch (error) {
+                console.error('Could not copy customer order link:', error);
+                window.prompt('Copy this customer view-only link:', link);
+            }
+        }
+
+        function renderCustomerOrderLink() {
+            const container = document.getElementById('customerOrderView');
+            container.replaceChildren();
+            try {
+                const encoded = new URLSearchParams(window.location.hash.slice(1)).get('view');
+                if (!encoded || encoded.length > 400000) throw new Error('This order link is invalid.');
+                const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+                const binary = atob(base64 + '='.repeat((4 - base64.length % 4) % 4));
+                const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+                const order = JSON.parse(new TextDecoder().decode(bytes));
+                if (order.version !== 1 || !Array.isArray(order.items) || order.items.length > 500) {
+                    throw new Error('This order link is invalid or unsupported.');
+                }
+                document.title = `${String(order.orderId || 'Order')} | Customer Order`;
+
+                const card = document.createElement('section');
+                card.className = 'glass-card';
+                const heading = document.createElement('h1');
+                heading.textContent = 'Design Space · Order';
+                heading.style.cssText = 'font-size: 1.2rem; margin-bottom: 8px;';
+                card.appendChild(heading);
+
+                const orderInfo = document.createElement('p');
+                orderInfo.textContent = `Order #${String(order.orderId || '')}`;
+                orderInfo.style.cssText = 'color: var(--text-secondary); margin-bottom: 12px;';
+                card.appendChild(orderInfo);
+
+                const readOnlyNotice = document.createElement('p');
+                readOnlyNotice.textContent = 'Customer view · Read only';
+                readOnlyNotice.style.cssText = 'font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 16px;';
+                card.appendChild(readOnlyNotice);
+
+                if (order.customerName) {
+                    const customer = document.createElement('p');
+                    customer.textContent = `Customer: ${String(order.customerName)}`;
+                    customer.style.marginBottom = '8px';
+                    card.appendChild(customer);
+                }
+                const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleDateString('en-IN') : '';
+                const dueDate = order.dueDate ? new Date(order.dueDate).toLocaleDateString('en-IN') : '';
+                if (orderDate || dueDate) {
+                    const dates = document.createElement('p');
+                    dates.textContent = [orderDate && `Order date: ${orderDate}`, dueDate && `Due date: ${dueDate}`]
+                        .filter(Boolean).join(' · ');
+                    dates.style.cssText = 'color: var(--text-secondary); font-size: 0.8rem;';
+                    card.appendChild(dates);
+                }
+
+                const itemsHeading = document.createElement('h2');
+                itemsHeading.textContent = 'Items';
+                itemsHeading.style.cssText = 'font-size: 1rem; margin-top: 22px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);';
+                card.appendChild(itemsHeading);
+
+                order.items.forEach(item => {
+                    const row = document.createElement('article');
+                    row.className = 'customer-share-item';
+                    const imageSource = typeof item.image === 'string' &&
+                        (/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(item.image) ||
+                         /^https:\/\//i.test(item.image))
+                        ? item.image
+                        : '';
+                    if (imageSource) {
+                        const image = document.createElement('img');
+                        image.className = 'customer-share-image';
+                        image.src = imageSource;
+                        image.alt = `${String(item.name || 'Item')} photo`;
+                        row.appendChild(image);
+                    } else {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'customer-share-image-placeholder';
+                        placeholder.innerHTML = '<i class="fas fa-image"></i>';
+                        row.appendChild(placeholder);
+                    }
+
+                    const details = document.createElement('div');
+                    const name = document.createElement('h3');
+                    name.textContent = String(item.name || 'Order item');
+                    name.style.cssText = 'font-size: 0.95rem; margin-bottom: 6px;';
+                    details.appendChild(name);
+                    const description = [
+                        `Qty: ${Number(item.quantity) || 1}`,
+                        item.printType,
+                        item.material,
+                        item.finishing
+                    ].filter(Boolean).join(' · ');
+                    const meta = document.createElement('p');
+                    meta.textContent = description;
+                    meta.style.cssText = 'font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;';
+                    details.appendChild(meta);
+                    if (item.description) {
+                        const notes = document.createElement('p');
+                        notes.textContent = String(item.description);
+                        notes.style.cssText = 'font-size: 0.75rem; color: var(--text-secondary); margin-top: 5px;';
+                        details.appendChild(notes);
+                    }
+                    const status = document.createElement('p');
+                    status.textContent = String(item.status || 'Pending');
+                    status.style.cssText = 'font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-top: 6px;';
+                    details.appendChild(status);
+                    if (Number(item.amount) > 0) {
+                        const amount = document.createElement('p');
+                        amount.textContent = `₹${Number(item.amount).toFixed(2)}`;
+                        amount.style.cssText = 'font-size: 0.8rem; font-weight: 700; margin-top: 6px;';
+                        details.appendChild(amount);
+                    }
+                    row.appendChild(details);
+                    card.appendChild(row);
+                });
+
+                if (Number(order.total) > 0) {
+                    const total = document.createElement('p');
+                    total.textContent = `Order total: ₹${Number(order.total).toFixed(2)}`;
+                    total.style.cssText = 'text-align: right; font-size: 1rem; font-weight: 700; margin-top: 16px;';
+                    card.appendChild(total);
+                }
+                container.appendChild(card);
+            } catch (error) {
+                const message = document.createElement('p');
+                message.className = 'glass-card';
+                message.textContent = error instanceof Error ? error.message : 'Unable to display this order.';
+                container.appendChild(message);
+            }
+        }
+
+        if (document.documentElement.classList.contains('customer-order-share')) {
+            renderCustomerOrderLink();
+        }
+
         function renderItems() {
             const filtered = filterAndSortItems();
             visibleItemIds = filtered.map(fi => fi.id);
@@ -1642,6 +1867,7 @@
                                 <button class="btn-icon quick-status-btn" title="Mark delivered" aria-label="Mark delivered" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-status="Delivered"><i class="fas fa-truck"></i></button>
                                 <button class="btn-icon quick-flag-btn billed-flag-btn ${billed ? 'is-active' : ''}" title="${billed ? 'Clear billed' : 'Mark billed'}" aria-label="${billed ? 'Clear billed' : 'Mark billed'}" aria-pressed="${billed}" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-field="billed" data-value="${!billed}"><i class="fas fa-file-invoice"></i></button>
                                 <button class="btn-icon quick-flag-btn mark-paid-btn ${paid ? 'is-active' : ''}" title="${paid ? 'Clear paid' : 'Mark paid'}" aria-label="${paid ? 'Clear paid' : 'Mark paid'}" aria-pressed="${paid}" data-order="${fi.originalOrderId}" data-idx="${item.index}" data-field="paid" data-value="${!paid}"><i class="fas fa-dollar-sign"></i></button>
+                                <button class="btn-icon customer-order-link-btn" data-order="${encodeURIComponent(String(fi.originalOrderId)).replace(/'/g, '%27')}" title="Copy customer view-only link"><i class="fas fa-link"></i> Link</button>
                                 <button class="btn-icon btn-whatsapp whatsapp-share-btn" data-item='${JSON.stringify(fi).replace(/'/g, "\\'")}'><i class="fab fa-whatsapp"></i> Share</button>
                             </div>
                         </div>
@@ -1669,6 +1895,9 @@
                     const itemData = JSON.parse(btn.dataset.item);
                     openShareSettings(itemData);
                 });
+            });
+            document.querySelectorAll('.customer-order-link-btn').forEach(btn => {
+                btn.addEventListener('click', () => copyCustomerOrderLink(decodeURIComponent(btn.dataset.order)));
             });
             refreshBulkControls();
         }
@@ -1818,39 +2047,41 @@
             await executeWhatsAppShare(pendingShareItemData, options);
         };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user && !user.isAnonymous) {
-                loginPanel.style.display = 'none';
-                dashboard.style.display = 'block';
-                startListeners(user.uid);
-                currentFilter = 'In Progress';
-                searchTerm = '';
-                searchInput.value = '';
-                sortSelect.value = 'newest';
-                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-                const inProgressBtn = document.querySelector('.filter-pill[data-filter="In Progress"]');
-                if(inProgressBtn) inProgressBtn.classList.add('active');
-                showToast(`Welcome, ${user.email}`);
-            } else {
-                loginPanel.style.display = 'flex';
-                dashboard.style.display = 'none';
-                uid = null;
-                flatItems = [];
-                allOrders = [];
-                allCustomers = [];
-                selectedItemIds.clear();
-                lastStatusUpdate = null;
-                if(loginBtn) {
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Login';
+        if (!document.documentElement.classList.contains('customer-order-share')) {
+            onAuthStateChanged(auth, (user) => {
+                if (user && !user.isAnonymous) {
+                    loginPanel.style.display = 'none';
+                    dashboard.style.display = 'block';
+                    startListeners(user.uid);
+                    currentFilter = 'In Progress';
+                    searchTerm = '';
+                    searchInput.value = '';
+                    sortSelect.value = 'newest';
+                    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    const inProgressBtn = document.querySelector('.filter-pill[data-filter="In Progress"]');
+                    if(inProgressBtn) inProgressBtn.classList.add('active');
+                    showToast(`Welcome, ${user.email}`);
+                } else {
+                    loginPanel.style.display = 'flex';
+                    dashboard.style.display = 'none';
+                    uid = null;
+                    flatItems = [];
+                    allOrders = [];
+                    allCustomers = [];
+                    selectedItemIds.clear();
+                    lastStatusUpdate = null;
+                    if(loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = 'Login';
+                    }
+                    emailInput.value = '';
+                    pwdInput.value = '';
+                    loginError.style.display = 'none';
+                    analyticsModal.style.display = 'none';
+                    shareSettingsModal.style.display = 'none';
                 }
-                emailInput.value = '';
-                pwdInput.value = '';
-                loginError.style.display = 'none';
-                analyticsModal.style.display = 'none';
-                shareSettingsModal.style.display = 'none';
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
